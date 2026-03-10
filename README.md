@@ -10,4 +10,4 @@ Dossier de travail :
   /config           <-- Connexion DB et clés API
   /vendor           <-- Bibliothèques installées par Composer
   /sql              <-- Les scripts de création de tables
-  composer.json     <-- Liste de tes dépendances
+  composer.json     <-- Liste des dépendances
