@@ -17,7 +17,7 @@ try {
     echo "</ul>";
 
 } catch (Exception $e) {
-    echo "<h1>❌ Erreur</h1>";
+    echo "<h1>❌ Erreur places de parkings</h1>";
     echo "Détails : " . $e->getMessage();
 }
 
@@ -25,17 +25,17 @@ try {
     // On récupère les ressources de type 'parking'
     $stmt = $pdo->prepare("SELECT *  FROM users");
     $stmt->execute();
-    $parkings = $stmt->fetchAll();
+    $users = $stmt->fetchAll();
 
-    echo "<h1>✅ Connexion réussie à PostgreSQL !</h1>";
-    echo "<h3>Liste des places de parking :</h3>";
+    echo "<h3>Liste des utilisateurs :</h3>";
     echo "<ul>";
-    foreach ($parkings as $p) {
-        echo "<li><strong>" . htmlspecialchars($p['nom']) . "</strong> - Localisation : " . htmlspecialchars($p['localisation']) . "</li>";
+    foreach ($users as $u) {
+        echo "<li><strong>" . htmlspecialchars($u['nom']) . "</strong> - Prénom : ". htmlspecialchars($u['prenom']) . " - 
+        Poste : " . htmlspecialchars($u['id_role']) .  "</li>";
     }
     echo "</ul>";
 
 } catch (Exception $e) {
-    echo "<h1>❌ Erreur</h1>";
+    echo "<h1>❌ Erreur utilisateurs</h1>";
     echo "Détails : " . $e->getMessage();
 }
