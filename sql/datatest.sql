@@ -3,7 +3,9 @@ INSERT INTO roles (nom) VALUES ('admin'), ('manager'), ('collaborateur');
 
 -- 2. Insertion d'un premier utilisateur Admin (mot de passe fictif pour l'instant)
 INSERT INTO users (id_role, nom, prenom, email, immatriculation, password_hash) 
+VALUES (4, 'Test', 'Imonial' ,'imonial_test@test.com', 'CC-456-dd', 'password_en_clair_test'),
 VALUES (1, 'Admin', 'Global', 'admin@workspace.com', 'AA-123-BB', 'password_en_clair_test');
+
 
 -- 3. Insertion des 2 places de parking (US 1.1)
 INSERT INTO resources (type, nom, localisation, equipements) VALUES 
