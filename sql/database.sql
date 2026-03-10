@@ -19,9 +19,13 @@ CREATE TABLE users (
 -- 3. Table des Ressources (Parking, Bureaux, Salles)
 CREATE TYPE resource_type AS ENUM ('parking', 'bureau', 'salle');
 
+-- question pr Mr SANCHEZ : est ce que faire un type est plus interessant qu'une autre table
+-- pck chaque type ne va pas avoir les meme parametres, une salle de réu n'a pas dde prise
+-- pour recharger les voitures électrique par ex
+
 CREATE TABLE resources (
     id SERIAL PRIMARY KEY,
-    type resource_type NOT NULL, -- 
+    type resource_type NOT NULL, -- ex: Parking, Bureaux, Salles
     nom VARCHAR(100) NOT NULL, -- ex: 'Salle A1', 'Place P12'
     localisation TEXT, -- 
     capacite INTEGER DEFAULT 1, -- Pour les salles [cite: 22]
