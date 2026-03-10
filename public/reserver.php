@@ -1,0 +1,67 @@
+<?php
+// On récupère la connexion PDO (assure-toi que le chemin est bon)
+$pdo = require_once __DIR__ . '/../config/db.php';
+
+$message = "";
+
+// 1. Si le formulaire est envoyé
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id_resource = $_POST['resource'];
+    $date_debut = $_POST['debut'];
+    $date_fin = $_POST['fin'];
+    $id_user = 1; // On simule l'utilisateur ID 1 pour le moment
+
+    try {
+        $sql = "INSERT INTO bookings (id_user, id_resource, date_debut, date_fin) 
+                VALUES (:user, :res, :debut, :fin)";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            'user'  => $id_user,
+            'res'   => $id_resource,
+            'debut' => $date_debut,
+            'fin'   => $date_fin
+        ]);
+
+        $message = "✅ Réservation réussie !";
+    } catch (Exception $e) {
+        // Si la contrainte 'no_overlap' est déclenchée, ça tombe ici !
+        $message = "❌ Erreur : Cette place est déjà réservée sur ce créneau.";
+    }
+}
+
+// 2. On récupère la liste des parkings pour le menu déroulant
+$resources = $pdo->query("SELECT id, nom FROM resources WHERE resource_type = 'parking'")->fetchAll();
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Réserver un parking</title>
+</head>
+<body>
+    <h1>Réserver ma place</h1>
+    
+    <?php if($message) echo "<p>$message</p>"; ?>
+
+    <form method="POST">
+        <label>Choisir la place :</label>
+        <select name="resource" required>
+            <?php foreach($resources as $r): ?>
+                <option value="<?= $r['id'] ?>"><?= htmlspecialchars($r['nom']) ?></option>
+            <?php endforeach; ?>
+        </select>
+        <br><br>
+
+        <label>Début :</label>
+        <input type="datetime-local" name="debut" required>
+        <br><br>
+
+        <label>Fin :</label>
+        <input type="datetime-local" name="fin" required>
+        <br><br>
+
+        <button type="submit">Confirmer la réservation</button>
+    </form>
+</body>
+</html>
