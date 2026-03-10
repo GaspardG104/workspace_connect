@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // 2. On récupère la liste des parkings pour le menu déroulant
-$resources = $pdo->query("SELECT id, nom FROM resources WHERE resource_type = 'parking'")->fetchAll();
+$resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking'")->fetchAll();
 ?>
 
 <!DOCTYPE html>
