@@ -2,11 +2,11 @@
 // config/db.php
 
 // On charge le fichier ignoré par Git
-$settings = require 'settings.php';
+$db_config = require 'db_config.php';
 
 try {
-    $dsn = "pgsql:host={$settings['host']};dbname={$settings['db']}";
-    $pdo = new PDO($dsn, $settings['user'], $settings['pass'], [
+    $dsn = "pgsql:host={$db_config['host']};dbname={$db_config['db']}";
+    $pdo = new PDO($dsn, $db_config['user'], $db_config['pass'], [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
     ]);
 } catch (PDOException $e) {
