@@ -12,3 +12,4 @@ try {
 } catch (PDOException $e) {
     die("Erreur de connexion sécurisée.");
 }
+return $pdo;
