@@ -23,7 +23,7 @@ try {
 
 try {
     // On récupère les ressources de type 'parking'
-    $stmt = $pdo->prepare("SELECT *  FROM users");
+    $stmt = $pdo->prepare("SELECT *  FROM users"); // oui après je demande qu'une partie des infos mais au final entre temps j'ai changer d'avis
     $stmt->execute();
     $users = $stmt->fetchAll();
 
