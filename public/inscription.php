@@ -1,26 +1,22 @@
 <?php
+session_start(); 
 
-session_start(); // Ouvre la session pour "retenir" l'utilisateur
-
-// Vérifier si connecté ET si admin
+// 1. Vérifications de sécurité (DOIVENT être avant tout affichage)
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
     header('Location: login.php?redirect=inscription.php');
     exit;
 }
 
-// On récupère la connexion PDO
 $pdo = require_once __DIR__ . '/../config/db.php';
+
+// 2. Gestion des messages en session
 $message = "";
+if (isset($_SESSION['msg'])) {
+    $message = $_SESSION['msg'];
+    unset($_SESSION['msg']); 
+}
 
-// pour la liste des postes
-$roles_query = $pdo->query("SELECT id, nom FROM roles ORDER BY nom");
-$liste_roles = $roles_query->fetchAll();
-
-// RECUPERATION DE L'ID RÉEL
-$id_user = $_SESSION['user_id']; 
-$nom_user = $_SESSION['user_nom']; // Optionnel pour la partie user experience
-
-
+// 3. Traitement du formulaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_role = $_POST['id_role'];
     $nom = $_POST['nom'];
@@ -29,37 +25,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $immatriculation = $_POST['immatriculation'];
     $password = $_POST['password'];
 
-    // 1. On hache le mot de passe (Sécurité !)
     $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
     try {
-        // 2. On insère dans la base (id_role = 3 par défaut pour "collaborateur")
         $sql = "INSERT INTO users (id_role, nom, prenom, email, immatriculation, password_hash) 
                 VALUES (:id_role, :nom, :prenom, :email, :imma, :pass)";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            'id_role'   => $id_role,
-            'nom'   => $nom,
-            'prenom' => $prenom,
-            'email' => $email,
-            'imma'  => $immatriculation,
-            'pass'  => $password_hash
+            'id_role' => $id_role,
+            'nom'     => $nom,
+            'prenom'  => $prenom,
+            'email'   => $email,
+            'imma'    => $immatriculation,
+            'pass'    => $password_hash
         ]);
 
-        $message = "✅" . htmlspecialchars($nom_user) . " a créer le compte de " . htmlspecialchars($nom) . " avec succès ! 
-        <a href='login.php'>Connectez-vous ici</a>";
+        $_SESSION['msg'] = "✅ " . htmlspecialchars($_SESSION['user_nom']) . " a créé le compte de " . htmlspecialchars($nom) . " avec succès !";
+        
+        // REDIRECTION CRUCIALE
+        header("Location: inscription.php");
+        exit; // Arrête le script ici pour forcer la redirection
+
     } catch (Exception $e) {
-        $message = "❌ Erreur : Cet email est peut-être déjà utilisé.";
+        $_SESSION['msg'] = "❌ Erreur : Cet email est peut-être déjà utilisé ou données invalides.";
+        header("Location: inscription.php");
+        exit;
     }
 }
+
+// 4. On récupère les rôles SEULEMENT si on n'a pas redirigé (donc pour l'affichage)
+$roles_query = $pdo->query("SELECT id, nom FROM roles ORDER BY nom");
+$liste_roles = $roles_query->fetchAll();
 ?>
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <title>Inscription - Workspace Connect</title>
-    <link rel="stylesheet" href="styles/style_inscription">
+    <link rel="stylesheet" href="styles/style_inscription.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
@@ -70,10 +74,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="text" name="nom" placeholder="Nom" required> <i class="fa-solid fa-address-card"></i><br><br>
         <input type="text" name="prenom" placeholder="Prénom" required> <i class="fa-regular fa-address-card"></i><br><br>
         <input type="email" name="email" placeholder="Email" required> <i class="fa-solid fa-envelope"></i> <br><br>
-        <select name="id_role" id="role" require><option value="">-- Sélectionner un rôle --</option>
+        <div class="input-group">
+        <select name="id_role" id="id_role" require><option value="">-- Sélectionner un rôle --</option>
         <?php foreach ($liste_roles as $role): ?><option value="<?= $role['id'] ?>">
         <?= htmlspecialchars($role['nom']) ?></option>
         <?php endforeach; ?></select><i class="fa-solid fa-user-tie"><br><br>
+        </div>
         <input type="text" name="immatriculation" placeholder="Immatriculation (ex: AA-123-BB)"> <i class="fa-solid fa-car-rear"></i> <br><br>
         <input type="password" name="password" placeholder="Mot de passe" required>  <i class="fa-solid fa-lock"></i><br><br>
         

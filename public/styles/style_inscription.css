@@ -1,0 +1,42 @@
+/* Conteneur principal du formulaire */
+form {
+    display: flex;
+    flex-direction: column; /* Aligne tout en colonne */
+    align-items: center;    /* Centre la colonne horizontalement */
+    gap: 15px;             /* Espace entre chaque bloc */
+}
+
+/* Groupe comprenant l'input/select et son icône */
+.input-group {
+    display: flex;
+    align-items: center;   /* Aligne verticalement l'icône et le champ */
+    width: 300px;          /* Fixez une largeur commune */
+    position: relative;
+}
+
+/* Style commun pour les inputs et le select */
+input, select {
+    width: 100%;           /* Prend toute la largeur du groupe */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Important pour que le padding ne dépasse pas */
+}
+
+/* Positionnement des icônes */
+.input-group i {
+    margin-left: 10px;     /* Espace entre le champ et l'icône */
+    width: 20px;           /* Largeur fixe pour que tout soit aligné verticalement */
+    text-align: center;
+}
+
+/* Style du bouton pour qu'il soit aussi large que le reste */
+button {
+    width: 300px;
+    padding: 10px;
+    cursor: pointer;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
