@@ -63,13 +63,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <p><?= $message ?></p>
 
     <form method="POST">
-        <input type="text" name="nom" placeholder="Nom" required><br><br>
-        <input type="text" name="prenom" placeholder="Prénom" required><br><br>
-        <input type="email" name="email" placeholder="Email" required><br><br>
-        <input type="text" name="immatriculation" placeholder="Immatriculation (ex: AA-123-BB)"><br><br>
-        <input type="password" name="password" placeholder="Mot de passe" required><i class="fa-solid fa-lock"></i><br><br>
+        <input type="text" name="nom" placeholder="Nom" required> <i class="fa-solid fa-address-card"></i><br><br>
+        <input type="text" name="prenom" placeholder="Prénom" required> <i class="fa-regular fa-address-card"></i><br><br>
+        <input type="email" name="email" placeholder="Email" required> <i class="fa-solid fa-envelope"></i> <br><br>
+        <input type="text" name="immatriculation" placeholder="Immatriculation (ex: AA-123-BB)"> <i class="fa-solid fa-car-rear"></i> <br><br>
+        <input type="password" name="password" placeholder="Mot de passe" required>  <i class="fa-solid fa-lock"></i><br><br>
         
-        <button type="submit">Valider</button>
+        <button type="submit">Valider</button> <i class="fa-solid fa-handshake"></i>
     </form>
     <a href="logout.php" style="color: red;">Se déconnecter</a>
 </body>
