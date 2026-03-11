@@ -1,15 +1,27 @@
 <?php
+
+// Indispensable pour lire les infos du login
+session_start(); 
+
+// Si pas de session, retour au login
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
 // On récupère la connexion PDO (assure-toi que le chemin est bon)
 $pdo = require_once __DIR__ . '/../config/db.php';
-
 $message = "";
+
+// RECUPERATION DE L'ID RÉEL
+$id_user = $_SESSION['user_id']; 
+$nom_user = $_SESSION['user_nom']; // Optionnel pour la partie user experience
 
 // 1. Si le formulaire est envoyé
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_resource = $_POST['resource'];
     $date_debut = $_POST['debut'];
     $date_fin = $_POST['fin'];
-    $id_user = 1; // On simule l'utilisateur ID 1 pour le moment
 
     try {
         $sql = "INSERT INTO bookings (id_user, id_resource, date_debut, date_fin) 
@@ -23,7 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'fin'   => $date_fin
         ]);
 
-        $message = "✅ Réservation réussie !";
+        $message = "✅ Réservation réussie pour " . htmlspecialchars($nom_user) . " !";
+        
     } catch (Exception $e) {
         // Si la contrainte 'no_overlap' est déclenchée, ça tombe ici !
         $message = "❌ Erreur : Cette place est déjà réservée sur ce créneau.";
