@@ -20,18 +20,20 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' O
     <title>Réserver un parking</title>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
     <link rel="stylesheet" href="/../styles/style_reserver.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 
-    <h1>Réserver ma place</h1>
+    <h1>Réserver ma place <i class="fa-solid fa-square-parking" style="color: rgb(0, 109, 198);"></i></h1>
+    
     
     <div id="ajax-message" style="margin-bottom: 20px; font-weight: bold;"></div>
 
-    <h3>1. Cliquez sur une place pour voir ses disponibilités</h3>
+    <h3>Cliquez sur une place pour voir ses disponibilités</h3>
     <div class="parking-map">
         <?php foreach($resources as $r): ?>
             <div class="place-btn" id="btn-<?= $r['id'] ?>" onclick="selectPlace(<?= $r['id'] ?>, '<?= htmlspecialchars($r['nom']) ?>')">
-                <?= htmlspecialchars($r['nom']) ?>
+                <?= htmlspecialchars($r['nom']) ?><i class="fa-solid fa-car fa-xl" style="color: rgb(0, 0, 0);"></i>
             </div>
         <?php endforeach; ?>
     </div>
@@ -132,7 +134,7 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' O
             msgDiv.style.color = data.success ? "green" : "red";
 
             if (data.success) {
-                // On rafraîchit le calendrier pour voir la nouvelle zone "OCCUPÉ"
+                // On rafraîchit le calendrier pour voir la nouvelle zone "RÉSERVÉE"
                 calendar.refetchEvents();
                 // On vide les champs pour permettre une autre sélection (ex: Jeudi puis Dimanche)
                 document.getElementById('debutInput').value = "";
