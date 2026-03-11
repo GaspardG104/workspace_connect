@@ -14,7 +14,7 @@ session_start();
         <nav>
             <?php if (isset($_SESSION['user_id'])): ?>
                 <p>Bonjour, <strong><?= htmlspecialchars($_SESSION['user_nom']) ?></strong> !</p>
-                <a href="reserver.php">Réserver une place</a> | 
+                <a href="parking/reserver.php">Réserver une place</a> | 
                 
                 <?php if ($_SESSION['user_role'] == 1): ?>
                     <a href="inscription.php">Administration (Créer un compte)</a> |

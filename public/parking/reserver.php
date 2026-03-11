@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // On récupère la connexion PDO
-$pdo = require_once __DIR__ . '/../config/db.php';
+$pdo = require_once __DIR__ . '/../../config/db.php';
 $message = "";
 
 // RECUPERATION DE L'ID RÉEL
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $debut_choisi = new DateTime($date_debut);
 
     if ($debut_choisi < $maintenant) {
-        $message = "❌ Erreur : Voyager dans le passé n'est pas encore possible... Vous ne pouvez pas réserver dans le passé !";
+        $message = "❌ Erreur : Le voyage dans le temps n'est pas encore possible... Vous ne pouvez pas réserver dans le passé !";
     } else {
         try {
             $sql = "INSERT INTO bookings (id_user, id_resource, date_debut, date_fin) 
