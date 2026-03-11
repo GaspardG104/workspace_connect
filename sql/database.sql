@@ -47,7 +47,9 @@ CREATE TABLE bookings (
         id_resource WITH =,
         tsrange(date_debut, date_fin) WITH &&
     ),
-    CONSTRAINT check_dates CHECK (date_debut < date_fin)
+    CONSTRAINT check_dates CHECK (date_debut < date_fin),
+
+    CONSTRAINT check_date_future CHECK (date_debut >= CURRENT_TIMESTAMP);
 );
 
 -- 5. Table des Participants
