@@ -23,23 +23,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $date_debut = $_POST['debut'];
     $date_fin = $_POST['fin'];
 
-    try {
-        $sql = "INSERT INTO bookings (id_user, id_resource, date_debut, date_fin) 
-                VALUES (:user, :res, :debut, :fin)";
-        
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            'user'  => $id_user,
-            'res'   => $id_resource,
-            'debut' => $date_debut,
-            'fin'   => $date_fin
-        ]);
+    $maintenant = new DateTime();
+    $debut_choisi = new DateTime($date_debut);
 
-        $message = "✅ Réservation réussie pour " . htmlspecialchars($nom_user) . " !";
+    if ($debut_choisi < $maintenant) {
+        $message = "❌ Erreur : Voyager dans le passé n'est pas encore possible... Vous ne pouvez pas réserver dans le passé !";
+    } else {
+        try {
+            $sql = "INSERT INTO bookings (id_user, id_resource, date_debut, date_fin) 
+                    VALUES (:user, :res, :debut, :fin)";
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                'user'  => $id_user,
+                'res'   => $id_resource,
+                'debut' => $date_debut,
+                'fin'   => $date_fin
+            ]);
 
-    } catch (Exception $e) {
-        // Si la contrainte 'no_overlap' est déclenchée, ça tombe ici !
-        $message = "❌ Erreur : Cette place est déjà réservée sur ce créneau.";
+            $message = "✅ Réservation réussie pour " . htmlspecialchars($nom_user) . " !";
+
+        } catch (Exception $e) {
+            // Si la contrainte 'no_overlap' est déclenchée, ça tombe ici !
+            $message = "❌ Erreur : Cette place est déjà réservée sur ce créneau.";
+        }
     }
 }
 
@@ -67,11 +74,11 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking'")
         <br><br>
 
         <label>Début :</label>
-        <input type="datetime-local" name="debut" required>
+        <input type="datetime-local" name="debut" min="<?= $now ?>" required>
         <br><br>
 
         <label>Fin :</label>
-        <input type="datetime-local" name="fin" required>
+        <input type="datetime-local" name="fin" min="<?= $now ?>" required>
         <br><br>
 
         <button type="submit">Confirmer la réservation</button>
