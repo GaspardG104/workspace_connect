@@ -37,9 +37,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="fr">
 <head>
     <title>Connexion - Workspace Connect</title>
+    <link rel="stylesheet" href="styles/style_login/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> 
+
 </head>
 <body>
-    <h2>Connexion</h2>
+    <h2>Connexion <i class="fa-regular fa-id-card"></i></h2>
     
     <?php if($error): ?>
         <p style="color:red;"><?= $error ?></p>
@@ -48,13 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <form method="POST">
         <input type="hidden" name="redirect_to" value="<?= htmlspecialchars($redirect) ?>">
 
-        <label>Email :</label><br>
+        <label> <i class="fa-solid fa-envelope"></i> Email :</label><br>
         <input type="email" name="email" required><br><br>
 
-        <label>Mot de passe :</label><br>
+        <label> <i class="fa-solid fa-lock"></i> Mot de passe :</label><br>
         <input type="password" name="password" required><br><br>
 
-        <button type="submit">Se connecter</button>
+        <button type="submit">Se connecter </button>  <i class="fa-solid fa-arrow-right-to-bracket"></i>
     </form>
 </body>
 </html>

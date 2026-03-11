@@ -55,6 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="fr">
 <head>
     <title>Inscription - Workspace Connect</title>
+    <link rel="stylesheet" href="styles/style_inscription">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
     <h1>Créer un compte</h1>
@@ -65,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="text" name="prenom" placeholder="Prénom" required><br><br>
         <input type="email" name="email" placeholder="Email" required><br><br>
         <input type="text" name="immatriculation" placeholder="Immatriculation (ex: AA-123-BB)"><br><br>
-        <input type="password" name="password" placeholder="Mot de passe" required><br><br>
+        <input type="password" name="password" placeholder="Mot de passe" required><i class="fa-solid fa-lock"></i><br><br>
         
         <button type="submit">Valider</button>
     </form>
