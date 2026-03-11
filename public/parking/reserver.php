@@ -1,7 +1,7 @@
 <?php
 session_start(); 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: /../login.php');
     exit;
 }
 
@@ -10,7 +10,7 @@ $message = "";
 $id_user = $_SESSION['user_id']; 
 $nom_user = $_SESSION['user_nom'];
 
-// ON VERIFIE SI LE BOUTON A ETE CLIQUE
+// Traitement de la réservation
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['resource'])) {
     $id_resource = $_POST['resource'];
     $date_debut = $_POST['debut'];
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['resource'])) {
     }
 }
 
-$resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking'")->fetchAll();
+$resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' ORDER BY nom")->fetchAll();
 $now = date('Y-m-d\TH:i');
 ?>
 
@@ -48,11 +48,7 @@ $now = date('Y-m-d\TH:i');
 <head>
     <title>Réserver un parking</title>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
-    <style>
-        body { font-family: sans-serif; padding: 20px; text-align: center; }
-        #calendar { max-width: 900px; margin: 20px auto; background: white; padding: 10px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .form-container { background: #f9f9f9; padding: 20px; border: 1px solid #ccc; display: inline-block; border-radius: 8px; text-align: left; }
-    </style>
+    <link rel="stylesheet" href="/../styles/style_reserver.css">
 </head>
 <body>
 
@@ -60,18 +56,21 @@ $now = date('Y-m-d\TH:i');
     
     <?php if(!empty($message)) echo "<p><strong>$message</strong></p>"; ?>
 
+    <h3>1. Cliquez sur une place pour voir ses disponibilités</h3>
+    <div class="parking-map">
+        <?php foreach($resources as $r): ?>
+            <div class="place-btn" id="btn-<?= $r['id'] ?>" onclick="selectPlace(<?= $r['id'] ?>, '<?= htmlspecialchars($r['nom']) ?>')">
+                <?= htmlspecialchars($r['nom']) ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
     <div id='calendar'></div>
 
-    <div class="form-container">
+    <div class="form-container" id="res-form-box" style="display:none;">
+        <h3 id="selected-title">Nouvelle réservation</h3>
         <form method="POST">
-            <label>Place de parking :</label><br>
-            <select name="resource" id="resourceSelect" required>
-                <option value="">-- Choisissez --</option>
-                <?php foreach($resources as $r): ?>
-                    <option value="<?= $r['id'] ?>"><?= htmlspecialchars($r['nom']) ?></option>
-                <?php endforeach; ?>
-            </select>
-            <br><br>
+            <input type="hidden" name="resource" id="resourceSelect" required>
 
             <label>Date de début :</label><br>
             <input type="datetime-local" name="debut" id="debutInput" required>
@@ -81,49 +80,64 @@ $now = date('Y-m-d\TH:i');
             <input type="datetime-local" name="fin" id="finInput" required>
             <br><br>
 
-            <button type="submit">Confirmer la réservation</button>
+            <button type="submit">Confirmer la réservation pour cette place</button>
         </form>
     </div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
+    let calendar;
+
+    document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendar');
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'timeGridWeek',
-          locale: 'fr',
-          selectable: true,
-          headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek'
-          },
-          events: 'get_events.php', // AFFICHE LES RESERVATIONS EXISTANTES
-          
-          select: function(info) {
-            // Conversion du format de date pour HTML5 (YYYY-MM-DDTHH:MM)
-            let start = info.startStr.substring(0, 16);
-            let end = info.endStr.substring(0, 16);
-
-            document.getElementById('debutInput').value = start;
-            document.getElementById('finInput').value = end;
-
-            // Optionnel : Appel à check_availability.php si tu l'as créé
-            fetch(`check_availability.php?start=${start}&end=${end}&type=parking`)
-                .then(res => res.json())
-                .then(data => {
-                    if(data.available_id) {
-                        let select = document.getElementById('resourceSelect');
-                        select.value = data.available_id;
-                        // On force un petit message visuel rapide (optionnel)
-                        console.log("Place trouvée : " + data.available_id);
-                    } else {
-                        alert("Aucune place n'est libre pour ce créneau !");
-                    }
-                });
-          }
-        });
+        calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                selectable: true,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek'
+                },
+                // On ne charge rien au début tant qu'on n'a pas cliqué
+                events: [], 
+                
+                select: function(info) {
+                    document.getElementById('debutInput').value = info.startStr.substring(0, 16);
+                    document.getElementById('finInput').value = info.endStr.substring(0, 16);
+                }
+            });
         calendar.render();
-      });
+    });
+
+    function selectPlace(id, nom) {
+        // 1. Mise à jour visuelle des boutons
+        document.querySelectorAll('.place-btn').forEach(btn => btn.classList.remove('selected'));
+        document.getElementById('btn-' + id).classList.add('selected');
+
+        // 2. Remplissage du formulaire caché
+        document.getElementById('resourceSelect').value = id;
+        document.getElementById('selected-title').innerText = "Réservation pour : " + nom;
+        
+        // 3. AFFICHAGE
+        const calEl = document.getElementById('calendar');
+        const formEl = document.getElementById('res-form-box');
+        
+        calEl.style.display = 'block';
+        formEl.style.display = 'block'; // Utilise block plutôt que inline-block pour éviter les sauts de ligne bizarres
+
+        // 4. LA CORRECTION DU BUG D'AFFICHAGE
+        // Sans ça, la sélection de dates ne fonctionnera pas bien
+        setTimeout(() => {
+            calendar.updateSize();
+        }, 50);
+            
+        // 5. Mise à jour des événements
+        calendar.setOption('events', 'get_events.php?id_resource=' + id);
+        calendar.refetchEvents();
+        
+        // Scroll fluide
+        calEl.scrollIntoView({ behavior: 'smooth' });
+        }
     </script>
 </body>
 </html>
