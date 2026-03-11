@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// On récupère la connexion PDO (assure-toi que le chemin est bon)
+// On récupère la connexion PDO
 $pdo = require_once __DIR__ . '/../config/db.php';
 $message = "";
 
@@ -17,7 +17,7 @@ $message = "";
 $id_user = $_SESSION['user_id']; 
 $nom_user = $_SESSION['user_nom']; // Optionnel pour la partie user experience
 
-// 1. Si le formulaire est envoyé
+// Si le formulaire est envoyé
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_resource = $_POST['resource'];
     $date_debut = $_POST['debut'];
@@ -36,14 +36,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
 
         $message = "✅ Réservation réussie pour " . htmlspecialchars($nom_user) . " !";
-        
+
     } catch (Exception $e) {
         // Si la contrainte 'no_overlap' est déclenchée, ça tombe ici !
         $message = "❌ Erreur : Cette place est déjà réservée sur ce créneau.";
     }
 }
 
-// 2. On récupère la liste des parkings pour le menu déroulant
+// On récupère la liste des parkings pour le menu déroulant
 $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking'")->fetchAll();
 ?>
 
