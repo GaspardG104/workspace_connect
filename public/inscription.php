@@ -2,9 +2,9 @@
 
 session_start(); // Ouvre la session pour "retenir" l'utilisateur
 
-// Si pas de session, retour au login
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+// Vérifier si connecté ET si admin
+if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
+    header('Location: login.php?error=access_denied');
     exit;
 }
 
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // 2. On insère dans la base (id_role = 3 par défaut pour "collaborateur")
         $sql = "INSERT INTO users (id_role, nom, prenom, email, immatriculation, password_hash) 
-                VALUES (id_role, :nom, :prenom, :email, :imma, :pass)";
+                VALUES (:id_role, :nom, :prenom, :email, :imma, :pass)";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
