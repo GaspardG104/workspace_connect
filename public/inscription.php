@@ -12,6 +12,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
 $pdo = require_once __DIR__ . '/../config/db.php';
 $message = "";
 
+// pour la liste des postes
+$roles_query = $pdo->query("SELECT id, nom FROM roles ORDER BY nom");
+$liste_roles = $roles_query->fetchAll();
+
 // RECUPERATION DE L'ID RÉEL
 $id_user = $_SESSION['user_id']; 
 $nom_user = $_SESSION['user_nom']; // Optionnel pour la partie user experience
@@ -66,6 +70,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="text" name="nom" placeholder="Nom" required> <i class="fa-solid fa-address-card"></i><br><br>
         <input type="text" name="prenom" placeholder="Prénom" required> <i class="fa-regular fa-address-card"></i><br><br>
         <input type="email" name="email" placeholder="Email" required> <i class="fa-solid fa-envelope"></i> <br><br>
+        <select name="id_role" id="role" require><option value="">-- Sélectionner un rôle --</option>
+        <?php foreach ($liste_roles as $role): ?><option value="<?= $role['id'] ?>">
+        <?= htmlspecialchars($role['nom']) ?></option>
+        <?php endforeach; ?></select><i class="fa-solid fa-user-tie"><br><br>
         <input type="text" name="immatriculation" placeholder="Immatriculation (ex: AA-123-BB)"> <i class="fa-solid fa-car-rear"></i> <br><br>
         <input type="password" name="password" placeholder="Mot de passe" required>  <i class="fa-solid fa-lock"></i><br><br>
         
