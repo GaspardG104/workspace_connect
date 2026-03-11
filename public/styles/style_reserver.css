@@ -17,16 +17,38 @@ body {
 .place-btn {
     width: 80px;
     height: 120px;
-    border: 3px solid #333;
+    /* On enlève la bordure classique pour mettre des pointillés sur les côtés */
+    border-left: 3px dashed #333;
+    border-right: 3px dashed #333;
+    border-top: none;
+    border-bottom: none;
+    
     background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     font-weight: bold;
-    border-radius: 5px;
+    position: relative; /* Indispensable pour placer les barres */
     transition: 0.3s;
+    border-radius: 0; /* Les pointillés supportent mal les arrondis */
+    padding: 0; 
 }
+
+/* Les petites barres aux extrémités (Haut et Bas) */
+.place-btn::before{
+    content: "";
+    position: absolute;
+    /* On les fait commencer un peu à gauche et finir un peu à droite */
+    /* pour couvrir l'épaisseur des pointillés et former le T */
+    left: -3px; 
+    right: -3px;
+    height: 3px; /* Épaisseur de la barre horizontale */
+    background-color: #333;
+}
+
+.place-btn::before { 
+    top: 0; }  /* Barre du bas */
 
 .place-btn:hover {
     background: #e9ecef;
@@ -35,7 +57,12 @@ body {
 .place-btn.selected {
     background: #28a745;
     color: white;
-    border-color: #1e7e34;
+    border-left-color: #1e7e34;
+    border-right-color: #1e7e34;
+}
+
+.place-btn.selected::before, .place-btn.selected::after {
+    background-color: #1e7e34;
 }
 
 #calendar { 
@@ -60,4 +87,9 @@ body {
 }
 .hidden {
     display: none;
+}
+
+.fa-car {
+    padding: 5%;
+
 }
