@@ -6,46 +6,17 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $pdo = require_once __DIR__ . '/../../config/db.php';
-$message = "";
 $id_user = $_SESSION['user_id']; 
 $nom_user = $_SESSION['user_nom'];
 
-// Traitement de la réservation
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['resource'])) {
-    $id_resource = $_POST['resource'];
-    $date_debut = $_POST['debut'];
-    $date_fin = $_POST['fin'];
-
-    $maintenant = new DateTime();
-    $debut_choisi = new DateTime($date_debut);
-
-    if ($debut_choisi < $maintenant) {
-        $message = "❌ Erreur : Le voyage dans le temps n'est pas encore possible... Vous ne pouvez pas réserver dans le passé !";
-    } else {
-        try {
-            $sql = "INSERT INTO bookings (id_user, id_resource, date_debut, date_fin) 
-                    VALUES (:user, :res, :debut, :fin)";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                'user'  => $id_user,
-                'res'   => $id_resource,
-                'debut' => $date_debut,
-                'fin'   => $date_fin
-            ]);
-            $message = "✅ Réservation réussie pour " . htmlspecialchars($nom_user) . " !";
-        } catch (Exception $e) {
-            $message = "❌ Erreur : Cette place est déjà réservée sur ce créneau.";
-        }
-    }
-}
-
+// On récupère juste les parkings pour l'affichage initial des boutons
 $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' ORDER BY nom")->fetchAll();
-$now = date('Y-m-d\TH:i');
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
+    <meta charset="UTF-8">
     <title>Réserver un parking</title>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
     <link rel="stylesheet" href="/../styles/style_reserver.css">
@@ -54,7 +25,7 @@ $now = date('Y-m-d\TH:i');
 
     <h1>Réserver ma place</h1>
     
-    <?php if(!empty($message)) echo "<p><strong>$message</strong></p>"; ?>
+    <div id="ajax-message" style="margin-bottom: 20px; font-weight: bold;"></div>
 
     <h3>1. Cliquez sur une place pour voir ses disponibilités</h3>
     <div class="parking-map">
@@ -65,11 +36,11 @@ $now = date('Y-m-d\TH:i');
         <?php endforeach; ?>
     </div>
 
-    <div id='calendar'></div>
+    <div id='calendar' style="display:none;"></div>
 
     <div class="form-container" id="res-form-box" style="display:none;">
         <h3 id="selected-title">Nouvelle réservation</h3>
-        <form method="POST">
+        <form id="bookingForm">
             <input type="hidden" name="resource" id="resourceSelect" required>
 
             <label>Date de début :</label><br>
@@ -80,7 +51,7 @@ $now = date('Y-m-d\TH:i');
             <input type="datetime-local" name="fin" id="finInput" required>
             <br><br>
 
-            <button type="submit">Confirmer la réservation pour cette place</button>
+            <button type="submit" id="submitBtn">Confirmer la réservation</button>
         </form>
     </div>
 
@@ -90,54 +61,93 @@ $now = date('Y-m-d\TH:i');
     document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendar');
         calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                locale: 'fr',
-                selectable: true,
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek'
-                },
-                // On ne charge rien au début tant qu'on n'a pas cliqué
-                events: [], 
-                
-                select: function(info) {
-                    document.getElementById('debutInput').value = info.startStr.substring(0, 16);
-                    document.getElementById('finInput').value = info.endStr.substring(0, 16);
+            initialView: 'dayGridMonth', // Vue mensuelle demandée
+            locale: 'fr',
+            selectable: true,
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek'
+            },
+            events: [], 
+            
+            select: function(info) {
+                function formatDateForInput(date) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    return `${year}-${month}-${day}T${hours}:${minutes}`;
                 }
-            });
+
+                const startFormatted = formatDateForInput(info.start);
+                const endFormatted = formatDateForInput(info.end);
+
+                document.getElementById('debutInput').value = startFormatted;
+                document.getElementById('finInput').value = endFormatted;
+            }
+        });
         calendar.render();
     });
 
+    // Sélection de la place (Plan interactif)
     function selectPlace(id, nom) {
-        // 1. Mise à jour visuelle des boutons
         document.querySelectorAll('.place-btn').forEach(btn => btn.classList.remove('selected'));
         document.getElementById('btn-' + id).classList.add('selected');
 
-        // 2. Remplissage du formulaire caché
         document.getElementById('resourceSelect').value = id;
         document.getElementById('selected-title').innerText = "Réservation pour : " + nom;
         
-        // 3. AFFICHAGE
-        const calEl = document.getElementById('calendar');
-        const formEl = document.getElementById('res-form-box');
-        
-        calEl.style.display = 'block';
-        formEl.style.display = 'block'; // Utilise block plutôt que inline-block pour éviter les sauts de ligne bizarres
+        document.getElementById('calendar').style.display = 'block';
+        document.getElementById('res-form-box').style.display = 'block';
 
-        // 4. LA CORRECTION DU BUG D'AFFICHAGE
-        // Sans ça, la sélection de dates ne fonctionnera pas bien
         setTimeout(() => {
             calendar.updateSize();
+            calendar.setOption('events', 'get_events.php?id_resource=' + id);
+            calendar.refetchEvents();
         }, 50);
-            
-        // 5. Mise à jour des événements
-        calendar.setOption('events', 'get_events.php?id_resource=' + id);
-        calendar.refetchEvents();
         
-        // Scroll fluide
-        calEl.scrollIntoView({ behavior: 'smooth' });
-        }
+        document.getElementById('calendar').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Gestion de l'envoi AJAX
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        e.preventDefault(); 
+
+        const formData = new FormData(this);
+        const msgDiv = document.getElementById('ajax-message');
+        const submitBtn = document.getElementById('submitBtn');
+
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Traitement...";
+
+        fetch('process_reservation.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            msgDiv.innerHTML = data.message;
+            msgDiv.style.color = data.success ? "green" : "red";
+
+            if (data.success) {
+                // On rafraîchit le calendrier pour voir la nouvelle zone "OCCUPÉ"
+                calendar.refetchEvents();
+                // On vide les champs pour permettre une autre sélection (ex: Jeudi puis Dimanche)
+                document.getElementById('debutInput').value = "";
+                document.getElementById('finInput').value = "";
+            }
+        })
+        .catch(error => {
+            msgDiv.innerHTML = "❌ Erreur de connexion au serveur.";
+            msgDiv.style.color = "red";
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Confirmer la réservation";
+        });
+    });
     </script>
 </body>
 </html>
