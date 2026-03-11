@@ -1,0 +1,2 @@
+COMMANDES TECHNIQUES AU SERVEUR LOCAL :
+php -S 127.0.0.1:8000 -t public     pour lancer le serveur pgAdmin4
