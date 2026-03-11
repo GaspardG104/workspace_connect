@@ -4,6 +4,9 @@ $pdo = require_once __DIR__ . '/../config/db.php';
 
 $error = "";
 
+//Pour la redirection si non identifié
+$redirect = isset($_GET['redirect']) ? $_GET['redirect'] : 'index.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
@@ -21,7 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['user_role'] = $user['id_role'];
 
         // Redirection vers la page de réservation
-        header('Location: reserver.php');
+        $target = isset($_POST['redirect_to']) ? $_POST['redirect_to'] : 'reserver.php';
+        header("Location: $target");
         exit;
     } else {
         $error = "Email ou mot de passe incorrect.";
@@ -42,6 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <form method="POST">
+        <input type="hidden" name="redirect_to" value="<?= htmlspecialchars($redirect) ?>">
+
         <label>Email :</label><br>
         <input type="email" name="email" required><br><br>
 
