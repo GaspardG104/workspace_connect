@@ -4,7 +4,7 @@ session_start(); // Ouvre la session pour "retenir" l'utilisateur
 
 // Vérifier si connecté ET si admin
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
-    header('Location: login.php?error=access_denied');
+    header('Location: login.php?redirect=inscription.php');
     exit;
 }
 
@@ -15,6 +15,7 @@ $message = "";
 // RECUPERATION DE L'ID RÉEL
 $id_user = $_SESSION['user_id']; 
 $nom_user = $_SESSION['user_nom']; // Optionnel pour la partie user experience
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_role = $_POST['id_role'];
