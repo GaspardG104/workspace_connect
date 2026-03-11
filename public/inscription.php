@@ -67,7 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="text" name="immatriculation" placeholder="Immatriculation (ex: AA-123-BB)"><br><br>
         <input type="password" name="password" placeholder="Mot de passe" required><br><br>
         
-        <button type="submit">S'inscrire</button>
+        <button type="submit">Valider</button>
     </form>
+    <a href="logout.php" style="color: red;">Se déconnecter</a>
 </body>
 </html>

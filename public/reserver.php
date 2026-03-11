@@ -76,5 +76,6 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking'")
 
         <button type="submit">Confirmer la réservation</button>
     </form>
+    <a href="logout.php" style="color: red;">Se déconnecter</a>
 </body>
 </html>
