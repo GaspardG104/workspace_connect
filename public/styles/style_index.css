@@ -1,9 +1,50 @@
-body { 
-    background-color: #143470; 
+/* Couleur de fond identique à ta page inscription */
+body {
+    background: linear-gradient(135deg, #286fe0 0%, #042b6b 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
 }
 
-/* Supprime les marges forcées sur les icônes que tu avais mises */
-.input-group i {
-    margin: 0 !important; 
-    text-align: center;
+/* Style de la Navbar */
+.navbar {
+    background-color: rgba(0, 0, 0, 0.1); /* Fond sombre transparent */
+    backdrop-filter: blur(10px); /* Effet de flou moderne */
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+/* On personnalise les boutons pour qu'ils ne soient pas trop "flashy" */
+.btn-light {
+    background-color: #ffffff;
+    border: none;
+    color: #04a572 !important;
+    transition: transform 0.2s;
+}
+
+.btn-light:hover {
+    transform: translateY(-2px);
+    background-color: #f8f9fa;
+}
+
+.btn-primary {
+    background-color: #183fd8; /* Vert plus vif pour le bouton principal */
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #3a82df;
+}
+
+/* Animation douce pour le contenu */
+main {
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
