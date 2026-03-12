@@ -14,6 +14,21 @@ form {
     position: relative;
 }
 
+/* Centre l'icône horizontalement et verticalement dans son carré */
+.input-group-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 45px; /* Optionnel : donne une largeur fixe pour que tous les champs soient alignés */
+}
+
+/* S'assure que l'icône FontAwesome elle-même n'a pas de marges parasites */
+.input-group-text i {
+    margin: 0;
+    padding: 0;
+    line-height: 1; /* Force l'icône à ne pas prendre de hauteur de ligne de texte */
+}
+
 /* Style commun pour les inputs et le select */
 input, select {
     width: 100%;           /* Prend toute la largeur du groupe */
