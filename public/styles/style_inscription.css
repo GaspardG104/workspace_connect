@@ -40,3 +40,37 @@ button {
     border: none;
     border-radius: 5px;
 }
+
+.card { 
+    border: none; 
+    border-radius: 15px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+
+.btn-validate { 
+    background-color: #28a745; 
+    color: white; 
+    border: none; 
+    padding: 10px 30px; }
+        
+.btn-validate:hover { 
+    background-color: #218838; 
+    color: white; }
+
+/* PARTIE BOOTSTRAP */
+
+.card { 
+    border: none; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+.input-group-text { 
+    background-color: #ffffff; 
+    color: #6c757d; }
+
+.btn-primary { 
+    background-color: #28a745; 
+    border: none; 
+    transition: 0.3s; }
+
+.btn-primary:hover { 
+    background-color: #218838; }
