@@ -57,7 +57,7 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'salle' AND
                 <small><i class="fa-solid fa-square text-dark"></i> Box</small>
             </div>
             <div class="text-center mt-4">
-                <a href="index.php" class="btn btn-outline-secondary px-4">Retour à l'accueil</a>
+                <a href="/../index.php" class="btn btn-outline-secondary px-4">Retour à l'accueil</a>
             </div>
         </div>
     </div>

@@ -23,8 +23,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    /* On ne redéfinit pas le hover ici, il est géré par .btn-primary dans main_theme si tu appliques la classe, 
-       sinon on garde la version générique suivante : */
+
 }
 
 /* Style spécifique des bureaux (Contours bleus) */
@@ -48,7 +47,7 @@
 
 .meeting-2 {
     grid-column: 7 / 12;
-    grid-row: 9 / 11;
+    grid-row: 11 / 11;
     border: 2px solid #333;
 }
 

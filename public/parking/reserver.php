@@ -22,19 +22,11 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' O
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="../styles/style_reserver.css">
+    <link rel="stylesheet" href="../styles/style_parking.css">
+    <link rel="stylesheet" href="../styles/main_theme.css">
 </head>
 <body class="bg-light">
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="../index.php"><i class="fa-solid fa-car-side me-2"></i> Workspace Connect</a>
-            <div class="ms-auto d-flex align-items-center">
-                <span class="text-white me-3 d-none d-md-inline">Bonjour, <strong><?= htmlspecialchars($nom_user) ?></strong></span>
-                <a href="../logout.php" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-power-off"></i></a>
-            </div>
-        </div>
-    </nav>
+<?php include __DIR__ . '/..//includes/navbar.php'; ?>
 
     <div class="container">
         <div class="text-center mb-4">

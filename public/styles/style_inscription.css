@@ -8,17 +8,6 @@ body {
     padding-bottom: 50px;
 }
 
-/* Style de la Navbar */
-.navbar {
-    background-color: rgba(0, 0, 0, 0.1); /* Fond sombre transparent */
-    backdrop-filter: blur(10px); /* Effet de flou moderne */
-}
-
-.navbar-brand {
-    font-size: 1.5rem;
-    letter-spacing: -0.5px;
-}
-
 .card { 
     border: none; 
     border-radius: 12px; 
