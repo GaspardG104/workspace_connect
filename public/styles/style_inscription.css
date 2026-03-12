@@ -1,64 +1,29 @@
-/* 1. On applique ton dégradé de fond signature */
-body {
-    background: linear-gradient(135deg, #286fe0 0%, #042b6b 100%);
-    min-height: 100vh;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: white;
-    /* Texte blanc pour le titre de la page */
-    padding-bottom: 50px;
-}
-
-.card { 
-    border: none; 
-    border-radius: 12px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-}
-
-/* 2. CORRECTIF DES ICONES (Le coeur du problème) */
+/* --- DESIGN DES CHAMPS DE FORMULAIRE --- */
 .input-group-text { 
     background-color: #ffffff; 
     color: #6c757d; 
-    min-width: 45px;      /* Largeur fixe pour que tous les champs soient alignés */
-    display: flex;       /* Active le centrage Flexbox */
+    min-width: 45px;      /* Largeur fixe pour l'alignement des icônes */
+    display: flex;       
     justify-content: center; 
     align-items: center;
 }
 
-/* Supprime les marges forcées sur les icônes que tu avais mises */
+/* Alignement centré des icônes sans marges forcées */
 .input-group i {
     margin: 0 !important; 
     text-align: center;
 }
 
-/* 3. Style des boutons */
-.btn-primary { 
-    background-color: #28a745; 
-    border: none; 
-    transition: 0.3s; 
-}
-
-.btn-primary:hover { 
-    background-color: #218838; 
-}
-
-/* 4. Responsive : évite que le formulaire soit trop large sur mobile */
-@media (max-width: 576px) {
-    .card {
-        margin: 10px;
-    }
-}
-
+/* --- BOUTON DE VISIBILITÉ DU MOT DE PASSE --- */
 #togglePassword {
     background-color: white !important;
     border-left: none !important;
 }
 
 #togglePassword:hover {
-    color: #1e3c72 !important; /* Le bleu de ton thème */
+    color: #1e3c72 !important; /* Bleu spécifique au thème lors du survol */
 }
 
-/* Évite le contour bleu de Bootstrap au clic */
 #togglePassword:focus {
-    box-shadow: none;
+    box-shadow: none; /* Supprime le halo bleu par défaut de Bootstrap */
 }
-
