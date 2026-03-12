@@ -1,10 +1,24 @@
-/* 1. On garde le design de la carte et du fond */
+/* 1. On applique ton dégradé de fond signature */
 body {
     background: linear-gradient(135deg, #286fe0 0%, #042b6b 100%);
     min-height: 100vh;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: white;
+    /* Texte blanc pour le titre de la page */
+    padding-bottom: 50px;
 }
+
+/* Style de la Navbar */
+.navbar {
+    background-color: rgba(0, 0, 0, 0.1); /* Fond sombre transparent */
+    backdrop-filter: blur(10px); /* Effet de flou moderne */
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
 .card { 
     border: none; 
     border-radius: 12px; 
