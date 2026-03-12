@@ -63,7 +63,7 @@ session_start();
                 <?php else: ?>
                     <div class="d-flex justify-content-center gap-3">
                         <a href="parking/reserver.php" class="btn btn-lg btn-primary fw-bold px-4 shadow">Réserver un Parking</a>
-                        <a href="#" class="btn btn-lg btn-outline-light fw-bold px-4">Réserver un Bureau</a>
+                        <a href="desks/reserver.php" class="btn btn-lg btn-outline-light fw-bold px-4">Réserver un Bureau</a>
                     </div>
                 <?php endif; ?>
             </div>
