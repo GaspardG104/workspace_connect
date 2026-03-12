@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'pass'    => $password_hash
         ]);
 
-        $_SESSION['msg'] = "✅ " . htmlspecialchars($_SESSION['user_nom']) . " a créé le compte de " . htmlspecialchars($nom) . " avec succès !";
+        $_SESSION['msg'] = "✅ " . htmlspecialchars($_SESSION['user_nom']) . " a créé le compte de " . htmlspecialchars($nom) . " " . htmlspecialchars($prenom) . " avec succès !";
         header("Location: inscription.php");
         exit;
 
@@ -66,9 +66,10 @@ $liste_roles = $roles_query->fetchAll();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription - Workspace Connect</title>
 
-    <link rel="stylesheet" href="styles/style_inscription.css">
+    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" >
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles/style_inscription.css">
     
 </head>
 <body>
@@ -122,7 +123,7 @@ $liste_roles = $roles_query->fetchAll();
                         <div class="input-group">
                             <span class="input-group-text"><i class="fa-solid fa-user-tie"></i></span>
                             <select name="id_role" id="id_role" class="form-select" required>
-                                <option value="" selected disabled>-- Sélectionner un rôle --</option>
+                                <option value="" selected disabled> -- Sélectionner un rôle -- </option>
                                 <?php foreach ($liste_roles as $role): ?>
                                     <option value="<?= $role['id'] ?>"><?= htmlspecialchars($role['nom']) ?></option>
                                 <?php endforeach; ?>
@@ -145,16 +146,13 @@ $liste_roles = $roles_query->fetchAll();
                             <input type="password" name="password" class="form-control" placeholder="********" required>
                         </div>
                     </div>
-
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary fw-bold py-2">
                             <i class="fa-solid fa-check-circle me-2"></i> Valider l'inscription
                         </button>
-                    </div>
-
-                    <div class="text-center mt-4">
-                        <a href="logout.php" class="text-danger text-decoration-none small fw-bold">
-                            <i class="fa-solid fa-power-off"></i> Se déconnecter
+                        
+                        <a href="index.php" class="btn btn-secondary fw-bold py-2">
+                            <i class="fa-solid fa-arrow-right-from-bracket fa-flip-horizontal me-2"></i>Retour
                         </a>
                     </div>
                 </form>

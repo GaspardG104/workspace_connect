@@ -1,0 +1,9 @@
+body { 
+    background-color: #143470; 
+}
+
+/* Supprime les marges forcées sur les icônes que tu avais mises */
+.input-group i {
+    margin: 0 !important; 
+    text-align: center;
+}
