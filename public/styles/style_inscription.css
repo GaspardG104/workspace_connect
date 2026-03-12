@@ -1,91 +1,44 @@
-/* Conteneur principal du formulaire */
-form {
-    display: flex;
-    flex-direction: column; /* Aligne tout en colonne */
-    align-items: center;    /* Centre la colonne horizontalement */
-    gap: 15px;             /* Espace entre chaque bloc */
+/* 1. On garde le design de la carte et du fond */
+body { 
+    background-color: #f4f7f6; 
 }
-
-/* Groupe comprenant l'input/select et son icône */
-.input-group {
-    display: flex;
-    align-items: center;   /* Aligne verticalement l'icône et le champ */
-    width: 300px;          /* Fixez une largeur commune */
-    position: relative;
-}
-
-/* Centre l'icône horizontalement et verticalement dans son carré */
-.input-group-text {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 45px; /* Optionnel : donne une largeur fixe pour que tous les champs soient alignés */
-}
-
-/* S'assure que l'icône FontAwesome elle-même n'a pas de marges parasites */
-.input-group-text i {
-    margin: 0;
-    padding: 0;
-    line-height: 1; /* Force l'icône à ne pas prendre de hauteur de ligne de texte */
-}
-
-/* Style commun pour les inputs et le select */
-input, select {
-    width: 100%;           /* Prend toute la largeur du groupe */
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box; /* Important pour que le padding ne dépasse pas */
-}
-
-/* Positionnement des icônes */
-.input-group i {
-    margin-left: 10px;     /* Espace entre le champ et l'icône */
-    width: 20px;           /* Largeur fixe pour que tout soit aligné verticalement */
-    text-align: center;
-}
-
-/* Style du bouton pour qu'il soit aussi large que le reste */
-button {
-    width: 300px;
-    padding: 10px;
-    cursor: pointer;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-}
-
-.card { 
-    border: none; 
-    border-radius: 15px; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-
-.btn-validate { 
-    background-color: #28a745; 
-    color: white; 
-    border: none; 
-    padding: 10px 30px; }
-        
-.btn-validate:hover { 
-    background-color: #218838; 
-    color: white; }
-
-/* PARTIE BOOTSTRAP */
 
 .card { 
     border: none; 
     border-radius: 12px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+}
 
+/* 2. CORRECTIF DES ICONES (Le coeur du problème) */
 .input-group-text { 
     background-color: #ffffff; 
-    color: #6c757d; }
+    color: #6c757d; 
+    min-width: 45px;      /* Largeur fixe pour que tous les champs soient alignés */
+    display: flex;       /* Active le centrage Flexbox */
+    justify-content: center; 
+    align-items: center;
+}
 
+/* Supprime les marges forcées sur les icônes que tu avais mises */
+.input-group i {
+    margin: 0 !important; 
+    text-align: center;
+}
+
+/* 3. Style des boutons */
 .btn-primary { 
     background-color: #28a745; 
     border: none; 
-    transition: 0.3s; }
+    transition: 0.3s; 
+}
 
 .btn-primary:hover { 
-    background-color: #218838; }
+    background-color: #218838; 
+}
+
+/* 4. Responsive : évite que le formulaire soit trop large sur mobile */
+@media (max-width: 576px) {
+    .card {
+        margin: 10px;
+    }
+}
