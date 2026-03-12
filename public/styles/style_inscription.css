@@ -1,8 +1,10 @@
 /* 1. On garde le design de la carte et du fond */
-body { 
-    background-color: #5880ca; 
+body {
+    background: linear-gradient(135deg, #286fe0 0%, #042b6b 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
 }
-
 .card { 
     border: none; 
     border-radius: 12px; 
@@ -42,3 +44,18 @@ body {
         margin: 10px;
     }
 }
+
+#togglePassword {
+    background-color: white !important;
+    border-left: none !important;
+}
+
+#togglePassword:hover {
+    color: #1e3c72 !important; /* Le bleu de ton thème */
+}
+
+/* Évite le contour bleu de Bootstrap au clic */
+#togglePassword:focus {
+    box-shadow: none;
+}
+
