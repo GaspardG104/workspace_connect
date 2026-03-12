@@ -1,7 +1,7 @@
 <?php
 session_start(); 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: /../login.php');
+    header('Location: ../login.php'); // Vérifie bien le chemin vers ton login
     exit;
 }
 
@@ -9,7 +9,6 @@ $pdo = require_once __DIR__ . '/../../config/db.php';
 $id_user = $_SESSION['user_id']; 
 $nom_user = $_SESSION['user_nom'];
 
-// On récupère juste les parkings pour l'affichage initial des boutons
 $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' ORDER BY nom")->fetchAll();
 ?>
 
@@ -17,44 +16,76 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' O
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Réserver un parking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réserver un parking - Workspace Connect</title>
+    
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
-    <link rel="stylesheet" href="/../styles/style_reserver.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../styles/style_reserver.css">
 </head>
-<body>
+<body class="bg-light">
 
-    <h1>Réserver ma place <i class="fa-solid fa-square-parking" style="color: rgb(0, 109, 198);"></i></h1>
-    
-    
-    <div id="ajax-message" style="margin-bottom: 20px; font-weight: bold;"></div>
-
-    <h3>Cliquez sur une place pour voir ses disponibilités</h3>
-    <div class="parking-map">
-        <?php foreach($resources as $r): ?>
-            <div class="place-btn" id="btn-<?= $r['id'] ?>" onclick="selectPlace(<?= $r['id'] ?>, '<?= htmlspecialchars($r['nom']) ?>')">
-                <?= htmlspecialchars($r['nom']) ?><i class="fa-solid fa-car fa-xl" style="color: rgb(0, 0, 0);"></i>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="../index.php"><i class="fa-solid fa-car-side me-2"></i> Workspace Connect</a>
+            <div class="ms-auto d-flex align-items-center">
+                <span class="text-white me-3 d-none d-md-inline">Bonjour, <strong><?= htmlspecialchars($nom_user) ?></strong></span>
+                <a href="../logout.php" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-power-off"></i></a>
             </div>
-        <?php endforeach; ?>
-    </div>
+        </div>
+    </nav>
 
-    <div id='calendar' style="display:none;"></div>
+    <div class="container">
+        <div class="text-center mb-4">
+            <h1 class="fw-bold">Réserver ma place <i class="fa-solid fa-square-parking text-primary"></i></h1>
+            <div id="ajax-message" class="fw-bold mt-2"></div>
+        </div>
 
-    <div class="form-container" id="res-form-box" style="display:none;">
-        <h3 id="selected-title">Nouvelle réservation</h3>
-        <form id="bookingForm">
-            <input type="hidden" name="resource" id="resourceSelect" required>
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body">
+                <h5 class="card-title mb-3"><i class="fa-solid fa-map-location-dot me-2"></i> Sélectionnez une place</h5>
+                <div class="parking-map">
+                    <?php foreach($resources as $r): ?>
+                        <div class="place-btn" id="btn-<?= $r['id'] ?>" onclick="selectPlace(<?= $r['id'] ?>, '<?= htmlspecialchars($r['nom']) ?>')">
+                            <span class="place-name"><?= htmlspecialchars($r['nom']) ?></span>
+                            <i class="fa-solid fa-car fa-xl mt-2"></i>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
 
-            <label>Date de début :</label><br>
-            <input type="datetime-local" name="debut" id="debutInput" required>
-            <br><br>
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow-sm border-0 p-3">
+                    <div id='calendar' style="display:none;"></div>
+                </div>
+            </div>
 
-            <label>Date de fin :</label><br>
-            <input type="datetime-local" name="fin" id="finInput" required>
-            <br><br>
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 p-4" id="res-form-box" style="display:none; position: sticky; top: 20px;">
+                    <h4 id="selected-title" class="fw-bold text-primary mb-4">Détails</h4>
+                    <form id="bookingForm">
+                        <input type="hidden" name="resource" id="resourceSelect" required>
 
-            <button type="submit" id="submitBtn">Confirmer la réservation</button>
-        </form>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Date de début</label>
+                            <input type="datetime-local" name="debut" id="debutInput" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Date de fin</label>
+                            <input type="datetime-local" name="fin" id="finInput" class="form-control" required>
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="btn btn-success w-100 fw-bold py-2 mt-2">
+                            Confirmer la réservation
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -63,7 +94,7 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' O
     document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendar');
         calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth', // Vue mensuelle demandée
+            initialView: 'dayGridMonth',
             locale: 'fr',
             selectable: true,
             headerToolbar: {
@@ -71,8 +102,7 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' O
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek'
             },
-            events: [], 
-            
+            // Fonction de formatage pour l'input datetime-local
             select: function(info) {
                 function formatDateForInput(date) {
                     const year = date.getFullYear();
@@ -82,24 +112,19 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' O
                     const minutes = String(date.getMinutes()).padStart(2, '0');
                     return `${year}-${month}-${day}T${hours}:${minutes}`;
                 }
-
-                const startFormatted = formatDateForInput(info.start);
-                const endFormatted = formatDateForInput(info.end);
-
-                document.getElementById('debutInput').value = startFormatted;
-                document.getElementById('finInput').value = endFormatted;
+                document.getElementById('debutInput').value = formatDateForInput(info.start);
+                document.getElementById('finInput').value = formatDateForInput(info.end);
             }
         });
         calendar.render();
     });
 
-    // Sélection de la place (Plan interactif)
     function selectPlace(id, nom) {
         document.querySelectorAll('.place-btn').forEach(btn => btn.classList.remove('selected'));
         document.getElementById('btn-' + id).classList.add('selected');
 
         document.getElementById('resourceSelect').value = id;
-        document.getElementById('selected-title').innerText = "Réservation pour : " + nom;
+        document.getElementById('selected-title').innerText = "Place : " + nom;
         
         document.getElementById('calendar').style.display = 'block';
         document.getElementById('res-form-box').style.display = 'block';
@@ -109,8 +134,6 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' O
             calendar.setOption('events', 'get_events.php?id_resource=' + id);
             calendar.refetchEvents();
         }, 50);
-        
-        document.getElementById('calendar').scrollIntoView({ behavior: 'smooth' });
     }
 
     // Gestion de l'envoi AJAX
@@ -130,20 +153,37 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' O
         })
         .then(response => response.json())
         .then(data => {
+            // 1. Affichage du message avec les classes Bootstrap
             msgDiv.innerHTML = data.message;
-            msgDiv.style.color = data.success ? "green" : "red";
+            msgDiv.className = data.success ? "alert alert-success" : "alert alert-danger";
+            msgDiv.style.display = "block"; // On s'assure qu'il est visible
+
+            // 2. Remonter en haut de la page pour voir le message
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
             if (data.success) {
-                // On rafraîchit le calendrier pour voir la nouvelle zone "RÉSERVÉE"
                 calendar.refetchEvents();
-                // On vide les champs pour permettre une autre sélection (ex: Jeudi puis Dimanche)
                 document.getElementById('debutInput').value = "";
                 document.getElementById('finInput').value = "";
             }
+
+            // 3. Faire disparaître le message après 3 secondes
+            setTimeout(() => {
+                // Effet de disparition douce (fade out)
+                msgDiv.style.transition = "opacity 0.5s ease";
+                msgDiv.style.opacity = "0";
+                
+                // On cache complètement après l'animation
+                setTimeout(() => {
+                    msgDiv.style.display = "none";
+                    msgDiv.style.opacity = "1"; // On remet l'opacité à 1 pour la prochaine fois
+                }, 500);
+            }, 3000);
         })
         .catch(error => {
             msgDiv.innerHTML = "❌ Erreur de connexion au serveur.";
-            msgDiv.style.color = "red";
+            msgDiv.className = "alert alert-danger";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         })
         .finally(() => {
             submitBtn.disabled = false;
@@ -151,5 +191,7 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' O
         });
     });
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,96 +1,105 @@
+/* Fond et général */
 body {
-    font-family: sans-serif;
-    padding: 20px;
-    text-align: center;
-    background-color: #f0f2f5;
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Style du Plan de Parking */
-/* Pour que les boutons ne soient pas collés au titre */
-.parking-map { 
-    margin-top: 20px;
-    margin-bottom: 30px; 
-    display: flex; 
-    justify-content: center; gap: 20px; margin: 20px 0;
+/* Grille du parking */
+.parking-map {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 15px;
+    padding: 10px;
+    background: #e9ecef;
+    border-radius: 10px;
 }
 
+/* Style des boutons "Places" */
 .place-btn {
-    width: 80px;
-    height: 120px;
-    /* On enlève la bordure classique pour mettre des pointillés sur les côtés */
-    border-left: 3px dashed #333;
-    border-right: 3px dashed #333;
-    border-top: none;
-    border-bottom: none;
-    
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background-color: #ffffff;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px 5px;
+    text-align: center;
     cursor: pointer;
-    font-weight: bold;
-    position: relative; /* Indispensable pour placer les barres */
-    transition: 0.3s;
-    border-radius: 0; /* Les pointillés supportent mal les arrondis */
-    padding: 0; 
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #6c757d;
 }
-
-/* Les petites barres aux extrémités (Haut et Bas) */
-.place-btn::before{
-    content: "";
-    position: absolute;
-    /* On les fait commencer un peu à gauche et finir un peu à droite */
-    /* pour couvrir l'épaisseur des pointillés et former le T */
-    left: -3px; 
-    right: -3px;
-    height: 3px; /* Épaisseur de la barre horizontale */
-    background-color: #333;
-}
-
-.place-btn::before { 
-    top: 0; }  /* Barre du bas */
 
 .place-btn:hover {
-    background: #e9ecef;
+    border-color: #04a572;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
+/* Place sélectionnée */
 .place-btn.selected {
-    background: #28a745;
+    background-color: #04a572;
+    border-color: #04a572;
     color: white;
-    border-left-color: #1e7e34;
-    border-right-color: #1e7e34;
 }
 
-.place-btn.selected::before, .place-btn.selected::after {
-    background-color: #1e7e34;
+.place-btn.selected i {
+    color: white !important;
 }
 
-#calendar { 
-    max-width: 900px; 
-    margin: 30px auto; /* Plus d'espace autour */
-    background: white; 
-    padding: 15px; 
-    border-radius: 10px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    min-height: 600px; /* Force une hauteur pour que le calendrier respire */
+.place-name {
+    font-weight: bold;
+    font-size: 0.9rem;
 }
 
-.form-container { 
-    background: #ffffff; 
-    padding: 25px; 
-    border: 1px solid #e0e0e0; 
-    border-radius: 12px; 
-    text-align: left; 
-    margin: 30px auto; 
-    max-width: 450px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-.hidden {
-    display: none;
+/* FullCalendar Customization */
+#calendar {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
 }
 
-.fa-car {
-    padding: 5%;
-
+/* Couleurs des événements dans le calendrier */
+.fc-event {
+    border: none !important;
+    padding: 2px 5px;
+    font-size: 0.85rem;
 }
 
+/* Boutons FullCalendar */
+.fc .fc-button-primary {
+    background-color: #1e3c72 !important;
+    border: none !important;
+}
+
+.fc .fc-button-primary:hover {
+    background-color: #2a5298 !important;
+}
+
+/* Alertes AJAX */
+#ajax-message {
+    padding: 10px;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+/* Formulaire à droite */
+.form-control {
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.btn-success {
+    background-color: #04a572;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #038d61;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .parking-map {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
