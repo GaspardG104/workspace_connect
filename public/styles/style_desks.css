@@ -67,9 +67,9 @@
 }
 
 .desk-unit {
-    background: #ffffff;
-    border: 1px solid #d1d9e6;
-    cursor: pointer;
+    background: #ffffff !important;
+    border: 1px solid #d1d9e6 !important;
+    cursor: pointer !important;
     
 }
 
@@ -127,3 +127,6 @@
 
 /* Reset Bootstrap */
 .btn-meeting, .btn-box, .desk-unit { outline: none !important; box-shadow: none !important; }
+
+/* Important pour le placement du calendrier à droite */
+.container-fluid { max-width: 1400px; }
