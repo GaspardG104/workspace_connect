@@ -1,115 +1,122 @@
-/* --- LE PLAN (CONTENEUR) --- */
+/* --- LE PLAN (TON CONTENEUR) --- */
 .plan-container {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: repeat(10, 50px);
-    gap: 12px;
-    background: #f8f9fa; /* Gris léger pour délimiter la zone du sol */
-    border: 2px solid #dee2e6;
-    padding: 20px;
+    grid-template-columns: repeat(80, minmax(0, 1fr));
+    grid-template-rows: repeat(80, minmax(0, 1fr));
+    aspect-ratio: 1 / 1.1; 
+    gap: 0; 
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    padding: 2%; 
     border-radius: 8px;
     width: 100%;
-    max-width: 750px;
+    max-width: 600px;
     margin: 0 auto;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
 }
 
-/* --- LOGIQUE DES ÉLÉMENTS DU PLAN --- */
-.btn-office {
-    background-color: #ffffff;
-    transition: 0.3s;
-    font-weight: 600;
-    font-size: 0.85rem;
+/* --- STYLE DES ÉLÉMENTS --- */
+.btn-meeting,.btn-box {
+    font-weight: 700;
+    font-size: 0.95rem; 
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-
+    overflow: hidden;
+    padding: 2px;
+    transition: all 0.2s ease;
+    border-radius: 4px;
 }
 
-.desk-group::after {
-    content: "";
-    position: absolute;
-    background: #333;
+.btn-meeting{
+    border: 2px solid #0d6efd; 
 }
 
-/* --- PLACEMENT GRILLE (LA CARTE DES LOCAUX) --- */
-.meeting-1 {
-    grid-column: 7 / 13;
-    grid-row: 1 / 4;
-    border: 2px solid #333;
+.btn-box{
+    border: 2px solid #000000; 
 }
 
-.meeting-2 {
-    grid-column: 7 / 12;
-    grid-row: 13;
-    border: 2px solid #333;
+.btn-box:hover {
+    background-color: #000000 !important;
+    color: #ffffff !important;
 }
 
-.v-desk-1 { grid-column: 4 / 5; grid-row: 1/ 5; }
-.v-desk-2 { grid-column: 8 / 5; grid-row: 1 / 5; }
-.h-1 { grid-column: 1 / 8; grid-row: 6; }
-.h-2 { grid-column: 7 / 13; grid-row: 6; }
-.h-3 { grid-column: 1 / 8; grid-row: 8; }
-.h-4 { grid-column: 7 / 13; grid-row: 8;}
-.box-1 { grid-column: 6 / 8; grid-row: 11 / 13; border: 2px solid #333; }
-.box-2 { grid-column: 8 / 10; grid-row: 11 / 13; border: 2px solid #333; }
-.meeting-2 { grid-column: 7 / 12; grid-row: 13; border: 2px solid #333; }
-
-
-/* Trait central pour les bureaux horizontaux */
-.h-1::after, .h-2::after, .h-3::after, .h-4::after {
-    content: "";
-    position: absolute;
-    width: 100%;
-    height: 2px;
-    top: 50%;
-    left: 0;
-    background: #333;
-    z-index: 2; /* Pour passer par-dessus les boutons */
-    pointer-events: none; /* Pour pouvoir cliquer sur les bureaux en dessous */
+.btn-meeting:hover {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
 }
 
-.v-desk-1::after, .v-desk-2::after {
-    content: "";
-    position: absolute;
-    width: 2px;
-    height: 100%;
-    left: 50%;
-    top: 0;
-    background: #333;
-    z-index: 2;
-    pointer-events: none;
-} 
 
-/* Style spécifique des bureaux (Contours bleus) */
-.desk-group-h {
-    border: 2px solid #00a2e8;
+
+/* --- GROUPES DE BUREAUX --- */
+.desk-group-v, .desk-group-h {
+    border: 2px solid #2c3e50; 
     display: grid;
-    /* 3 colonnes égales, 2 lignes égales */
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 0; /* Pas d'espace pour garder l'aspect "bloc" */
+    position: relative;
+    background: #eef2f7; 
+    border-radius: 8px;
     overflow: hidden;
 }
 
-.desk-group-v {
-    border: 2px solid #00a2e8;
-    display: grid;
-    /* 2 colonnes égales, 3 lignes égales */
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 0; /* Pas d'espace pour garder l'aspect "bloc" */
-    overflow: hidden;
-}
-
-/* --- LE BUREAU INDIVIDUEL (BOUTON) --- */
 .desk-unit {
-    background: white;
-    border: 1px solid rgba(0, 162, 232, 0.3); /* Bordure légère entre les postes */
+    background: #ffffff;
+    border: 1px solid #d1d9e6;
     cursor: pointer;
-    transition: background 0.2s;
+    
 }
 
 .desk-unit:hover {
-    background: #e1f5fe; /* Bleu très clair au survol */
+    background: #73b9e8; 
 }
+
+/* --- TRAITS CENTRAUX --- */
+.desk-group-v::after, .desk-group-h::after {
+    content: "";
+    position: absolute;
+    background: #2c3e50;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.desk-group-v::after {
+    width: 2px; height: 100%;
+    left: 50%; top: 0;
+    transform: translateX(-50%);
+}
+
+.desk-group-h::after {
+    width: 100%; height: 2px;
+    top: 50%; left: 0;
+    transform: translateY(-50%);
+}
+
+/* --- RÉALIGNEMENT DES POSITIONS --- */
+
+/* Verticaux */
+.v-desk-1 { grid-column: 10 / 20; grid-row: 5 / 30; }
+.v-desk-2 { grid-column: 25 / 35; grid-row: 5 / 30; }
+
+/* Salle 1 */
+.meeting-1 { grid-column: 45 / 75; grid-row: 5 / 25; }
+
+/* Horizontaux */
+.h-1 { grid-column: 5 / 35;  grid-row: 35 / 45; }
+.h-2 { grid-column: 45 / 75; grid-row: 35 / 45; }
+.h-3 { grid-column: 5 / 35;  grid-row: 50 / 60; }
+.h-4 { grid-column: 45 / 75; grid-row: 50 / 60; }
+
+/* BOX (Au centre sous les bureaux) */
+.box-1 { grid-column: 17 / 30; grid-row: 68 / 78; }
+.box-2 { grid-column: 32 / 44; grid-row: 68 / 78; }
+
+/* SALLE 2 (À droite en bas) */
+.meeting-2 { grid-column: 45 / 75; grid-row: 68 / 78; }
+
+/* Découpe interne */
+.desk-group-h { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); }
+.desk-group-v { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); }
+
+/* Reset Bootstrap */
+.btn-meeting, .btn-box, .desk-unit { outline: none !important; box-shadow: none !important; }

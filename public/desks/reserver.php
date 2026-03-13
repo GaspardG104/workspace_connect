@@ -34,10 +34,10 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'salle' AND
             <p class="text-white-50">Sélectionnez votre bureau ou une salle de réunion</p>
         </div>
 
-        <div class="card shadow p-4 mx-auto" style="max-width: 900px;">
+        <div class="card shadow p-3 mx-auto" style="max-width: 800px; border-radius: 15px;">
             <div class="plan-container">
-                <button class="btn btn-office meeting-1 shadow-sm text-dark">Salle de réunion 1</button>
-                <button class="btn btn-office meeting-2 shadow-sm text-dark">Salle de réunion 2</button>
+                <button class="btn btn-meeting meeting-1 shadow-sm text-primary">Salle de réunion 1</button>
+                <button class="btn btn-meeting meeting-2 shadow-sm text-primary">Salle de réunion 2</button>
 
                 <div class="desk-group-v v-desk-1">
                     <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste V1-'.$i.'"></button>'; ?>
@@ -59,11 +59,11 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'salle' AND
                     <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste H4-'.$i.'"></button>'; ?>
                 </div>
 
-                <button class="btn btn-office box box-1 text-dark">Box 1</button>
-                <button class="btn btn-office box box-2 text-dark">Box 2</button>
+                <button class="btn btn-box box-1 text-dark">Box 1</button>
+                <button class="btn btn-box box-2 text-dark">Box 2</button>
             </div>
             
-            <div class="mt-4 d-flex justify-content-center gap-3">
+            <div class="mt-4 d-flex justify-content-center gap-4">
                 <small><i class="fa-solid fa-square text-primary"></i> Salles</small>
                 <small><i class="fa-solid fa-square" style="color: #00a2e8;"></i> Bureaux</small>
                 <small><i class="fa-solid fa-square text-dark"></i> Box</small>
