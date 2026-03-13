@@ -25,8 +25,6 @@ foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
     <link rel="stylesheet" href="/../styles/style_desks.css">
     <link rel="stylesheet" href="/../styles/main_theme.css">
     <style>
-        /* Style pour l'élément sélectionné */
-        .selected-resource { border: 3px solid #ffc107 !important; box-shadow: 0 0 15px rgba(255,193,7,0.6) !important; }
         /* Message flottant pour ne pas casser le design */
         #ajax-message { position: fixed; top: 20px; right: 20px; z-index: 10000; min-width: 250px; display: none; }
         #calendar { background: #fff; padding: 10px; border-radius: 8px; }

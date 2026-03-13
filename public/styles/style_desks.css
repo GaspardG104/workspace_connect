@@ -2,8 +2,6 @@
     background: linear-gradient(105deg, #ffffffbd 0%, #0062ffab 100%);
 }
 
-
-
 /* --- LE PLAN (TON CONTENEUR) --- */
 .plan-container {
     display: grid;
@@ -74,8 +72,8 @@
 }
 
 .desk-unit:hover {
-    background: #73b9e8; 
-    color: #000000;
+    background: #73b9e8 !important; 
+    color: #000000 !important;
 }
 
 /* --- TRAITS CENTRAUX --- */
