@@ -37,7 +37,7 @@ foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
 <div id="ajax-message" class="alert shadow-lg"></div>
 
 <div class="container-fluid py-4">
-    <div class="row">
+    <div class="row g-4 transition-layout" id="layout-wrapper">
         <div class="col-lg-7">
             <div class="card shadow p-3 border-0">
                 <div class="plan-container">
@@ -124,6 +124,20 @@ function selectResource(id, nom, el) {
     document.getElementById('display-name').innerText = "Poste : " + nom;
     document.getElementById('res_id').value = id;
 
+    function showCalendar() {
+    // On ajoute la classe qui déclenche le mouvement CSS
+    document.getElementById('layout-wrapper').classList.add('active');
+}
+
+document.querySelectorAll('.desk-unit, .btn-meeting, .btn-box').forEach(b => b.classList.remove('selected-resource'));
+    el.classList.add('selected-resource');
+
+    document.getElementById('booking-ui').style.display = 'block';
+function hideCalendar() {
+    // On retire la classe pour revenir au centre
+    document.getElementById('layout-wrapper').classList.remove('active');
+}
+
     calendar.setOption('events', 'get_events.php?id_resource=' + id);
     calendar.refetchEvents();
     calendar.updateSize();
@@ -150,6 +164,10 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
     })
     .finally(() => { btn.disabled = false; });
 });
+
+// ^pour l'animation de décalage du calendrier au début
+
+
 </script>
 </body>
 </html>

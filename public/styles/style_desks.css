@@ -128,3 +128,63 @@
 
 /* Important pour le placement du calendrier à droite */
 .container-fluid { max-width: 1400px; }
+
+.main-container {
+    display: flex;
+    width: 200%; /* Le conteneur est très large */
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 80vh;
+}
+
+.plan-section, .calendar-section {
+    width: 50%; /* Chaque section prend la moitié de l'espace réel */
+    padding: 20px;
+}
+
+/* ÉTAT ACTIF : On décale tout vers la gauche */
+.main-container.active {
+    transform: translateX(-25%); /* Ajuste le pourcentage selon l'effet voulu */
+}
+
+/* Optionnel : On peut aussi jouer sur l'opacité du calendrier */
+.calendar-section {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.active .calendar-section {
+    opacity: 1;
+}
+
+
+    /* Message flottant */
+    #ajax-message { position: fixed; top: 20px; right: 20px; z-index: 10000; min-width: 250px; display: none; }
+    #calendar { background: #fff; padding: 10px; border-radius: 8px; }
+
+    /* --- ANIMATION DE DÉCALAGE --- */
+    
+    /* On donne une transition douce à la ligne qui contient les deux colonnes */
+    .transition-layout {
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* La colonne du calendrier (col-lg-5) est cachée et décalée par défaut */
+    #booking-ui {
+        opacity: 0;
+        transform: translateX(50px);
+        transition: all 0.5s ease-out;
+        display: none; /* Gardé pour ton JS actuel */
+    }
+
+    /* Quand on active le layout (classe .active ajoutée via JS) */
+    #layout-wrapper.active #booking-ui {
+        display: block !important;
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* Optionnel : centrer le plan au début quand il n'y a pas de sélection */
+    #layout-wrapper:not(.active) .col-lg-7 {
+        margin: 0 auto;
+        transition: all 0.6s ease;
+    }
