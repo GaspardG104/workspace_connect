@@ -20,7 +20,7 @@ CREATE TABLE users (
 );
 
 -- 3. Table des Ressources
-CREATE TYPE resource_type AS ENUM ('parking', 'bureau', 'salle');
+CREATE TYPE resource_type AS ENUM ('parking', 'bureau', 'salle', 'box');
 
 CREATE TABLE resources (
     id SERIAL PRIMARY KEY,
