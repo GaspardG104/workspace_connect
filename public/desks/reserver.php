@@ -40,23 +40,23 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'salle' AND
                 <button class="btn btn-meeting meeting-2 shadow-sm text-primary">Salle de réunion 2</button>
 
                 <div class="desk-group-v v-desk-1">
-                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste V1-'.$i.'"></button>'; ?>
+                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste I1-'.$i.'">B'.$i.'</button>'; ?>
                 </div>
                 <div class="desk-group-v v-desk-2">
-                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste V2-'.$i.'"></button>'; ?>
+                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste I2-'.$i.'">B'.$i.'</button>'; ?>
                 </div>
 
                 <div class="desk-group-h h-1">
-                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste H1-'.$i.'"></button>'; ?>
+                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste I3-'.$i.'">B'.$i.'</button>'; ?>
                 </div>
                 <div class="desk-group-h h-2">
-                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste H2-'.$i.'"></button>'; ?>
+                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste I4-'.$i.'">B'.$i.'</button>'; ?>
                 </div>
                 <div class="desk-group-h h-3">
-                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste H3-'.$i.'"></button>'; ?>
+                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste I5-'.$i.'">B'.$i.'</button>'; ?>
                 </div>
                 <div class="desk-group-h h-4">
-                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste H4-'.$i.'"></button>'; ?>
+                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste I6-'.$i.'">B'.$i.'</button>'; ?>
                 </div>
 
                 <button class="btn btn-box box-1 text-dark">Box 1</button>
