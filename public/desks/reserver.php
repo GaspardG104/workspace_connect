@@ -9,7 +9,7 @@ $pdo = require_once __DIR__ . '/../../config/db.php';
 $id_user = $_SESSION['user_id']; 
 $nom_user = $_SESSION['user_nom'];
 
-$resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'salle' AND type = 'bureau' ORDER BY nom")->fetchAll();
+$resources = $pdo->query("SELECT id, nom FROM resources WHERE type NOT IN ('parking') ORDER BY nom")->fetchAll();
 ?>
 
 

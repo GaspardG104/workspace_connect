@@ -26,7 +26,7 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'parking' O
     <link rel="stylesheet" href="../styles/main_theme.css">
 </head>
 <body class="bg-light">
-<?php include __DIR__ . '/..//includes/navbar.php'; ?>
+<?php include __DIR__ . '/../includes/navbar.php'; ?>
 
     <div class="container">
         <div class="text-center mb-4">
