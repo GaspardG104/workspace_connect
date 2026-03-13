@@ -39,13 +39,25 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'salle' AND
                 <button class="btn btn-office meeting-1 shadow-sm text-dark">Salle de réunion 1</button>
                 <button class="btn btn-office meeting-2 shadow-sm text-dark">Salle de réunion 2</button>
 
-                <button class="btn-office desk-group v-desk-1"></button>
-                <button class="btn-office desk-group v-desk-2"></button>
+                <div class="desk-group-v v-desk-1">
+                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste V1-'.$i.'"></button>'; ?>
+                </div>
+                <div class="desk-group-v v-desk-2">
+                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste V2-'.$i.'"></button>'; ?>
+                </div>
 
-                <button class="btn-office desk-group h-desk h-1"></button>
-                <button class="btn-office desk-group h-desk h-2"></button>
-                <button class="btn-office desk-group h-desk h-3"></button>
-                <button class="btn-office desk-group h-desk h-4"></button>
+                <div class="desk-group-h h-1">
+                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste H1-'.$i.'"></button>'; ?>
+                </div>
+                <div class="desk-group-h h-2">
+                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste H2-'.$i.'"></button>'; ?>
+                </div>
+                <div class="desk-group-h h-3">
+                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste H3-'.$i.'"></button>'; ?>
+                </div>
+                <div class="desk-group-h h-4">
+                    <?php for($i=1; $i<=6; $i++) echo '<button class="desk-unit" title="Poste H4-'.$i.'"></button>'; ?>
+                </div>
 
                 <button class="btn btn-office box box-1 text-dark">Box 1</button>
                 <button class="btn btn-office box box-2 text-dark">Box 2</button>
