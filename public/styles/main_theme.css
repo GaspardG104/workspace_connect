@@ -17,13 +17,15 @@ body {
 
 /* --- BOUTONS --- */
 .btn-primary { 
-    background-color: #28a745 !important; 
+    background-color: #0d6efd !important; 
+    
     border: none !important; 
     font-weight: bold;
 }
 
 .btn-primary:hover { 
-    background-color: #218838 !important; 
+    background-color: #ffffff !important; 
+    color: #0d6efd;
     transform: translateY(-1px);
 }
 
@@ -34,5 +36,5 @@ body {
 }
 
 .navbar .nav-link:hover {
-    color: #28a745 !important; /* Le vert au survol du menu */
+    color: #ffffff !important; /* Le vert au survol du menu */
 }

@@ -17,18 +17,6 @@ body {
     letter-spacing: -0.5px;
 }
 
-/* On personnalise les boutons pour qu'ils ne soient pas trop "flashy" */
-.btn-light {
-    background-color: #ffffff;
-    border: none;
-    color: #04a572 !important;
-    transition: transform 0.2s;
-}
-
-.btn-light:hover {
-    transform: translateY(-2px);
-    background-color: #f8f9fa;
-}
 
 .btn-primary {
     background-color: #183fd8; /* Vert plus vif pour le bouton principal */

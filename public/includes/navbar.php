@@ -16,15 +16,18 @@
                             </span>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link btn btn-light text-dark px-3 me-2 btn-sm" href="parking/reserver.php">Réserver</a>
+                            <a class="nav-link btn text-primary px-3 me-2 btn-sm" href="parking/reserver.php"> <i class="fa-solid fa-square-parking"></i> Parking</a> 
                         </li>
-                        <?php if ($_SESSION['user_role'] == 1): ?>
+                        <li class="nav-item">
+                            <a class="nav-link btn text-primary-.text-info-emphasis px-3 me-2 btn-sm" href="desks/reserver.php">Bureaux <i class="fa-solid fa-person-booth"></i></a>
+                        </li>
+                        <?php if ($_SESSION['user_role'] == 1):?>
                             <li class="nav-item">
-                                <a class="nav-link text-white fw-bold" href="/../inscription.php">Inscription</a>
+                                <a class="nav-link text-success fw-bold" href="/../inscription.php"><i class="fa-solid fa-user-check"></i> Inscription</a>
                             </li>
                         <?php endif; ?>
                         <li class="nav-item">
-                            <a class="nav-link text-warning fw-bold" href="/../logout.php">Déconnexion</a>
+                            <a class="nav-link text-danger fw-bold" href="/../logout.php"> Déconnexion <i class="fa-solid fa-arrow-right-from-bracket"></i></a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">

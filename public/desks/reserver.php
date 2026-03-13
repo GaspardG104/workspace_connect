@@ -28,7 +28,7 @@ $resources = $pdo->query("SELECT id, nom FROM resources WHERE type = 'salle' AND
 
 <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
-    <div class="container py-5">
+    <div class="container py-5 ">
         <div class="text-center mb-5">
             <h1 class="fw-bold text-white">Réserver un espace de travail</h1>
             <p class="text-white-50">Sélectionnez votre bureau ou une salle de réunion</p>

@@ -1,3 +1,9 @@
+.card {
+    background: linear-gradient(105deg, #ffffffbd 0%, #0062ffab 100%);
+}
+
+
+
 /* --- LE PLAN (TON CONTENEUR) --- */
 .plan-container {
     display: grid;
@@ -5,10 +11,10 @@
     grid-template-rows: repeat(80, minmax(0, 1fr));
     aspect-ratio: 1 / 1.1; 
     gap: 0; 
-    background: #ffffff;
+    background-color: #ffffff ;
     border: 1px solid #dee2e6;
     padding: 2%; 
-    border-radius: 8px;
+    border-radius: 18px;
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
