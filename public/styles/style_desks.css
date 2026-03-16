@@ -157,34 +157,61 @@
 }
 
 
-    /* Message flottant */
-    #ajax-message { position: fixed; top: 20px; right: 20px; z-index: 10000; min-width: 250px; display: none; }
-    #calendar { background: #fff; padding: 10px; border-radius: 8px; }
+/* Message flottant */
+#ajax-message { position: fixed; top: 20px; right: 20px; z-index: 10000; min-width: 250px; display: none; }
+#calendar { background: #fff; padding: 10px; border-radius: 8px; }
 
-    /* --- ANIMATION DE DÉCALAGE --- */
-    
-    /* On donne une transition douce à la ligne qui contient les deux colonnes */
-    .transition-layout {
-        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+/* --- ANIMATION DE DÉCALAGE --- */
 
-    /* La colonne du calendrier (col-lg-5) est cachée et décalée par défaut */
-    #booking-ui {
+/* On donne une transition douce à la ligne qui contient les deux colonnes */
+.transition-layout {
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* La colonne du calendrier (col-lg-5) est cachée et décalée par défaut */
+#booking-ui {
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity 1.5s ease, transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    /*display: none;  Gardé pour ton JS actuel */
+}
+
+/* Quand on active le layout (classe .active ajoutée via JS) */
+#layout-wrapper.active #booking-ui {
+    display: block !important;
+    opacity: 1;
+}
+
+/* Animation de "rafraîchissement" du calendrier */
+.refresh-anim {
+    animation: slideUpFade 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;}
+
+@keyframes slideUpFade {
+    0% {
         opacity: 0;
-        transform: translateX(50px);
-        transition: all 0.5s ease-out;
-        display: none; /* Gardé pour ton JS actuel */
+        transform: translateY(px);
     }
-
-    /* Quand on active le layout (classe .active ajoutée via JS) */
-    #layout-wrapper.active #booking-ui {
-        display: block !important;
+    100% {
         opacity: 1;
-        transform: translateX(0);
+        transform: translateY(0);
     }
+}
 
-    /* Optionnel : centrer le plan au début quand il n'y a pas de sélection */
-    #layout-wrapper:not(.active) .col-lg-7 {
-        margin: 0 auto;
-        transition: all 0.6s ease;
-    }
+/* centrer le plan au début quand il n'y a pas de sélection */
+#layout-wrapper:not(.active) #plan-column {
+    flex: 0 0 auto;
+    width: 58.333333%; /* Équivalent à col-lg-7 */
+    margin: 0 auto;    /* Sécurité supplémentaire */
+}
+
+/*Ajustement pour éviter que les colonnes sautent */
+.transition-layout {
+    display: flex;
+    justify-content: center;
+    transition: all 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+#plan-column {
+    transition: all 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+

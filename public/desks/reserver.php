@@ -34,11 +34,12 @@ foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
 
 <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
-<div id="ajax-message" class="alert shadow-lg"></div>
-
 <div class="container-fluid py-4">
-    <div class="row g-4 transition-layout" id="layout-wrapper">
-        <div class="col-lg-7">
+    <div class="text-center mb-4">
+        <h1 class="fw-bold">Réserver mon bureau</h1>
+    </div>
+    <div class="row g-4 transition-layout justify-content-center" id="layout-wrapper">
+        <div class="col-lg-7 transition-all" id="plan-column">
             <div class="card shadow p-3 border-0">
                 <div class="plan-container">
                     <button class="btn-meeting meeting-1" onclick="selectResource(<?= $res_map['S1'] ?? 0 ?>, 'Salle 1', this)">Salle de réunion 1</button>
@@ -69,8 +70,8 @@ foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
             </div>
         </div>
 
-        <div class="col-lg-5">
-            <div id="booking-ui" style="display:none;">
+        <div class="col-lg-5" id="calendar-column" style="display: none;">
+            <div id="booking-ui">
                 <div class="card shadow-sm border-0 p-3 mb-3">
                     <h4 id="display-name" class="fw-bold text-primary"></h4>
                     <div id="calendar"></div>
@@ -101,10 +102,15 @@ foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
 let calendar;
 
 document.addEventListener('DOMContentLoaded', function() {
-    calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+    const calendarEl = document.getElementById('calendar');
+    calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'fr',
-        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
+        headerToolbar: { 
+            left: 'prev,next today', 
+            center: 'title', 
+            right: 'dayGridMonth,timeGridWeek' 
+        },
         selectable: true,
         select: function(info) {
             document.getElementById('startInput').value = info.startStr + "T09:00";
@@ -114,37 +120,55 @@ document.addEventListener('DOMContentLoaded', function() {
     calendar.render();
 });
 
+// La fonction est maintenant bien définie au niveau global
 function selectResource(id, nom, el) {
-    if(!id) { showMsg("Ressource non trouvée en BDD", false); return; }
+    if(!id) { 
+        showMsg("Ressource non trouvée en BDD", false); 
+        return; 
+    }
 
-    document.querySelectorAll('.desk-unit, .btn-meeting, .btn-box').forEach(b => b.classList.remove('selected-resource'));
+    // 1. Gérer la sélection visuelle (couleur du bureau)
+    document.querySelectorAll('.selected-resource').forEach(b => b.classList.remove('selected-resource'));
     el.classList.add('selected-resource');
 
-    document.getElementById('booking-ui').style.display = 'block';
+    // 2. Afficher le bloc de réservation et déclencher l'animation de décalage
+    const calendarCol = document.getElementById('calendar-column');
+    const bookingUi = document.getElementById('booking-ui');
+    const layoutWrapper = document.getElementById('layout-wrapper');
+    
+    bookingUi.classList.remove('refresh-anim'); //on enlève l'animation pour la calendrier si elle y était déjà
+
+    // affichage des conteneurs
+    calendarCol.style.display = 'block'; // On affiche la colonne parent
+    bookingUi.style.display = 'block';     // On affiche l'UI interne
+
+    
+    void bookingUi.offsetWidth;     // On force un petit "recalcul" pour que le navigateur voie le changement
+    bookingUi.classList.add('refresh-anim');
+
+    // 3. Mettre à jour les informations du formulaire
     document.getElementById('display-name').innerText = "Poste : " + nom;
     document.getElementById('res_id').value = id;
 
-    function showCalendar() {
-    // On ajoute la classe qui déclenche le mouvement CSS
-    document.getElementById('layout-wrapper').classList.add('active');
-}
-
-document.querySelectorAll('.desk-unit, .btn-meeting, .btn-box').forEach(b => b.classList.remove('selected-resource'));
-    el.classList.add('selected-resource');
-
-    document.getElementById('booking-ui').style.display = 'block';
-function hideCalendar() {
-    // On retire la classe pour revenir au centre
-    document.getElementById('layout-wrapper').classList.remove('active');
-}
-
+    // 4. Charger les événements et forcer le calendrier à recalculer sa taille
     calendar.setOption('events', 'get_events.php?id_resource=' + id);
     calendar.refetchEvents();
-    calendar.updateSize();
+    
+    // TRÈS IMPORTANT : On attend un court instant que l'animation commence 
+    // pour que FullCalendar ajuste sa largeur, sinon il reste invisible ou buggé.
+    setTimeout(() => {
+        layoutWrapper.classList.add('active');
+        // On attend un peu plus (500ms au lieu de 200ms) pour que 
+        // l'espace soit suffisant avant de dessiner le calendrier
+        setTimeout(() => {
+            calendar.updateSize();
+        }, 500); 
+    }, 10);
 }
 
 function showMsg(txt, isSuccess) {
     const m = document.getElementById('ajax-message');
+    if(!m) return;
     m.innerHTML = txt;
     m.className = "alert shadow-lg " + (isSuccess ? "alert-success" : "alert-danger");
     m.style.display = "block";
@@ -160,12 +184,13 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
     .then(r => r.json())
     .then(data => {
         showMsg(data.message, data.success);
-        if(data.success) { calendar.refetchEvents(); this.reset(); }
+        if(data.success) { 
+            calendar.refetchEvents(); 
+            this.reset(); 
+        }
     })
     .finally(() => { btn.disabled = false; });
 });
-
-// ^pour l'animation de décalage du calendrier au début
 
 
 </script>
