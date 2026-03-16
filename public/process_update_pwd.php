@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 
 // 2. Connexion à la base de données
 try {
-    $pdo = require_once __DIR__ . '/db.php';
+    $pdo = require_once __DIR__ . '/../config/db.php';
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => 'Erreur de connexion à la base de données.']);
     exit;
