@@ -234,3 +234,19 @@
     transition: all 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
 }
 
+.invite-tag {
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 2px 12px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.invite-tag .remove-invite {
+    cursor: pointer;
+    color: #dc3545;
+    font-weight: bold;
+}
+.invite-tag .remove-invite:hover { color: #a71d2a; }

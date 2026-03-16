@@ -100,13 +100,25 @@ $capacities = $stmtCap->fetchAll(PDO::FETCH_KEY_PAIR);
                             </div>
                         </div>
                         <div id="invite-section" class="mt-3" style="display:none;">
-                            <label class="small fw-bold text-muted">Inviter des collègues (Capacité max : <span id="cap-val"></span>)</label>
-                            <select name="invites[]" id="inviteSelect" class="form-select" multiple>
-                                <?php foreach($all_users as $u): ?>
-                                    <option value="<?= $u['id'] ?>"><?= htmlspecialchars($u['prenom'] . ' ' . $u['nom']) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <small class="text-muted">Sélectionner vos invité(e)s.</small>
+                            <label class="small fw-bold text-muted mb-2">
+                                Inviter des collègues (Capacité max : <span id="cap-val"></span>)
+                            </label>                          
+                            <div id="tags-container" class="d-flex flex-wrap gap-2 mb-2"></div>
+                            <div class="dropdown">
+                                <input type="text" id="userSearch" class="form-control" placeholder="Rechercher un collègue..." autocomplete="off">
+                                <ul id="userSuggestions" class="dropdown-menu w-100 shadow-sm" style="max-height: 200px; overflow-y: auto;">
+                                    <?php foreach($all_users as $u): ?>
+                                        <li>
+                                            <a class="dropdown-item user-option" href="#" 
+                                            data-id="<?= $u['id'] ?>" 
+                                            data-name="<?= htmlspecialchars($u['prenom'] . ' ' . $u['nom']) ?>">
+                                                <?= htmlspecialchars($u['prenom'] . ' ' . $u['nom']) ?>
+                                            </a>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>                            
+                            <div id="hidden-inputs"></div>
                         </div>
                         <button type="submit" id="subBtn" class="btn btn-primary w-100 mt-3 fw-bold">Réserver</button>
                     </form>
@@ -236,6 +248,82 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
         }
     })
     .finally(() => { btn.disabled = false; });
+});
+
+const userSearch = document.getElementById('userSearch');
+const userSuggestions = document.getElementById('userSuggestions');
+const tagsContainer = document.getElementById('tags-container');
+const hiddenInputs = document.getElementById('hidden-inputs');
+let selectedUsers = [];
+
+// Filtrer la liste pendant la frappe
+userSearch.addEventListener('input', function() {
+    const term = this.value.toLowerCase();
+    const items = document.querySelectorAll('.user-option');
+    let hasResults = false;
+
+    items.forEach(item => {
+        const name = item.getAttribute('data-name').toLowerCase();
+        if (name.includes(term) && term.length > 0) {
+            item.parentElement.style.display = 'block';
+            hasResults = true;
+        } else {
+            item.parentElement.style.display = 'none';
+        }
+    });
+
+    userSuggestions.classList.toggle('show', hasResults);
+});
+
+// Ajouter un invité lors du clic sur un nom
+document.querySelectorAll('.user-option').forEach(option => {
+    option.addEventListener('click', function(e) {
+        e.preventDefault();
+        const id = this.getAttribute('data-id');
+        const name = this.getAttribute('data-name');
+        const capaciteMax = parseInt(document.getElementById('cap-val').innerText) || 1;
+
+        // Vérification : pas déjà ajouté et respect de la capacité (soi-même + invités)
+        if (!selectedUsers.includes(id)) {
+            if (selectedUsers.length + 1 < capaciteMax) {
+                addTag(id, name);
+            } else {
+                alert("Capacité maximale de la salle atteinte !");
+            }
+        }
+
+        userSearch.value = '';
+        userSuggestions.classList.remove('show');
+    });
+});
+
+function addTag(id, name) {
+    selectedUsers.push(id);
+    
+    // Créer le tag visuel
+    const tag = document.createElement('div');
+    tag.className = 'invite-tag';
+    tag.innerHTML = `${name} <span class="remove-invite" onclick="removeTag('${id}', this)">&times;</span>`;
+    tagsContainer.appendChild(tag);
+
+    // Créer l'input caché pour le formulaire
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'invites[]';
+    input.value = id;
+    input.id = 'input-invite-' + id;
+    hiddenInputs.appendChild(input);
+}
+
+function removeTag(id, element) {
+    selectedUsers = selectedUsers.filter(uid => uid !== id);
+    element.parentElement.remove();
+    document.getElementById('input-invite-' + id).remove();
+}
+
+// Fermer la liste si on clique ailleurs
+document.addEventListener('click', (e) => {
+    if (!userSearch.contains(e.target)) userSuggestions.classList.remove('show');
 });
 
 
