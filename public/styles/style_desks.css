@@ -34,9 +34,23 @@
     border-radius: 4px;
 }
 
+/* --- GROUPES DE SALLES --- */
+
 .btn-meeting{
     border: 2px solid #0d6efd; 
 }
+
+.btn-meeting:hover {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+}
+
+.btn-meeting.selected-resource {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+}
+
+/* --- GROUPES DE BOXS --- */
 
 .btn-box{
     border: 2px solid #000000; 
@@ -47,8 +61,8 @@
     color: #ffffff !important;
 }
 
-.btn-meeting:hover {
-    background-color: #0d6efd !important;
+.btn-box.selected-resource {
+    background-color: #000000 !important;
     color: #ffffff !important;
 }
 
@@ -72,6 +86,11 @@
 }
 
 .desk-unit:hover {
+    background: #73b9e8 !important; 
+    color: #000000 !important;
+}
+
+.desk-unit.selected-resource {
     background: #73b9e8 !important; 
     color: #000000 !important;
 }
