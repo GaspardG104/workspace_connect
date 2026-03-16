@@ -34,6 +34,8 @@ foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
 
 <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
+<div id="ajax-message" class="alert shadow-lg"></div>
+
 <div class="container-fluid py-4">
     <div class="text-center mb-4">
         <h1 class="fw-bold">Réserver mon bureau</h1>
@@ -114,7 +116,21 @@ document.addEventListener('DOMContentLoaded', function() {
         selectable: true,
         select: function(info) {
             document.getElementById('startInput').value = info.startStr + "T09:00";
-            document.getElementById('endInput').value = info.startStr + "T18:00";
+            let endDate = new Date(info.end);
+            
+            // Si c'est une sélection sur la vue Mois (allDay), FullCalendar donne le lendemain à 00:00.
+            // On recule d'un jour pour revenir au jour réel de fin de réservation.
+            if (info.allDay) {
+                endDate.setDate(endDate.getDate() - 1);
+            }
+
+            // On formate la date au format YYYY-MM-DD
+            let day = endDate.getDate().toString().padStart(2, '0');
+            let month = (endDate.getMonth() + 1).toString().padStart(2, '0');
+            let year = endDate.getFullYear();
+            
+            let formattedEndDate = `${year}-${month}-${day}T18:00`;
+            document.getElementById('endInput').value = formattedEndDate;
         }
     });
     calendar.render();
