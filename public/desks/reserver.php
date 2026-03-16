@@ -7,12 +7,18 @@ if (!isset($_SESSION['user_id'])) {
 $pdo = require_once __DIR__ . '/../../config/db.php';
 
 // On prépare le mapping des IDs pour le JavaScript
-$stmt = $pdo->query("SELECT id, nom, capacite FROM resources WHERE type NOT IN ('parking')");
+$stmt = $pdo->query("SELECT id, nom FROM resources WHERE type NOT IN ('parking')");
 $res_map = [];
 foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
     $res_map[$r['nom']] = $r['id'];
-    $capacite = 
 }
+
+$stmtUsers = $pdo->query("SELECT id, prenom, nom FROM users WHERE id != {$_SESSION['user_id']} ORDER BY nom ASC");
+$all_users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
+
+$stmtCap = $pdo->query("SELECT id, capacite FROM resources");
+$capacities = $stmtCap->fetchAll(PDO::FETCH_KEY_PAIR);
+
 ?>
 
 <!DOCTYPE html>
@@ -93,6 +99,15 @@ foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
                                 <input type="datetime-local" name="fin" id="endInput" class="form-control" required>
                             </div>
                         </div>
+                        <div id="invite-section" class="mt-3" style="display:none;">
+                            <label class="small fw-bold text-muted">Inviter des collègues (Capacité max : <span id="cap-val"></span>)</label>
+                            <select name="invites[]" id="inviteSelect" class="form-select" multiple>
+                                <?php foreach($all_users as $u): ?>
+                                    <option value="<?= $u['id'] ?>"><?= htmlspecialchars($u['prenom'] . ' ' . $u['nom']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <small class="text-muted">Sélectionner vos invité(e)s.</small>
+                        </div>
                         <button type="submit" id="subBtn" class="btn btn-primary w-100 mt-3 fw-bold">Réserver</button>
                     </form>
                 </div>
@@ -137,6 +152,8 @@ document.addEventListener('DOMContentLoaded', function() {
     calendar.render();
 });
 
+const resCapacities = <?= json_encode($capacities) ?>;
+
 // La fonction est maintenant bien définie au niveau global
 function selectResource(id, nom, el) {
     if(!id) { 
@@ -152,6 +169,18 @@ function selectResource(id, nom, el) {
     const calendarCol = document.getElementById('calendar-column');
     const bookingUi = document.getElementById('booking-ui');
     const layoutWrapper = document.getElementById('layout-wrapper');
+
+    // Gestion de la capacité et des invités
+    const inviteSection = document.getElementById('invite-section');
+    const capDisplay = document.getElementById('cap-val');
+    const capaciteMax = resCapacities[id] || 1;
+
+    if (capaciteMax > 1) {
+        inviteSection.style.display = 'block';
+        capDisplay.innerText = capaciteMax;
+    } else {
+        inviteSection.style.display = 'none';
+    }
     
     bookingUi.classList.remove('refresh-anim'); //on enlève l'animation pour la calendrier si elle y était déjà
 

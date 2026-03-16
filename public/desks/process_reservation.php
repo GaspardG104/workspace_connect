@@ -29,4 +29,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'message' => "❌ Erreur : Cette ressources est déjà prise."]);
     }
+
+    $bookingId = $pdo->lastInsertId();
+
+    if (!empty($_POST['invites']) && is_array($_POST['invites'])) {
+        $sqlInvite = "INSERT INTO booking_invites (id_booking, id_user) VALUES (?, ?)";
+        $stmtInvite = $pdo->prepare($sqlInvite);
+        
+        foreach ($_POST['invites'] as $inviteeId) {
+            $stmtInvite->execute([$bookingId, $inviteeId]);
+        }
+    }
 }
