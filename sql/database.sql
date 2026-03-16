@@ -49,7 +49,7 @@ CREATE TABLE bookings (
     ),
     CONSTRAINT check_dates CHECK (date_debut < date_fin),
 
-    CONSTRAINT check_date_future CHECK (date_debut >= CURRENT_TIMESTAMP);
+    CONSTRAINT check_date_future CHECK (date_debut >= CURRENT_TIMESTAMP)
 );
 
 -- 5. Table des Participants
