@@ -32,18 +32,18 @@ if (strlen($new_pwd) < 6) {
 }
 
 // 4. Vérification de l'ancien mot de passe
-$stmt = $pdo->prepare("SELECT password FROM users WHERE id = ?");
+$stmt = $pdo->prepare("SELECT password_hash FROM users WHERE id = ?");
 $stmt->execute([$userId]);
 $user = $stmt->fetch();
 
-if (!$user || !password_verify($old_pwd, $user['password'])) {
+if (!$user || !password_verify($old_pwd, $user['password_hash'])) {
     echo json_encode(['success' => false, 'message' => "L'ancien mot de passe est incorrect."]);
     exit;
 }
 
 // 5. Mise à jour avec le nouveau mot de passe (haché)
 $hashed_pwd = password_hash($new_pwd, PASSWORD_DEFAULT);
-$update = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+$update = $pdo->prepare("UPDATE users SET password_hash = ? WHERE id = ?");
 
 if ($update->execute([$hashed_pwd, $userId])) {
     echo json_encode(['success' => true, 'message' => 'Mot de passe mis à jour avec succès !']);
