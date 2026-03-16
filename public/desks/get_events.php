@@ -6,10 +6,15 @@ $id_resource = isset($_GET['id_resource']) ? intval($_GET['id_resource']) : 0;
 
 if ($id_resource > 0) {
     // On ne récupère que les réservations des ressources spécifique choisie
-    $stmt = $pdo->prepare("SELECT b.id, b.date_debut as start, b.date_fin as end, 'RÉSERVÉE' as title 
-                           FROM bookings b 
-                           WHERE b.id_resource = :id");
-    $stmt->execute(['id' => $id_resource]);
+    $stmt = $pdo->prepare("SELECT 
+            b.id, 
+            b.date_debut as start, 
+            b.date_fin as end, 
+            CONCAT(u.prenom, ' ', u.nom) as title
+        FROM bookings b
+        JOIN users u ON b.id_user = u.id
+        WHERE b.id_resource = :id");
+        $stmt->execute(['id' => $id_resource]);
 } else {
     // Par sécurité, si pas d'ID, on ne renvoie rien
     echo json_encode([]);
