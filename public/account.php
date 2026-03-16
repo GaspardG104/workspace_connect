@@ -118,7 +118,13 @@ $types_uniques = array_unique($types_disponibles);
                                 <select class="form-select border-primary" id="workFilterSelect">
                                     <option value="" selected disabled>Bureaux, Salles, Boxs...</option>
                                     <?php foreach($types_uniques as $type): ?>
-                                        <option value="<?= htmlspecialchars($type) ?>"><?= ucfirst(htmlspecialchars($type)) ?>s</option>
+                                        <option value="<?= htmlspecialchars($type) ?>">
+                                            <?php 
+                                                $label = ucfirst(htmlspecialchars($type));
+                                                // Si le mot finit par "eau", on ajoute un "x", sinon on ajoute un "s"
+                                                echo (substr($type, -3) === 'eau') ? $label . 'x' : $label . 's';
+                                            ?>
+                                        </option>
                                     <?php endforeach; ?>
                                 </select>
 
