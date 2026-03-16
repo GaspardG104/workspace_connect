@@ -7,10 +7,11 @@ if (!isset($_SESSION['user_id'])) {
 $pdo = require_once __DIR__ . '/../../config/db.php';
 
 // On prépare le mapping des IDs pour le JavaScript
-$stmt = $pdo->query("SELECT id, nom FROM resources WHERE type NOT IN ('parking')");
+$stmt = $pdo->query("SELECT id, nom, capacite FROM resources WHERE type NOT IN ('parking')");
 $res_map = [];
 foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
     $res_map[$r['nom']] = $r['id'];
+    $capacite = 
 }
 ?>
 
