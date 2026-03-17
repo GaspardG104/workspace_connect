@@ -15,12 +15,33 @@ $stmt = $pdo->prepare($queryUser);
 $stmt->execute([$userId]);
 $user = $stmt->fetch();
 
-// 2. Récupération des réservations
-$queryRes = "SELECT res.nom as ressource_nom, res.type as ressource_type, bk.date_debut as debut, bk.date_fin as fin 
-             FROM bookings bk JOIN resources res ON bk.id_resource = res.id
-             WHERE bk.id_user = ? ORDER BY bk.date_debut DESC";
+/// 2. Récupération des réservations (Organisateur OU Invité)
+$queryRes = "
+    (SELECT 
+        res.nom as ressource_nom, 
+        res.type as ressource_type, 
+        bk.date_debut as debut, 
+        bk.date_fin as fin,
+        'Organisateur' as role_dans_resa
+    FROM bookings bk 
+    JOIN resources res ON bk.id_resource = res.id
+    WHERE bk.id_user = ?)
+    UNION
+    (SELECT 
+        res.nom as ressource_nom, 
+        res.type as ressource_type, 
+        bk.date_debut as debut, 
+        bk.date_fin as fin,
+        'Invité' as role_dans_resa
+    FROM booking_invites bi
+    JOIN bookings bk ON bi.id_booking = bk.id
+    JOIN resources res ON bk.id_resource = res.id
+    WHERE bi.id_user = ?)
+    ORDER BY debut DESC";
+
 $stmtRes = $pdo->prepare($queryRes);
-$stmtRes->execute([$userId]);
+// On passe deux fois l'ID : une fois pour le premier SELECT, une fois pour le second
+$stmtRes->execute([$userId, $userId]);
 $reservations = $stmtRes->fetchAll();
 
 // 3. Logique flexible pour le menu déroulant (Bureaux, Salles, Boxs...)
@@ -151,7 +172,14 @@ $types_uniques = array_unique($types_disponibles);
                                             <tr data-type="<?= htmlspecialchars($r['ressource_type']) ?>">
                                                 <td>
                                                     <span class="fw-bold d-block text-dark"><?= htmlspecialchars($r['ressource_nom']) ?></span>
-                                                    <small class="badge bg-light text-dark border text-uppercase" style="font-size: 0.7rem;"><?= htmlspecialchars($r['ressource_type']) ?></small>
+                                                    <div class="d-flex gap-1">
+                                                        <small class="badge bg-light text-dark border text-uppercase" style="font-size: 0.65rem;"><?= htmlspecialchars($r['ressource_type']) ?></small>
+                                                        <?php if($r['ressource_type'] === 'salle'): ?>
+                                                            <small class="badge <?= $r['role_dans_resa'] === 'Organisateur' ? 'bg-primary' : 'bg-info' ?> text-uppercase" style="font-size: 0.65rem;">
+                                                            <?= $r['role_dans_resa'] ?>
+                                                            </small>
+                                                        <?php endif; ?>
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     <div class="small">
