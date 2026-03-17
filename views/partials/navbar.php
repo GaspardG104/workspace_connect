@@ -1,6 +1,6 @@
  <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/../index.php">
+            <a class="navbar-brand fw-bold" href="/home">
                 <i class="fa-solid fa-car-side me-2"></i> Workspace Connect
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -21,15 +21,15 @@
                         </li>
                         <?php if ($_SESSION['user_role'] == 1):?>
                             <li class="nav-item">
-                                <a class="nav-link text-success fw-bold" href="/../inscription.php"><i class="fa-solid fa-user-check"></i> Inscription</a>
+                                <a class="nav-link text-success fw-bold" href="/inscription"><i class="fa-solid fa-user-check"></i> Inscription</a>
                             </li>
                         <?php endif; ?>
                         <li class="nav-item">
-                            <a class="nav-link text-danger fw-bold" href="/../logout.php"> Déconnexion <i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                            <a class="nav-link text-danger fw-bold" href="/logout"> Déconnexion <i class="fa-solid fa-arrow-right-from-bracket"></i></a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="btn btn-outline-light px-4" href="login.php">Se connecter</a>
+                            <a class="btn btn-outline-light px-4" href="/login">Se connecter</a>
                         </li>
                     <?php endif; ?>
                 </ul>

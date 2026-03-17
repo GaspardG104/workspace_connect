@@ -1,15 +1,14 @@
 <?php
-
-namespace app\controllers;
+namespace App\Controllers;
 
 class HomeController {
-    
     public function index() {
-        // On définit les variables dont la vue aura besoin
-        $pageTitle = "Accueil - Workspace Connect";
-        $isLoggedIn = isset($_SESSION['user_id']);
+        // Définition de la racine des vues pour simplifier
+        $viewPath = __DIR__ . '/../views/';
 
-        // On appelle la vue
-        require_once __DIR__ . '/../../views/home.php';
+        // Chargement des composants
+        include $viewPath . 'layouts/header.php';
+        include $viewPath . 'home.php';
+        include $viewPath . 'layouts/footer.php';
     }
 }

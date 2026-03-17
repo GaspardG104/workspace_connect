@@ -26,17 +26,17 @@ $urlParts = explode('/', $url);
 // On utilise les Namespaces configurés dans ton composer.json (App\Controllers)
 switch ($urlParts[0]) {
     case 'home':
-        $controller = new \app\controllers\homeController();
+        $controller = new \App\Controllers\HomeController();
         $controller->index();
         break;
 
     case 'login':
-        $controller = new \app\controllers\authController();
+        $controller = new \App\Controllers\AuthController();
         $controller->showLogin();
         break;
 
     case 'reservation':
-        $controller = new \app\controllers\bookingController();
+        $controller = new \App\Controllers\BookingController();
         // Si l'URL est 'reservation/store', on appelle la méthode store()
         $action = $urlParts[1] ?? 'index';
         if (method_exists($controller, $action)) {

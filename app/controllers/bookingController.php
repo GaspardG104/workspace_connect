@@ -1,7 +1,7 @@
 <?php
 namespace Controllers;
 
-use models\booking;
+use Models\Bookings;
 
 class BookingController {
     private $bookingModel;
