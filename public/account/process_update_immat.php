@@ -1,7 +1,7 @@
 <?php
 session_start();
 // On récupère la connexion à la base de données
-$pdo = require_once __DIR__ . '/../config/db.php';
+$pdo = require_once __DIR__ . '/../../config/db.php';
 
 // On vérifie que l'utilisateur est connecté et que la méthode est POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
@@ -24,13 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
         ]);
 
         if ($success) {
-            echo json_encode(['success' => true, 'message' => "✅ Plaque d'immatriculation mise à jour !"]);
+            echo json_encode(['success' => true, 'message' => " Plaque d'immatriculation mise à jour !"]);
         } else {
-            echo json_encode(['success' => false, 'message' => "❌ Erreur lors de la mise à jour."]);
+            echo json_encode(['success' => false, 'message' => " Erreur lors de la mise à jour."]);
         }
     } catch (Exception $e) {
         // En cas d'erreur SQL (ex: problème de connexion)
-        echo json_encode(['success' => false, 'message' => "❌ Erreur technique : " . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => " Erreur technique : " . $e->getMessage()]);
     }
 } else {
     // Si on essaie d'accéder au fichier directement sans être connecté

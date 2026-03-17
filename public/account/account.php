@@ -96,23 +96,24 @@ $types_uniques = array_unique($types_disponibles);
                             <span class="fw-medium"><?= htmlspecialchars($user['email']) ?></span>
                         </div>
                         <div class="p-3">
-    <small class="text-muted d-block">Plaque d'immatriculation</small>
-    <div id="immat-container" class="d-flex align-items-center justify-content-between">
-        <span id="immat-text" class="fw-medium"><?= htmlspecialchars($user['immatriculation'] ?: 'Non renseignée') ?></span>
-        
-        <input type="text" id="immat-input" class="form-control form-control-sm me-2" style="display:none;" 
-               value="<?= htmlspecialchars($user['immatriculation']) ?>" maxlength="15">
-        
-        <button id="btn-edit-immat" class="btn btn-sm btn-outline-secondary border-0">
-            <i class="fas fa-pencil-alt"></i>
-        </button>
-        
-        <div id="immat-actions" style="display:none;">
-            <button id="btn-save-immat" class="btn btn-sm btn-success me-1"><i class="fas fa-check"></i></button>
-            <button id="btn-cancel-immat" class="btn btn-sm btn-light"><i class="fas fa-times"></i></button>
-        </div>
-    </div>
-</div>
+                            <div id="immat-feedback" class="mt-2" style="display:none;"></div>
+                            <small class="text-muted d-block">Plaque d'immatriculation</small>
+                            <div id="immat-container" class="d-flex align-items-center justify-content-between">
+                                <span id="immat-text" class="fw-medium"><?= htmlspecialchars($user['immatriculation'] ?: 'Non renseignée') ?></span>
+                                
+                                <input type="text" id="immat-input" class="form-control form-control-sm me-2" style="display:none;" 
+                                    value="<?= htmlspecialchars($user['immatriculation']) ?>" maxlength="15">
+                                
+                                <button id="btn-edit-immat" class="btn btn-sm btn-outline-secondary border-0">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                                
+                                <div id="immat-actions" style="display:none;">
+                                    <button id="btn-save-immat" class="btn btn-sm btn-success me-1"><i class="fas fa-check"></i></button>
+                                    <button id="btn-cancel-immat" class="btn btn-sm btn-light"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -274,67 +275,57 @@ document.getElementById('updatePwdForm').addEventListener('submit', function(e) 
     });
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    const textEl = document.getElementById('immat-text');
-    const inputEl = document.getElementById('immat-input');
-    const btnEdit = document.getElementById('btn-edit-immat');
-    const actionsEl = document.getElementById('immat-actions');
-    const btnSave = document.getElementById('btn-save-immat');
-    const btnCancel = document.getElementById('btn-cancel-immat');
 
-    let initialValue = inputEl.value;
+const textEl = document.getElementById('immat-text');
+const inputEl = document.getElementById('immat-input');
+const btnEdit = document.getElementById('btn-edit-immat');
+const actionsEl = document.getElementById('immat-actions');
+const btnSave = document.getElementById('btn-save-immat');
+const btnCancel = document.getElementById('btn-cancel-immat');
+const feedbackEl = document.getElementById('immat-feedback');
 
-    // Basculer vers le mode édition
-    btnEdit.addEventListener('click', () => {
-        textEl.style.display = 'none';
-        btnEdit.style.display = 'none';
-        inputEl.style.display = 'block';
-        actionsEl.style.display = 'block';
-        inputEl.focus();
-    });
+let initialVal = inputEl.value;
 
-    // Annuler les modifications
-    btnCancel.addEventListener('click', () => {
-        inputEl.value = initialValue; // On remet la valeur d'origine
-        textEl.style.display = 'block';
-        btnEdit.style.display = 'block';
-        inputEl.style.display = 'none';
-        actionsEl.style.display = 'none';
-    });
+// Fonction de feedback intégrée (remplace l'alert)
+function showImmatFeedback(msg, isSuccess) {
+    feedbackEl.style.display = 'block';
+    feedbackEl.className = "alert py-1 small fw-medium mt-2 " + (isSuccess ? "alert-success text-success" : "alert-danger text-danger");
+    feedbackEl.innerText = (isSuccess ? "✅ " : "❌ ") + msg;
+    setTimeout(() => { feedbackEl.style.display = 'none'; }, 3000);
+}
 
-    // Enregistrer 
-    btnSave.addEventListener('click', () => {
-        const newVal = inputEl.value.trim();
+btnEdit.addEventListener('click', () => {
+    textEl.style.display = 'none'; btnEdit.style.display = 'none';
+    inputEl.style.display = 'block'; actionsEl.style.display = 'block';
+    inputEl.focus();
+});
 
-        // 1. Vérification si vide
-        if (newVal === "") {
-            alert("La plaque ne peut pas être vide.");
-            return;
+btnCancel.addEventListener('click', () => {
+    inputEl.value = initialVal;
+    textEl.style.display = 'block'; btnEdit.style.display = 'block';
+    inputEl.style.display = 'none'; actionsEl.style.display = 'none';
+});
+
+btnSave.addEventListener('click', () => {
+    const newVal = inputEl.value.trim();
+    if (newVal === "") { showImmatFeedback("La plaque est vide", false); return; }
+    if (newVal === initialVal) { btnCancel.click(); return; }
+
+    const formData = new FormData();
+    formData.append('immatriculation', newVal);
+
+    fetch('process_update_immat.php', { method: 'POST', body: formData })
+    .then(r => r.json())
+    .then(data => {
+        showImmatFeedback(data.message, data.success); // On utilise le message du PHP ici
+        if(data.success) {
+            textEl.innerText = newVal;
+            initialVal = newVal;
+            setTimeout(() => { btnCancel.click(); }, 1000);
         }
-
-        // 2. Vérification si inchangé 
-        if (newVal === initialValue) {
-            btnCancel.click(); // On ferme simplement sans requête
-            return;
-        }
-
-        // 3. Envoi AJAX (Fetch)
-        const formData = new FormData();
-        formData.append('immatriculation', newVal);
-
-        fetch('process_update_immat.php', { method: 'POST', body: formData })
-        .then(r => r.json())
-        .then(data => {
-            if(data.success) {
-                textEl.innerText = newVal;
-                initialValue = newVal;
-                btnCancel.click(); // Retour au mode lecture
-            }
-            alert(data.message);
-        });
     });
 });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
