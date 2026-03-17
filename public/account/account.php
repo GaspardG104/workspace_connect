@@ -96,13 +96,14 @@ $types_uniques = array_unique($types_disponibles);
                             <span class="fw-medium"><?= htmlspecialchars($user['email']) ?></span>
                         </div>
                         <div class="p-3">
-                            <div id="immat-feedback" class="mt-2" style="display:none;"></div>
                             <small class="text-muted d-block">Plaque d'immatriculation</small>
                             <div id="immat-container" class="d-flex align-items-center justify-content-between">
-                                <span id="immat-text" class="fw-medium"><?= htmlspecialchars($user['immatriculation'] ?: 'Non renseignée') ?></span>
+                                <span id="immat-text" class="fw-medium <?= empty($user['immatriculation']) ? 'text-muted fst-italic' : '' ?>">
+                                    <?= htmlspecialchars($user['immatriculation'] ?: 'Aucune (pas de véhicule)') ?>
+                                </span>
                                 
                                 <input type="text" id="immat-input" class="form-control form-control-sm me-2" style="display:none;" 
-                                    value="<?= htmlspecialchars($user['immatriculation']) ?>" maxlength="15">
+                                    value="<?= htmlspecialchars($user['immatriculation']) ?>" placeholder="Ex: AA-123-BB ou laisser vide">
                                 
                                 <button id="btn-edit-immat" class="btn btn-sm btn-outline-secondary border-0">
                                     <i class="fas fa-pencil-alt"></i>
@@ -113,6 +114,7 @@ $types_uniques = array_unique($types_disponibles);
                                     <button id="btn-cancel-immat" class="btn btn-sm btn-light"><i class="fas fa-times"></i></button>
                                 </div>
                             </div>
+                            <div id="immat-feedback" class="mt-2" style="display:none;"></div>
                         </div>
                     </div>
                 </div>
@@ -308,19 +310,27 @@ btnCancel.addEventListener('click', () => {
 
 btnSave.addEventListener('click', () => {
     const newVal = inputEl.value.trim();
-    if (newVal === "") { showImmatFeedback("La plaque est vide", false); return; }
-    if (newVal === initialVal) { btnCancel.click(); return; }
+
+    if (newVal === initialVal) { 
+        btnCancel.click(); 
+        return; }
 
     const formData = new FormData();
     formData.append('immatriculation', newVal);
 
-    fetch('process_update_immat.php', { method: 'POST', body: formData })
+    fetch('process_update_immat.php', { 
+        method: 'POST', 
+        body: formData })
+
     .then(r => r.json())
+
     .then(data => {
         showImmatFeedback(data.message, data.success); // On utilise le message du PHP ici
         if(data.success) {
             textEl.innerText = newVal;
             initialVal = newVal;
+            if(!newVal) textEl.classList.add('text-muted', 'fst-italic');
+            else textEl.classList.remove('text-muted', 'fst-italic');
             setTimeout(() => { btnCancel.click(); }, 1000);
         }
     });
