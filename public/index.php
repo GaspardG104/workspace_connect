@@ -1,41 +1,50 @@
 <?php
-// 1. Initialisation de la session et des erreurs
+/**
+ * FRONT CONTROLLER - Point d'entrée unique
+ */
+
+// 1. Chargement de l'autoloader de Composer
+// On remonte d'un cran (../) car vendor est à la racine du projet
+$autoloadPath = __DIR__ . '/../vendor/autoload.php';
+
+if (!file_exists($autoloadPath)) {
+    die("Erreur : L'autoloader est introuvable. As-tu lancé 'composer dump-autoload' ?");
+}
+require_once $autoloadPath;
+
+// 2. Initialisation de la session et erreurs
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// 2. Chargement automatique (Autoload)
-// Si tu n'as pas encore Composer, on peut simuler un petit autoloader
-spl_autoload_register(function ($class) {
-    $path = __DIR__ . '/../app/' . str_replace('\\', '/', $class) . '.php';
-    if (file_exists($path)) {
-        require_once $path;
-    }
-});
-
-// 3. Récupération de l'URL demandée
-$url = $_GET['url'] ?? 'home'; // Par défaut, on va sur la page d'accueil
+// 3. Nettoyage de l'URL (ex: transforme 'reservation/desk/' en 'reservation/desk')
+$url = $_GET['url'] ?? 'home';
 $url = rtrim($url, '/');
+$urlParts = explode('/', $url);
 
-// 4. Système de routage très simple (Mapping URL -> Contrôleur)
-// Dans un vrai projet, on utiliserait un objet Router
-switch ($url) {
+// 4. Routage (Mapping URL -> Contrôleur)
+// On utilise les Namespaces configurés dans ton composer.json (App\Controllers)
+switch ($urlParts[0]) {
     case 'home':
-        require_once '../app/Controllers/HomeController.php';
-        $controller = new \Controllers\HomeController();
+        $controller = new \app\controllers\homeController();
         $controller->index();
         break;
 
     case 'login':
-        require_once '../app/Controllers/AuthController.php';
-        $controller = new \Controllers\AuthController();
+        $controller = new \app\controllers\authController();
         $controller->showLogin();
         break;
 
     case 'reservation':
-        require_once '../app/Controllers/BookingController.php';
-        $controller = new \Controllers\BookingController();
-        $controller->index();
+        $controller = new \app\controllers\bookingController();
+        // Si l'URL est 'reservation/store', on appelle la méthode store()
+        $action = $urlParts[1] ?? 'index';
+        if (method_exists($controller, $action)) {
+            $controller->$action();
+        } else {
+            http_response_code(404);
+            echo "Action non trouvée";
+        }
         break;
 
     default:
