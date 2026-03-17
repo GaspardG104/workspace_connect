@@ -5,7 +5,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$pdo = require_once __DIR__ . '/../config/db.php';
+$pdo = require_once __DIR__ . '/../../config/db.php';
 $userId = $_SESSION['user_id'];
 
 // 1. Récupération des infos utilisateur
@@ -62,7 +62,7 @@ $types_uniques = array_unique($types_disponibles);
     <title>Mon Compte - Workspace Connect</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="styles/main_theme.css">
+    <link rel="stylesheet" href="/../styles/main_theme.css">
     <style>
         .card { border-radius: 15px; overflow: hidden; }
         /* Style pour souder le groupe de filtres comme sur ta capture */
@@ -76,7 +76,7 @@ $types_uniques = array_unique($types_disponibles);
     </style>
 </head>
 <body class="bg-light">
-    <?php include __DIR__ . '/includes/navbar.php'; ?>
+    <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
     <div class="container py-5">
         <div class="row g-4">
@@ -96,9 +96,23 @@ $types_uniques = array_unique($types_disponibles);
                             <span class="fw-medium"><?= htmlspecialchars($user['email']) ?></span>
                         </div>
                         <div class="p-3">
-                            <small class="text-muted d-block">Plaque d'immatriculation</small>
-                            <span class="fw-medium"><?= htmlspecialchars($user['immatriculation'] ?: 'Non renseignée') ?></span>
-                        </div>
+    <small class="text-muted d-block">Plaque d'immatriculation</small>
+    <div id="immat-container" class="d-flex align-items-center justify-content-between">
+        <span id="immat-text" class="fw-medium"><?= htmlspecialchars($user['immatriculation'] ?: 'Non renseignée') ?></span>
+        
+        <input type="text" id="immat-input" class="form-control form-control-sm me-2" style="display:none;" 
+               value="<?= htmlspecialchars($user['immatriculation']) ?>" maxlength="15">
+        
+        <button id="btn-edit-immat" class="btn btn-sm btn-outline-secondary border-0">
+            <i class="fas fa-pencil-alt"></i>
+        </button>
+        
+        <div id="immat-actions" style="display:none;">
+            <button id="btn-save-immat" class="btn btn-sm btn-success me-1"><i class="fas fa-check"></i></button>
+            <button id="btn-cancel-immat" class="btn btn-sm btn-light"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+</div>
                     </div>
                 </div>
 
@@ -202,63 +216,124 @@ $types_uniques = array_unique($types_disponibles);
         </div>
     </div>
 
-    <script>
-    // Logique de filtrage
-    function applyFilter(value) {
-        const rows = document.querySelectorAll('#bookingTable tbody tr:not(.no-data)');
-        rows.forEach(row => {
-            const rowType = row.getAttribute('data-type');
-            row.style.display = (value === 'all' || rowType === value) ? '' : 'none';
-        });
-    }
+<script>
+// Logique de filtrage
+function applyFilter(value) {
+    const rows = document.querySelectorAll('#bookingTable tbody tr:not(.no-data)');
+    rows.forEach(row => {
+        const rowType = row.getAttribute('data-type');
+        row.style.display = (value === 'all' || rowType === value) ? '' : 'none';
+    });
+}
 
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.getElementById('workFilterSelect').selectedIndex = 0;
-            // Style visuel des boutons
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.replace('btn-primary', 'btn-outline-primary'));
-            this.classList.replace('btn-outline-primary', 'btn-primary');
-            applyFilter(this.getAttribute('data-filter'));
-        });
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.getElementById('workFilterSelect').selectedIndex = 0;
+        // Style visuel des boutons
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.replace('btn-primary', 'btn-outline-primary'));
+        this.classList.replace('btn-outline-primary', 'btn-primary');
+        applyFilter(this.getAttribute('data-filter'));
+    });
+});
+
+document.getElementById('workFilterSelect').addEventListener('change', function() {
+    // Si on utilise le select, on remet le bouton parking en outline
+    document.querySelectorAll('.filter-btn[data-filter="parking"]').forEach(b => b.classList.replace('btn-primary', 'btn-outline-primary'));
+    applyFilter(this.value);
+});
+
+// Tri par date
+let dateAscending = false;
+document.getElementById('sortByDate').addEventListener('click', function() {
+    const tbody = document.querySelector('#bookingTable tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr:not(.no-data)'));
+    dateAscending = !dateAscending;
+    rows.sort((a, b) => {
+        const dateA = parseFrenchDate(a.cells[1].innerText);
+        const dateB = parseFrenchDate(b.cells[1].innerText);
+        return dateAscending ? dateA - dateB : dateB - dateA;
+    });
+    rows.forEach(row => tbody.appendChild(row));
+});
+
+function parseFrenchDate(text) {
+    const match = text.match(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/);
+    return match ? new Date(match[3], match[2]-1, match[1], match[4], match[5]) : new Date(0);
+}
+
+// Changement de mot de passe (AJAX)
+document.getElementById('updatePwdForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const fb = document.getElementById('pwd-feedback');
+    fetch('process_update_pwd.php', { method: 'POST', body: new FormData(this) })
+    .then(r => r.json()).then(data => {
+        fb.style.display = 'block';
+        fb.className = "alert py-2 small fw-medium " + (data.success ? "alert-success text-success" : "alert-danger text-danger");
+        fb.innerText = data.message;
+        if(data.success) this.reset();
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const textEl = document.getElementById('immat-text');
+    const inputEl = document.getElementById('immat-input');
+    const btnEdit = document.getElementById('btn-edit-immat');
+    const actionsEl = document.getElementById('immat-actions');
+    const btnSave = document.getElementById('btn-save-immat');
+    const btnCancel = document.getElementById('btn-cancel-immat');
+
+    let initialValue = inputEl.value;
+
+    // Basculer vers le mode édition
+    btnEdit.addEventListener('click', () => {
+        textEl.style.display = 'none';
+        btnEdit.style.display = 'none';
+        inputEl.style.display = 'block';
+        actionsEl.style.display = 'block';
+        inputEl.focus();
     });
 
-    document.getElementById('workFilterSelect').addEventListener('change', function() {
-        // Si on utilise le select, on remet le bouton parking en outline
-        document.querySelectorAll('.filter-btn[data-filter="parking"]').forEach(b => b.classList.replace('btn-primary', 'btn-outline-primary'));
-        applyFilter(this.value);
+    // Annuler les modifications
+    btnCancel.addEventListener('click', () => {
+        inputEl.value = initialValue; // On remet la valeur d'origine
+        textEl.style.display = 'block';
+        btnEdit.style.display = 'block';
+        inputEl.style.display = 'none';
+        actionsEl.style.display = 'none';
     });
 
-    // Tri par date
-    let dateAscending = false;
-    document.getElementById('sortByDate').addEventListener('click', function() {
-        const tbody = document.querySelector('#bookingTable tbody');
-        const rows = Array.from(tbody.querySelectorAll('tr:not(.no-data)'));
-        dateAscending = !dateAscending;
-        rows.sort((a, b) => {
-            const dateA = parseFrenchDate(a.cells[1].innerText);
-            const dateB = parseFrenchDate(b.cells[1].innerText);
-            return dateAscending ? dateA - dateB : dateB - dateA;
+    // Enregistrer 
+    btnSave.addEventListener('click', () => {
+        const newVal = inputEl.value.trim();
+
+        // 1. Vérification si vide
+        if (newVal === "") {
+            alert("La plaque ne peut pas être vide.");
+            return;
+        }
+
+        // 2. Vérification si inchangé 
+        if (newVal === initialValue) {
+            btnCancel.click(); // On ferme simplement sans requête
+            return;
+        }
+
+        // 3. Envoi AJAX (Fetch)
+        const formData = new FormData();
+        formData.append('immatriculation', newVal);
+
+        fetch('process_update_immat.php', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if(data.success) {
+                textEl.innerText = newVal;
+                initialValue = newVal;
+                btnCancel.click(); // Retour au mode lecture
+            }
+            alert(data.message);
         });
-        rows.forEach(row => tbody.appendChild(row));
     });
-
-    function parseFrenchDate(text) {
-        const match = text.match(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/);
-        return match ? new Date(match[3], match[2]-1, match[1], match[4], match[5]) : new Date(0);
-    }
-
-    // Changement de mot de passe (AJAX)
-    document.getElementById('updatePwdForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const fb = document.getElementById('pwd-feedback');
-        fetch('process_update_pwd.php', { method: 'POST', body: new FormData(this) })
-        .then(r => r.json()).then(data => {
-            fb.style.display = 'block';
-            fb.className = "alert py-2 small fw-medium " + (data.success ? "alert-success text-success" : "alert-danger text-danger");
-            fb.innerText = data.message;
-            if(data.success) this.reset();
-        });
-    });
+});
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
