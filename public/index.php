@@ -32,7 +32,11 @@ switch ($urlParts[0]) {
 
     case 'login':
         $controller = new \App\Controllers\AuthController();
-        $controller->showLogin();
+        if (isset($urlParts[1]) && $urlParts[1] === 'verify') {
+            $controller->verify();
+        } else {
+            $controller->showLogin();
+        }
         break;
 
     case 'reservation':
