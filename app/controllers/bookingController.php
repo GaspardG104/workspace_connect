@@ -14,7 +14,7 @@ class BookingController {
         $db = require __DIR__ . '/../../config/db.php';
         
         // On récupère les places de parking 
-        $resources = $db->query("SELECT id, nom FROM resources WHERE type NOT IN ('parking') ORDER BY nom")->fetchAll();
+        $resources = $db->query("SELECT id, nom FROM resources WHERE type = 'parking' ORDER BY nom")->fetchAll();
 
         $viewPath = __DIR__ . '/../views/';
         include $viewPath . 'layouts/header.php';
@@ -24,19 +24,19 @@ class BookingController {
 
         // Affiche la page de réservation des bureaux
     public function desk() {
-        // 1. Sécurité
         if (!isset($_SESSION['user_id'])) {
             header('Location: /workspace_connect/login');
             exit;
         }
 
+        // On utilise directement le pont de connexion sans passer par un Model pour l'instant
         $db = require __DIR__ . '/../../config/db.php';
         
-        // 2. Récupération des ressources (Bureaux et Salles)
-        // On récupère tout SAUF le parking
-        $resources = $db->query("SELECT id, nom, capacite FROM resources WHERE type != 'parking' ORDER BY nom ASC")->fetchAll();  
+        // 1. Récupération des bureaux et salles
+        $stmt = $db->query("SELECT id, nom, capacite FROM resources WHERE type != 'parking' ORDER BY nom ASC");
+        $resources = $stmt->fetchAll();
 
-        // Transformation pour la vue (ton desk.php utilise $res_map['NomDuBureau'])
+        // 2. Préparation du mapping pour le plan (Nécessaire pour les boutons S1, S2, etc.)
         $res_map = [];
         $capacities = [];
         foreach ($resources as $r) {
@@ -45,14 +45,14 @@ class BookingController {
         }
 
         // 3. Récupération des autres utilisateurs (pour les invitations)
-        $stmt = $db->prepare("SELECT id, prenom, nom FROM users WHERE id != :my_id ORDER BY nom ASC");
-        $stmt->execute(['my_id' => $_SESSION['user_id']]);
-        $all_users = $stmt->fetchAll(); // Ton desk.php utilise $all_users
+        $stmtUsers = $db->prepare("SELECT id, prenom, nom FROM users WHERE id != :me ORDER BY nom ASC");
+        $stmtUsers->execute(['me' => $_SESSION['user_id']]);
+        $all_users = $stmtUsers->fetchAll(); 
 
-        // 4. Envoi à la BONNE vue
+        // 4. Chargement de la vue
         $viewPath = __DIR__ . '/../views/';
         include $viewPath . 'layouts/header.php';
-        include $viewPath . 'reservations/desk.php'; // On change parking.php par desk.php
+        include $viewPath . 'reservations/desk.php'; 
         include $viewPath . 'layouts/footer.php';
     }
 

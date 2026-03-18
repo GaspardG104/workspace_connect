@@ -170,7 +170,7 @@ function selectResource(id, nom, el) {
     document.getElementById('res_id').value = id;
 
     // 4. Charger les événements et forcer le calendrier à recalculer sa taille
-    calendar.setOption('events', 'get_events.php?id_resource=' + id);
+    calendar.setOption('events', '/workspace_connect/reservation/getEvents?id_resource=' + id);
     calendar.refetchEvents();
     
     // TRÈS IMPORTANT : On attend un court instant que l'animation commence 
@@ -199,7 +199,7 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
     const btn = document.getElementById('subBtn');
     btn.disabled = true;
 
-    fetch('process_reservation.php', { method: 'POST', body: new FormData(this) })
+    fetch('/workspace_connect/reservation/store', { method: 'POST', body: new FormData(this) })
     .then(r => r.json())
     .then(data => {
         showMsg(data.message, data.success);

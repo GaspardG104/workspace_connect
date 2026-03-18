@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 /**
  * FRONT CONTROLLER - Point d'entrée unique
  */
@@ -40,17 +42,23 @@ switch ($urlParts[0]) {
         break;
 
     case 'reservation':
-        $controller = new \App\Controllers\BookingController();
-        $action = $urlParts[1] ?? 'parking';
+            $controller = new \App\Controllers\BookingController();
+            // L'action est la deuxième partie de l'URL (ex: /reservation/desk)
+            $action = $urlParts[1] ?? 'parking'; 
 
-        if ($action === 'parking') {
-            $controller->parking();
-        } elseif ($action === 'getEvents') {
-            $controller->getEvents(); // Est-ce que cette ligne existe bien ?
-        } elseif ($action === 'store') {
-            $controller->store();
-        }
-        break;
+            if ($action === 'parking') {
+                $controller->parking();
+            } elseif ($action === 'desk') {
+                $controller->desk(); // <-- ICI : appeler la méthode desk() !
+            } elseif ($action === 'getEvents') {
+                $controller->getEvents();
+            } elseif ($action === 'store') {
+                $controller->store();
+            } else {
+                http_response_code(404);
+                echo "Action de réservation inconnue";
+            }
+            break;
 
     default:
         http_response_code(404);
