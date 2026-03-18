@@ -3,7 +3,7 @@ namespace App\Controllers;
 
 class BookingController {
     
-    // Affiche la page de réservation
+    // Affiche la page de réservation du parking
     public function parking() {
         // Sécurité : Vérification session
         if (!isset($_SESSION['user_id'])) {
@@ -13,8 +13,8 @@ class BookingController {
 
         $db = require __DIR__ . '/../../config/db.php';
         
-        // On récupère les places de parking (venant de ton reserver.php)
-        $resources = $db->query("SELECT id, nom FROM resources WHERE type = 'parking' ORDER BY nom")->fetchAll();
+        // On récupère les places de parking 
+        $resources = $db->query("SELECT id, nom FROM resources WHERE type NOT IN ('parking') ORDER BY nom")->fetchAll();
 
         $viewPath = __DIR__ . '/../views/';
         include $viewPath . 'layouts/header.php';
@@ -22,7 +22,33 @@ class BookingController {
         include $viewPath . 'layouts/footer.php';
     }
 
-    // Gère l'enregistrement (Logique de ton process_reservation.php)
+        // Affiche la page de réservation des bureaux
+    public function desk() {
+        // Sécurité : Vérification session
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: /workspace_connect/login');
+            exit;
+        }
+
+        $db = require __DIR__ . '/../../config/db.php';
+        
+        // On récupère les places des ressources sauf du parking 
+        $resources = $db->query("SELECT id, nom FROM resources WHERE type = 'parking' ORDER BY nom")->fetchAll();  
+
+        // On récupère les utilicapacites deqs ressources
+        $users = $db->query("SELECT id, prenom, nom FROM users WHERE id != {$_SESSION['user_id']} ORDER BY nom ASC")->fetchAll();
+    
+        // On récupère les capacites
+        $capacities = $db->query("SELECT id, capacite FROM resources ORDER BY nom ASC")->fetchAll();
+
+        $viewPath = __DIR__ . '/../views/';
+        include $viewPath . 'layouts/header.php';
+        include $viewPath . 'reservations/parking.php'; 
+        include $viewPath . 'layouts/footer.php';
+    }
+
+
+    // Gère l'enregistrement 
     public function store() {
         $db = require __DIR__ . '/../../config/db.php';
         

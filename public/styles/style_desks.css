@@ -250,3 +250,17 @@
     font-weight: bold;
 }
 .invite-tag .remove-invite:hover { color: #a71d2a; }
+
+/* Message flottant pour ne pas casser le design */
+#ajax-message { 
+    position: fixed; 
+    top: 20px; 
+    right: 20px; 
+    z-index: 10000; 
+    min-width: 250px; 
+    display: none; }
+
+#calendar { 
+    background: #fff; 
+    padding: 10px; 
+    border-radius: 8px; }
