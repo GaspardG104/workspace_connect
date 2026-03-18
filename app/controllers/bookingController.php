@@ -57,11 +57,11 @@ class BookingController {
                             JOIN users u ON b.id_user = u.id 
                             WHERE b.id_resource = :id");
         $stmt->execute(['id' => $id_resource]);
+        
+        // --- CE QU'IL FAUT AJOUTER ---
         $events = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-        // INDISPENSABLE pour FullCalendar
         header('Content-Type: application/json');
         echo json_encode($events);
-        exit; 
+        exit; // Très important pour ne pas envoyer de HTML parasite
     }
 }
