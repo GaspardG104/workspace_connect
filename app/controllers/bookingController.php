@@ -24,7 +24,7 @@ class BookingController {
 
         // Affiche la page de réservation des bureaux
     public function desk() {
-        // Sécurité : Vérification session
+        // 1. Sécurité
         if (!isset($_SESSION['user_id'])) {
             header('Location: /workspace_connect/login');
             exit;
@@ -32,18 +32,27 @@ class BookingController {
 
         $db = require __DIR__ . '/../../config/db.php';
         
-        // On récupère les places des ressources sauf du parking 
-        $resources = $db->query("SELECT id, nom FROM resources WHERE type = 'parking' ORDER BY nom")->fetchAll();  
+        // 2. Récupération des ressources (Bureaux et Salles)
+        // On récupère tout SAUF le parking
+        $resources = $db->query("SELECT id, nom, capacite FROM resources WHERE type != 'parking' ORDER BY nom ASC")->fetchAll();  
 
-        // On récupère les utilicapacites deqs ressources
-        $users = $db->query("SELECT id, prenom, nom FROM users WHERE id != {$_SESSION['user_id']} ORDER BY nom ASC")->fetchAll();
-    
-        // On récupère les capacites
-        $capacities = $db->query("SELECT id, capacite FROM resources ORDER BY nom ASC")->fetchAll();
+        // Transformation pour la vue (ton desk.php utilise $res_map['NomDuBureau'])
+        $res_map = [];
+        $capacities = [];
+        foreach ($resources as $r) {
+            $res_map[$r['nom']] = $r['id'];
+            $capacities[$r['id']] = $r['capacite'];
+        }
 
+        // 3. Récupération des autres utilisateurs (pour les invitations)
+        $stmt = $db->prepare("SELECT id, prenom, nom FROM users WHERE id != :my_id ORDER BY nom ASC");
+        $stmt->execute(['my_id' => $_SESSION['user_id']]);
+        $all_users = $stmt->fetchAll(); // Ton desk.php utilise $all_users
+
+        // 4. Envoi à la BONNE vue
         $viewPath = __DIR__ . '/../views/';
         include $viewPath . 'layouts/header.php';
-        include $viewPath . 'reservations/parking.php'; 
+        include $viewPath . 'reservations/desk.php'; // On change parking.php par desk.php
         include $viewPath . 'layouts/footer.php';
     }
 

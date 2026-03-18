@@ -2,8 +2,6 @@
 
 <!-- <body class="bg-light"> -->
 
-<?php include __DIR__ . '/../includes/navbar.php'; ?>
-
 <div id="ajax-message" class="alert shadow-lg"></div>
 
 <div class="container-fluid py-4">
