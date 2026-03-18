@@ -5,7 +5,7 @@
             <p class="lead mb-5">Notre plateforme permet aux collaborateurs de réserver leurs ressources en quelques clics, en toute sécurité.</p>
             
             <?php if (!isset($_SESSION['user_id'])): ?>
-                <a href="/login" class="btn btn-lg btn-light fw-bold px-5 py-3 shadow">Commencer maintenant</a>
+                <a href="/workspace_connect/login" class="btn btn-lg btn-light fw-bold px-5 py-3 shadow">Commencer maintenant</a>
             <?php else: ?>
                 <div class="d-flex justify-content-center gap-3">
                     <a href="/reservation/parking" class="btn btn-lg btn-primary fw-bold px-4 shadow">Réserver un Parking</a>

@@ -29,7 +29,7 @@
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="btn btn-outline-light px-4" href="/login">Se connecter</a>
+                            <a class="btn btn-outline-light px-4" href="/workspace_connect/login">Se connecter</a>
                         </li>
                     <?php endif; ?>
                 </ul>

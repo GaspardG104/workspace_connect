@@ -1,25 +1,46 @@
 <?php
 namespace App\Controllers;
+use PDO;
 
 class AuthController {
-    // Affiche le formulaire
+    
     public function showLogin() {
+        $error = null; // On définit la variable par défaut (vide)
+        $redirect = $_GET['redirect'] ?? '';
+        
         $viewPath = __DIR__ . '/../views/';
         include $viewPath . 'layouts/header.php';
         include $viewPath . 'auth/login.php';
         include $viewPath . 'layouts/footer.php';
     }
 
-    // Vérifie les identifiants
     public function verify() {
-        // C'est ici que tu mettras ta logique SQL plus tard
-        // Pour tester la navbar, on simule une connexion réussie :
-        session_start();
-        $_SESSION['user_id'] = 1;
-        $_SESSION['user_nom'] = "Admin";
-        $_SESSION['user_role'] = 1;
+        // On utilise bien db.php qui est configuré pour Postgres sans le charset
+        $db = require __DIR__ . '/../../config/db.php'; 
 
-        header('Location: /workspace_connect/home');
-        exit();
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+
+        // Utilisation de guillemets doubles pour "users" car Postgres est sensible à la casse
+        $stmt = $db->prepare('SELECT * FROM "users" WHERE email = ?');
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+
+        // password_verify compare le texte clair avec le hachage de la BDD
+        if ($user && password_verify($password, $user['password_hash'])) {
+            // On remplit la session avec les noms de colonnes de ton fichier SQL
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_nom'] = $user['nom'];
+            $_SESSION['user_role'] = $user['id_role'];
+
+            header('Location: /workspace_connect/home');
+            exit();
+        } else {
+            $error = "Email ou mot de passe incorrect.";
+            $viewPath = __DIR__ . '/../views/';
+            include $viewPath . 'layouts/header.php';
+            include $viewPath . 'auth/login.php';
+            include $viewPath . 'layouts/footer.php';
+        }
     }
 }

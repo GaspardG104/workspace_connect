@@ -11,7 +11,7 @@
             </div>
         <?php endif; ?>
 
-        <form method="POST">
+        <form action="/workspace_connect/login/verify" method="POST">
             <input type="hidden" name="redirect_to" value="<?= htmlspecialchars($redirect) ?>">
 
             <div class="mb-3">

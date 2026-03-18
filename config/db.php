@@ -1,15 +1,21 @@
 <?php
 // config/db.php
 
-// On charge le fichier ignoré par Git
-$db_config = require 'db_config.php';
+// On récupère les identifiants via le require
+$config = require __DIR__ . '/db_config.php';
 
 try {
-    $dsn = "pgsql:host={$db_config['host']};dbname={$db_config['db']}";
-    $pdo = new PDO($dsn, $db_config['user'], $db_config['pass'], [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-    ]);
+    $dsn = "pgsql:host={$config['host']};port={$config['port']};dbname={$config['dbname']}";
+    
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ];
+
+    // On retourne l'objet PDO pour qu'il soit stocké dans $db dans l'AuthController
+    return new PDO($dsn, $config['user'], $config['password'], $options);
+
 } catch (PDOException $e) {
-    die("Erreur de connexion sécurisée.");
+    // En production, on évite d'afficher $e->getMessage() pour ne pas dévoiler d'infos sensibles
+    die("Erreur de connexion à la base de données.");
 }
-return $pdo;
