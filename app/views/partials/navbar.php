@@ -14,10 +14,10 @@
                             <a class ="nav-link btn text-white px-3 me-2 btn-sm" href="/account"><i class="fa-regular fa-circle-user"></i> <?= htmlspecialchars($_SESSION['user_nom']) ?></a>           
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link btn text-primary px-3 me-2 btn-sm" href="/parking/reserver"> <i class="fa-solid fa-square-parking"></i> Parking</a> 
+                            <a class="nav-link btn text-primary px-3 me-2 btn-sm" href="/workspace_connect/reservation/parking"> <i class="fa-solid fa-square-parking"></i> Parking</a> 
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link btn text-primary-.text-info-emphasis px-3 me-2 btn-sm" href="/desks/reserver.php">Bureaux <i class="fa-solid fa-person-booth"></i></a>
+                            <a class="nav-link btn text-primary-.text-info-emphasis px-3 me-2 btn-sm" href="/workspace_connect/reservation/desk">Bureaux <i class="fa-solid fa-person-booth"></i></a>
                         </li>
                         <?php if ($_SESSION['user_role'] == 1):?>
                             <li class="nav-item">

@@ -1,3 +1,4 @@
+    <link rel="stylesheet" href="/workspace_connect/public/styles/style_index.css">
 <main class="container">
     <div class="row min-vh-100 align-items-center justify-content-center">
         <div class="col-md-8 text-center text-white">
@@ -8,8 +9,8 @@
                 <a href="/workspace_connect/login" class="btn btn-lg btn-light fw-bold px-5 py-3 shadow">Commencer maintenant</a>
             <?php else: ?>
                 <div class="d-flex justify-content-center gap-3">
-                    <a href="/reservation/parking" class="btn btn-lg btn-primary fw-bold px-4 shadow">Réserver un Parking</a>
-                    <a href="/reservation/desk" class="btn btn-lg btn-outline-light fw-bold px-4">Réserver un Bureau</a>
+                    <a href="/workspace_connect/reservation/parking" class="btn btn-lg btn-primary fw-bold px-4 shadow">Réserver un Parking</a>
+                    <a href="/workspace_connect/reservation/desk" class="btn btn-lg btn-outline-light fw-bold px-4">Réserver un Bureau</a>
                 </div>
             <?php endif; ?>
         </div>

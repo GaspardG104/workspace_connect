@@ -41,13 +41,14 @@ switch ($urlParts[0]) {
 
     case 'reservation':
         $controller = new \App\Controllers\BookingController();
-        // Si l'URL est 'reservation/store', on appelle la méthode store()
-        $action = $urlParts[1] ?? 'index';
-        if (method_exists($controller, $action)) {
-            $controller->$action();
-        } else {
-            http_response_code(404);
-            echo "Action non trouvée";
+        $action = $urlParts[1] ?? 'parking';
+
+        if ($action === 'parking') {
+            $controller->parking();
+        } elseif ($action === 'getEvents') {
+            $controller->getEvents(); // Est-ce que cette ligne existe bien ?
+        } elseif ($action === 'store') {
+            $controller->store();
         }
         break;
 
