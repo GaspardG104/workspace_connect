@@ -1,82 +1,4 @@
-<?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit;
-}
-
-$pdo = require_once __DIR__ . '/../../config/db.php';
-$userId = $_SESSION['user_id'];
-
-// 1. Récupération des infos utilisateur
-$queryUser = "SELECT u.nom, u.prenom, u.email, u.immatriculation, r.nom as role_nom 
-              FROM users u LEFT JOIN roles r ON u.id_role = r.id WHERE u.id = ?";
-$stmt = $pdo->prepare($queryUser);
-$stmt->execute([$userId]);
-$user = $stmt->fetch();
-
-/// 2. Récupération des réservations (Organisateur OU Invité)
-$queryRes = "
-    (SELECT 
-        res.nom as ressource_nom, 
-        res.type as ressource_type, 
-        bk.date_debut as debut, 
-        bk.date_fin as fin,
-        'Organisateur' as role_dans_resa
-    FROM bookings bk 
-    JOIN resources res ON bk.id_resource = res.id
-    WHERE bk.id_user = ?)
-    UNION
-    (SELECT 
-        res.nom as ressource_nom, 
-        res.type as ressource_type, 
-        bk.date_debut as debut, 
-        bk.date_fin as fin,
-        'Invité' as role_dans_resa
-    FROM booking_invites bi
-    JOIN bookings bk ON bi.id_booking = bk.id
-    JOIN resources res ON bk.id_resource = res.id
-    WHERE bi.id_user = ?)
-    ORDER BY debut DESC";
-
-$stmtRes = $pdo->prepare($queryRes);
-// On passe deux fois l'ID : une fois pour le premier SELECT, une fois pour le second
-$stmtRes->execute([$userId, $userId]);
-$reservations = $stmtRes->fetchAll();
-
-// 3. Logique flexible pour le menu déroulant (Bureaux, Salles, Boxs...)
-$types_disponibles = [];
-foreach ($reservations as $r) {
-    if ($r['ressource_type'] !== 'parking') {
-        $types_disponibles[] = $r['ressource_type'];
-    }
-}
-$types_uniques = array_unique($types_disponibles);
-?>
-
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Compte - Workspace Connect</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/../styles/main_theme.css">
-    <style>
-        .card { border-radius: 15px; overflow: hidden; }
-        /* Style pour souder le groupe de filtres comme sur ta capture */
-        .btn-group .form-select {
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-            margin-left: -1px;
-            border-color: #0d6efd;
-        }
-        .btn-outline-primary:hover { color: #fff; }
-    </style>
-</head>
-<body class="bg-light">
-    <?php include __DIR__ . '/../includes/navbar.php'; ?>
+<link rel="stylesheet" href="/workspace_connect/public/styles/style_account.css">
 
     <div class="container py-5">
         <div class="row g-4">
@@ -336,6 +258,4 @@ btnSave.addEventListener('click', () => {
     });
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+

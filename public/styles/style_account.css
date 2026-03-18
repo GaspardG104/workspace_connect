@@ -1,0 +1,9 @@
+.card { border-radius: 15px; overflow: hidden; }
+/* Style pour souder le groupe de filtres comme sur ta capture */
+.btn-group .form-select {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-left: -1px;
+    border-color: #0d6efd;
+}
+.btn-outline-primary:hover { color: #fff; }

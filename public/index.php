@@ -60,6 +60,15 @@ switch ($urlParts[0]) {
             }
             break;
 
+    case 'account':
+        $controller = new \App\Controllers\UserController();
+        if (isset($urlParts[1]) && $urlParts[1] === 'verify') {
+            $controller->verify();
+        } else {
+            $controller->showLogin();
+        }
+        break;
+
     default:
         http_response_code(404);
         echo "Page non trouvée";

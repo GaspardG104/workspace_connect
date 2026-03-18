@@ -11,7 +11,7 @@
                 <ul class="navbar-nav ms-auto align-items-center">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li class="nav-item">
-                            <a class ="nav-link btn text-white px-3 me-2 btn-sm" href="/account"><i class="fa-regular fa-circle-user"></i> <?= htmlspecialchars($_SESSION['user_nom']) ?></a>           
+                            <a class ="nav-link btn text-white px-3 me-2 btn-sm" href="/workspace_connect/user/account"><i class="fa-regular fa-circle-user"></i> <?= htmlspecialchars($_SESSION['user_nom']) ?></a>           
                         </li>
                         <li class="nav-item">
                             <a class="nav-link btn text-primary px-3 me-2 btn-sm" href="/workspace_connect/reservation/parking"> <i class="fa-solid fa-square-parking"></i> Parking</a> 
