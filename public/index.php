@@ -84,7 +84,7 @@ switch ($urlParts[0]) {
     }
 
     $controller = new \App\Controllers\AdminController();
-    $action = $urlParts[0] ?? 'dashboard';
+    $action = $urlParts[1] ?? 'dashboard';
 
     if ($action === 'register') {
         $controller->register();
