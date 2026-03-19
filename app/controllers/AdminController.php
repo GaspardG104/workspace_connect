@@ -11,22 +11,29 @@ class AdminController {
         }
     }
 
-    // Affiche le formulaire d'inscription
     public function register() {
-        $db = require __DIR__ . '/../../config/db.php';
+    $db = require __DIR__ . '/../../config/db.php';
 
-        // 1. On va chercher tous les rôles en base de données
-        $stmtRoles = $db->query("SELECT id, nom FROM roles ORDER BY nom ASC");
-        $roles = $stmtRoles->fetchAll(\PDO::FETCH_ASSOC);
+    // 1. On récupère les rôles pour le menu déroulant
+    $roles = $db->query("SELECT * FROM roles")->fetchAll(\PDO::FETCH_ASSOC);
 
-        $message = $_SESSION['msg'] ?? "";
-        $message_type = (strpos($message, '✅') !== false) ? 'success' : 'danger';
-        unset($_SESSION['msg']);
-        $viewPath = __DIR__ . '/../views/';
-        include $viewPath . 'layouts/header.php';
-        include $viewPath . 'admin/inscription.php';
-        include $viewPath . 'layouts/footer.php';
-    }
+    // 2. On récupère la liste des utilisateurs pour le tableau (L'OUBLI ÉTAIT ICI)
+    $sql = "SELECT u.*, r.nom as role_nom 
+            FROM users u 
+            JOIN roles r ON u.id_role = r.id 
+            ORDER BY u.nom ASC";
+    $users = $db->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+    // 3. Gestion des messages flash
+    $message = $_SESSION['msg'] ?? "";
+    unset($_SESSION['msg']);
+
+    $viewPath = __DIR__ . '/../views/';
+    include $viewPath . 'layouts/header.php';
+    // On passe $roles et $users à la vue
+    include $viewPath . 'admin/inscription.php'; 
+    include $viewPath . 'layouts/footer.php';
+}
 
     // Traite la création du compte
     public function storeUser() {
