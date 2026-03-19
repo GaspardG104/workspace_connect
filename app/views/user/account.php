@@ -59,7 +59,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="col-lg-8">
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-white py-3">
@@ -68,40 +67,38 @@
                     
                     <div class="card-body">
                         <div class="d-flex justify-content-center mb-4">
-    <div class="btn-group w-100 shadow-sm" role="group">
-        
-        <a href="/workspace_connect/user/account?type=all" 
-           class="btn <?= ($filterType === 'all') ? 'btn-primary' : 'btn-outline-primary' ?> filter-btn d-flex align-items-center justify-content-center">
-           Toutes
-        </a>
-        
-        <a href="/workspace_connect/user/account?type=parking" 
-           class="btn <?= ($filterType === 'parking') ? 'btn-primary' : 'btn-outline-primary' ?> filter-btn">
-            <i class="fas fa-car me-1"></i> Parking
-        </a>
+                            <div class="btn-group w-100 shadow-sm" role="group">
+                                
+                                <a href="/workspace_connect/user/account?type=all" 
+                                class="btn <?= ($filterType === 'all') ? 'btn-primary' : 'btn-outline-primary' ?> filter-btn d-flex align-items-center justify-content-center">
+                                Toutes
+                                </a>
+                                
+                                <a href="/workspace_connect/user/account?type=parking" 
+                                class="btn <?= ($filterType === 'parking') ? 'btn-primary' : 'btn-outline-primary' ?> filter-btn">
+                                    <i class="fas fa-car me-1"></i> Parking
+                                </a>
 
-        <select class="form-select border-primary" id="workFilterSelect" onchange="location = this.value;">
-            <option value="" selected disabled>Bureaux, Salles, Boxs...</option>
-            <?php foreach($types_uniques as $type): ?>
-                <?php if($type === 'parking') continue; // On l'a déjà en bouton ?>
-                
-                <option value="/workspace_connect/user/account?type=<?= htmlspecialchars($type) ?>" 
-                        <?= ($filterType === $type) ? 'selected' : '' ?>>
-                    <?php 
-                        $label = ucfirst(htmlspecialchars($type));
-                        // Ta logique de pluriel personnalisée
-                        echo (substr($type, -3) === 'eau') ? $label . 'x' : $label . 's';
-                    ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+                                <select class="form-select border-primary" id="workFilterSelect" onchange="location = this.value;">
+                                    <option value="" selected disabled>Bureaux, Salles, Boxs...</option>
+                                    <?php foreach($types_uniques as $type): ?>
+                                        <?php if($type === 'parking') continue; ?>
+                                        
+                                        <option value="/workspace_connect/user/account?type=<?= htmlspecialchars($type) ?>" 
+                                                <?= ($filterType === $type) ? 'selected' : '' ?>>
+                                            <?php 
+                                                $label = ucfirst(htmlspecialchars($type));
+                                                echo (substr($type, -3) === 'eau') ? $label . 'x' : $label . 's';
+                                            ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
 
-        <button id="sortByDate" class="btn btn-outline-primary">
-            <i class="fas fa-sort me-1"></i> Trier par date
-        </button>
-    </div>
-</div>
-
+                                <button id="sortByDate" class="btn btn-outline-primary">
+                                    <i class="fas fa-sort me-1"></i> Trier par date
+                                </button>
+                            </div>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0" id="bookingTable">
                                 <thead class="table-light text-secondary">

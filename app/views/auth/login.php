@@ -37,7 +37,7 @@
                 <button type="submit" class="btn btn-primary fw-bold py-2 shadow-sm">
                     Se connecter <i class="fa-solid fa-arrow-right-to-bracket ms-2"></i>
                 </button>
-                <a href="index.php" class="btn btn-link btn-sm text-decoration-none text-muted">Retour à l'accueil</a>
+                <a href="/workspace_connect/home" class="btn btn-link btn-sm text-decoration-none text-muted">Retour à l'accueil</a>
             </div>
         </form>
     </div>

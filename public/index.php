@@ -73,6 +73,11 @@ switch ($urlParts[0]) {
         }
         break;
 
+    case 'logout':
+        $controller = new \App\Controllers\OutController();
+        $controller->logout();
+        break;
+
     default:
         http_response_code(404);
         echo "Page non trouvée";
