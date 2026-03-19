@@ -78,20 +78,32 @@ switch ($urlParts[0]) {
         break;
 
     case 'admin':
-    if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
-        header('Location: /workspace_connect/login');
-        exit;
-    }
+        if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
+            header('Location: /workspace_connect/login');
+            exit;
+        }
 
-    $controller = new \App\Controllers\AdminController();
-    $action = $urlParts[1] ?? 'dashboard';
+        $controller = new \App\Controllers\AdminController();
+        $action = $urlParts[1] ?? 'dashboard';
 
-    if ($action === 'register') {
-        $controller->register();
-    } elseif ($action === 'storeUser') {
-        $controller->storeUser();
-    }
-    break;
+        if ($action === 'register') {
+            $controller->register();
+        } elseif ($action === 'storeUser') {
+            $controller->storeUser();
+        } elseif ($action === 'usersList') {
+            $controller->usersList();
+        } elseif ($action === 'editUser') {
+            $id = $urlParts[2] ?? null;
+            $controller->editUser($id);
+        } elseif ($action === 'deleteUser') {
+        $id = $urlParts[2] ?? null;
+        $controller->deleteUser($id);
+        } else {
+            // Redirection par défaut ou message
+            echo "Dashboard Admin";
+        }
+        break;
+
 
     default:
         http_response_code(404);
