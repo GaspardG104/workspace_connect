@@ -91,13 +91,13 @@ body{
 }
 
 .desk-unit:hover {
-    background: #73b9e8 !important; 
-    color: #000000 !important;
+    background: #000000 !important; 
+    color: #ffffff !important;
 }
 
 .desk-unit.selected-resource {
-    background: #73b9e8 !important; 
-    color: #000000 !important;
+    background: #000000 !important; 
+    color: #ffffff !important;
 }
 
 /* --- TRAITS CENTRAUX --- */

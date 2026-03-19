@@ -93,7 +93,6 @@ class BookingController {
                             WHERE b.id_resource = :id");
         $stmt->execute(['id' => $id_resource]);
         
-        // --- CE QU'IL FAUT AJOUTER ---
         $events = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         header('Content-Type: application/json');
         echo json_encode($events);

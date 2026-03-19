@@ -1,7 +1,5 @@
 <link rel="stylesheet" href="/workspace_connect/public/styles/style_desks.css">
 
-<!-- <body class="bg-light"> -->
-
 <div id="ajax-message" class="alert shadow-lg"></div>
 
 <div class="container-fluid py-4">

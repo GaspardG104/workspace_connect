@@ -60,12 +60,16 @@ switch ($urlParts[0]) {
             }
             break;
 
-    case 'account':
+    case 'user':
         $controller = new \App\Controllers\UserController();
-        if (isset($urlParts[1]) && $urlParts[1] === 'verify') {
-            $controller->verify();
-        } else {
-            $controller->showLogin();
+        $action = $urlParts[1] ?? 'account'; // Par défaut, on affiche le compte
+
+        if ($action === 'account') {
+            $controller->user();
+        } elseif ($action === 'updateImmat') {
+            $controller->updateImmat();
+        } elseif ($action === 'updatePassword') {
+            $controller->updatePassword();
         }
         break;
 

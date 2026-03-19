@@ -190,7 +190,7 @@ function parseFrenchDate(text) {
 document.getElementById('updatePwdForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const fb = document.getElementById('pwd-feedback');
-    fetch('process_update_pwd.php', { method: 'POST', body: new FormData(this) })
+    fetch('/workspace_connect/user/updatePassword', { method: 'POST', body: new FormData(this) })
     .then(r => r.json()).then(data => {
         fb.style.display = 'block';
         fb.className = "alert py-2 small fw-medium " + (data.success ? "alert-success text-success" : "alert-danger text-danger");
@@ -240,7 +240,7 @@ btnSave.addEventListener('click', () => {
     const formData = new FormData();
     formData.append('immatriculation', newVal);
 
-    fetch('process_update_immat.php', { 
+    fetch('/workspace_connect/user/updateImmat', { 
         method: 'POST', 
         body: formData })
 
