@@ -47,9 +47,9 @@
                         <label class="form-label small fw-bold text-secondary">Rôle assigné</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fa-solid fa-user-tie"></i></span>
-                            <select name="id_role" id="id_role" class="form-select" required>
+                            <select name="id_role" class="form-select" required>
                                 <option value="" selected disabled> -- Sélectionner un rôle -- </option>
-                                <?php foreach ($liste_roles as $role): ?>
+                                <?php foreach ($roles as $role): ?>
                                     <option value="<?= $role['id'] ?>"><?= htmlspecialchars($role['nom']) ?></option>
                                 <?php endforeach; ?>
                             </select>

@@ -13,10 +13,15 @@ class AdminController {
 
     // Affiche le formulaire d'inscription
     public function register() {
+        $db = require __DIR__ . '/../../config/db.php';
+
+        // 1. On va chercher tous les rôles en base de données
+        $stmtRoles = $db->query("SELECT id, nom FROM roles ORDER BY nom ASC");
+        $roles = $stmtRoles->fetchAll(\PDO::FETCH_ASSOC);
+
         $message = $_SESSION['msg'] ?? "";
         $message_type = (strpos($message, '✅') !== false) ? 'success' : 'danger';
         unset($_SESSION['msg']);
-
         $viewPath = __DIR__ . '/../views/';
         include $viewPath . 'layouts/header.php';
         include $viewPath . 'admin/inscription.php';
@@ -60,7 +65,7 @@ class AdminController {
             $_SESSION['msg'] = "❌ Erreur : " . $e->getMessage();
         }
 
-        header('Location: /workspace_connect/admin/inscription');
+        header('Location: /workspace_connect/admin/register');
         exit;
     }
 }
