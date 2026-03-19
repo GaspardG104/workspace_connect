@@ -3,37 +3,53 @@ namespace App\Controllers;
 
 class UserController {
     // Affiche la page du compte connécté
-    public function account() {
-        if (!isset($_SESSION['user_id'])) {
-            header('Location: /workspace_connect/login');
-            exit;
-        }
-
-        $db = require __DIR__ . '/../../config/db.php';
-        $userId = $_SESSION['user_id'];
-        
-        // 1. Récupérer les infos de l'utilisateur
-        $stmtUser = $db->prepare("SELECT u.*, r.nom as role_nom FROM users u LEFT JOIN roles r ON u.id_role = r.id WHERE u.id = ?");
-        $stmtUser->execute([$userId]);
-        $user = $stmtUser->fetch(\PDO::FETCH_ASSOC);
-
-        // 2. RÉCUPÉRER LES RÉSERVATIONS (La partie manquante !)
-        // On joint la table 'resources' pour avoir le nom de la salle/bureau/place
-        $queryBookings = "SELECT b.*, res.nom as resource_name, res.type as resource_type 
-                        FROM bookings b 
-                        JOIN resources res ON b.id_resource = res.id 
-                        WHERE b.id_user = ? 
-                        ORDER BY b.date_debut DESC";
-        $stmtBookings = $db->prepare($queryBookings);
-        $stmtBookings->execute([$userId]);
-        $bookings = $stmtBookings->fetchAll(\PDO::FETCH_ASSOC);
-
-        $viewPath = __DIR__ . '/../views/';
-        include $viewPath . 'layouts/header.php';
-        include $viewPath . 'user/account.php'; // Ici, $user ET $bookings seront disponibles
-        include $viewPath . 'layouts/footer.php';
+public function account() {
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: /workspace_connect/login');
+        exit;
     }
 
+    $db = require __DIR__ . '/../../config/db.php';
+    $userId = $_SESSION['user_id'];
+    
+    // --- 1. RÉCUPÉRATION DES TYPES POUR TON SELECT ---
+    $stmtTypes = $db->query("SELECT DISTINCT type FROM resources ORDER BY type");
+    $types_uniques = $stmtTypes->fetchAll(\PDO::FETCH_COLUMN);
+
+    // --- 2. GESTION DU FILTRE ---
+    $filterType = $_GET['type'] ?? 'all';
+    $typeCondition = ($filterType !== 'all') ? " AND res.type = ?" : "";
+
+    // --- 3. INFOS UTILISATEUR ---
+    $stmtUser = $db->prepare("SELECT u.*, r.nom as role_nom FROM users u LEFT JOIN roles r ON u.id_role = r.id WHERE u.id = ?");
+    $stmtUser->execute([$userId]);
+    $user = $stmtUser->fetch(\PDO::FETCH_ASSOC);
+    $userEmail = $user['email'];
+
+    // --- 4. REQUÊTE UNION FILTRÉE ---
+    $queryBookings = "
+        (SELECT res.nom as resource_name, res.type as resource_type, bk.date_debut as debut, bk.date_fin as fin, bk.statut, 'Organisateur' as role_dans_resa
+        FROM bookings bk 
+        JOIN resources res ON bk.id_resource = res.id
+        WHERE bk.id_user = ?" . $typeCondition . ")
+        UNION
+        (SELECT res.nom as resource_name, res.type as resource_type, bk.date_debut as debut, bk.date_fin as fin, bk.statut, 'Invité' as role_dans_resa
+        FROM attendees att
+        JOIN bookings bk ON att.id_booking = bk.id
+        JOIN resources res ON bk.id_resource = res.id
+        WHERE att.email = ?" . $typeCondition . ")
+        ORDER BY debut DESC";
+
+    $stmtBookings = $db->prepare($queryBookings);
+    $params = ($filterType !== 'all') ? [$userId, $filterType, $userEmail, $filterType] : [$userId, $userEmail];
+    $stmtBookings->execute($params);
+    $bookings = $stmtBookings->fetchAll(\PDO::FETCH_ASSOC);
+
+    $viewPath = __DIR__ . '/../views/';
+    include $viewPath . 'layouts/header.php';
+    include $viewPath . 'user/account.php'; 
+    include $viewPath . 'layouts/footer.php';
+}
     // Remplace process_update_immat.php
     public function updateImmat() {
         header('Content-Type: application/json');
