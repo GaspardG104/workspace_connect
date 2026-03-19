@@ -90,8 +90,8 @@ switch ($urlParts[0]) {
             $controller->register();
         } elseif ($action === 'storeUser') {
             $controller->storeUser();
-        } elseif ($action === 'usersList') {
-            $controller->usersList();
+        } elseif ($action === 'users_list') {
+            $controller->users_list();
         } elseif ($action === 'editUser') {
             $id = $urlParts[2] ?? null;
             $controller->editUser($id);

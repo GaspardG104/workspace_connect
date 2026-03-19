@@ -11,6 +11,7 @@ class AdminController {
         }
     }
 
+
     public function register() {
     $db = require __DIR__ . '/../../config/db.php';
 
@@ -31,14 +32,14 @@ class AdminController {
     $viewPath = __DIR__ . '/../views/';
     include $viewPath . 'layouts/header.php';
     // On passe $roles et $users à la vue
-    include $viewPath . 'admin/inscription.php'; 
+    include $viewPath . 'admin/users_list.php'; 
     include $viewPath . 'layouts/footer.php';
 }
 
     // Traite la création du compte
     public function storeUser() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /workspace_connect/admin/inscription');
+            header('Location: /workspace_connect/admin/users_list');
             exit;
         }
 
@@ -77,7 +78,7 @@ class AdminController {
     }
 
         // --- Affiche la liste des utilisateurs ---
-    public function usersList() {
+    public function users_list() {
         $db = require __DIR__ . '/../../config/db.php';
         
         // On récupère les users avec le nom de leur rôle
@@ -97,17 +98,16 @@ class AdminController {
     public function editUser($id) {
         $db = require __DIR__ . '/../../config/db.php';
 
+        // 1. Traitement de la mise à jour (POST)
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Logique de mise à jour
             $id_role = $_POST['id_role'];
             $nom = $_POST['nom'];
             $prenom = $_POST['prenom'];
             $email = $_POST['email'];
             $immat = $_POST['immatriculation'];
             
-            // Si un nouveau mot de passe est saisi, on le hache, sinon on garde l'ancien
-            if (!empty($_POST['new_password'])) {
-                $pass = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
+            if (!empty($_POST['password'])) {
+                $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
                 $sql = "UPDATE users SET id_role=?, nom=?, prenom=?, email=?, immatriculation=?, password_hash=? WHERE id=?";
                 $params = [$id_role, $nom, $prenom, $email, $immat, $pass, $id];
             } else {
@@ -115,46 +115,49 @@ class AdminController {
                 $params = [$id_role, $nom, $prenom, $email, $immat, $id];
             }
 
-            $stmt = $db->prepare($sql);
-            $stmt->execute($params);
-            
-            $_SESSION['msg'] = "✅ Utilisateur mis à jour !";
-            header('Location: /workspace_connect/admin/usersList');
+            $db->prepare($sql)->execute($params);
+            $_SESSION['msg'] = "✅ Utilisateur mis à jour avec succès !";
+            header('Location: /workspace_connect/admin/register'); // Retour à la liste
             exit;
         }
 
-        // Affichage du formulaire d'édition
-        $user = $db->prepare("SELECT * FROM users WHERE id = ?");
-        $user->execute([$id]);
-        $userData = $user->fetch(\PDO::FETCH_ASSOC);
-        
+        // 2. Affichage du formulaire (GET)
+        $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        $userData = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$userData) {
+            header('Location: /workspace_connect/admin/register');
+            exit;
+        }
+
         $roles = $db->query("SELECT * FROM roles")->fetchAll(\PDO::FETCH_ASSOC);
 
         $viewPath = __DIR__ . '/../views/';
         include $viewPath . 'layouts/header.php';
-        include $viewPath . 'admin/edit_user.php';
+        include $viewPath . 'admin/edit_user.php'; // On appelle la nouvelle vue
         include $viewPath . 'layouts/footer.php';
     }
 
     public function deleteUser($id) {
-    $db = require __DIR__ . '/../../config/db.php';
+        $db = require __DIR__ . '/../../config/db.php';
 
-    // Sécurité supplémentaire : on ne s'auto-supprime pas
-    if ($id == $_SESSION['user_id']) {
-        $_SESSION['msg'] = "❌ Vous ne pouvez pas supprimer votre propre compte admin !";
-        header('Location: /workspace_connect/admin/usersList');
-        exit;
-    }
+        // Sécurité supplémentaire : on ne s'auto-supprime pas
+        if ($id == $_SESSION['user_id']) {
+            $_SESSION['msg'] = "❌ Vous ne pouvez pas supprimer votre propre compte admin !";
+            header('Location: /workspace_connect/admin/users_list');
+            exit;
+        }
 
-    try {
-        $stmt = $db->prepare("DELETE FROM users WHERE id = ?");
-        $stmt->execute([$id]);
-        $_SESSION['msg'] = "✅ Utilisateur supprimé avec succès.";
-    } catch (\Exception $e) {
-        $_SESSION['msg'] = "❌ Impossible de supprimer : l'utilisateur est peut-être lié à des réservations.";
-    }
+        try {
+            $stmt = $db->prepare("DELETE FROM users WHERE id = ?");
+            $stmt->execute([$id]);
+            $_SESSION['msg'] = "✅ Utilisateur supprimé avec succès.";
+        } catch (\Exception $e) {
+            $_SESSION['msg'] = "❌ Impossible de supprimer : l'utilisateur est peut-être lié à des réservations.";
+        }
 
-    header('Location: /workspace_connect/admin/usersList');
+    header('Location: /workspace_connect/admin/users_list');
     exit;
 }
 
