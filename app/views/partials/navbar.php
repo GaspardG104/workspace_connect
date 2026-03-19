@@ -21,7 +21,7 @@
                         </li>
                         <?php if ($_SESSION['user_role'] == 1):?>
                             <li class="nav-item">
-                                <a class="nav-link text-success fw-bold" href="/workspace_connect/inscription"><i class="fa-solid fa-user-check"></i> Inscription</a>
+                                <a class="nav-link text-success fw-bold" href="/workspace_connect/admin/inscription"><i class="fa-solid fa-user-check"></i> Inscription</a>
                             </li>
                         <?php endif; ?>
                         <li class="nav-item">

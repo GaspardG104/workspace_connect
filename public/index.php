@@ -1,9 +1,8 @@
 <?php
-error_reporting(E_ALL);
+
 ini_set('display_errors', 1);
-/**
- * FRONT CONTROLLER - Point d'entrée unique
- */
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 // 1. Chargement de l'autoloader de Composer
 // On remonte d'un cran (../) car vendor est à la racine du projet
@@ -77,6 +76,22 @@ switch ($urlParts[0]) {
         $controller = new \App\Controllers\OutController();
         $controller->logout();
         break;
+
+    case 'admin':
+    if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
+        header('Location: /workspace_connect/login');
+        exit;
+    }
+
+    $controller = new \App\Controllers\AdminController();
+    $action = $urlParts[0] ?? 'dashboard';
+
+    if ($action === 'register') {
+        $controller->register();
+    } elseif ($action === 'storeUser') {
+        $controller->storeUser();
+    }
+    break;
 
     default:
         http_response_code(404);
