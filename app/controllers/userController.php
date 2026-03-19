@@ -3,8 +3,7 @@ namespace App\Controllers;
 
 class UserController {
     // Affiche la page du compte connécté
-    public function user() {
-        // Sécurité : Vérification session
+    public function account() {
         if (!isset($_SESSION['user_id'])) {
             header('Location: /workspace_connect/login');
             exit;
@@ -13,18 +12,25 @@ class UserController {
         $db = require __DIR__ . '/../../config/db.php';
         $userId = $_SESSION['user_id'];
         
-        // On récupère les infos de l'utilisateur 
-        $queryUser = "SELECT u.nom, u.prenom, u.email, u.immatriculation, r.nom as role_nom 
-              FROM users u LEFT JOIN roles r ON u.id_role = r.id WHERE u.id = ?";
-        $stmt = $db->prepare($queryUser);
-        $stmt->execute([$userId]);
-        $user = $stmt->fetch();
+        // 1. Récupérer les infos de l'utilisateur
+        $stmtUser = $db->prepare("SELECT u.*, r.nom as role_nom FROM users u LEFT JOIN roles r ON u.id_role = r.id WHERE u.id = ?");
+        $stmtUser->execute([$userId]);
+        $user = $stmtUser->fetch(\PDO::FETCH_ASSOC);
 
-
+        // 2. RÉCUPÉRER LES RÉSERVATIONS (La partie manquante !)
+        // On joint la table 'resources' pour avoir le nom de la salle/bureau/place
+        $queryBookings = "SELECT b.*, res.nom as resource_name, res.type as resource_type 
+                        FROM bookings b 
+                        JOIN resources res ON b.id_resource = res.id 
+                        WHERE b.id_user = ? 
+                        ORDER BY b.date_debut DESC";
+        $stmtBookings = $db->prepare($queryBookings);
+        $stmtBookings->execute([$userId]);
+        $bookings = $stmtBookings->fetchAll(\PDO::FETCH_ASSOC);
 
         $viewPath = __DIR__ . '/../views/';
         include $viewPath . 'layouts/header.php';
-        include $viewPath . 'user/account.php'; 
+        include $viewPath . 'user/account.php'; // Ici, $user ET $bookings seront disponibles
         include $viewPath . 'layouts/footer.php';
     }
 

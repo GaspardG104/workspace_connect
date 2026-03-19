@@ -104,16 +104,16 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php if(empty($reservations)): ?>
+                                    <?php if(empty($bookings)): ?>
                                         <tr class="no-data"><td colspan="3" class="text-center py-5 text-muted">Aucune réservation trouvée.</td></tr>
                                     <?php else: ?>
-                                        <?php foreach($reservations as $r): ?>
-                                            <tr data-type="<?= htmlspecialchars($r['ressource_type']) ?>">
+                                        <?php foreach($bookings as $r): ?>
+                                            <tr data-type="<?= htmlspecialchars($r['resource_type']) ?>">
                                                 <td>
-                                                    <span class="fw-bold d-block text-dark"><?= htmlspecialchars($r['ressource_nom']) ?></span>
+                                                    <span class="fw-bold d-block text-dark"><?= htmlspecialchars($r['resource_name']) ?></span>
                                                     <div class="d-flex gap-1">
-                                                        <small class="badge bg-light text-dark border text-uppercase" style="font-size: 0.65rem;"><?= htmlspecialchars($r['ressource_type']) ?></small>
-                                                        <?php if($r['ressource_type'] === 'salle'): ?>
+                                                        <small class="badge bg-light text-dark border text-uppercase" style="font-size: 0.65rem;"><?= htmlspecialchars($r['resource_type']) ?></small>
+                                                        <?php if($r['resource_type'] === 'salle'): ?>
                                                             <small class="badge <?= $r['role_dans_resa'] === 'Organisateur' ? 'bg-primary' : 'bg-info' ?> text-uppercase" style="font-size: 0.65rem;">
                                                             <?= $r['role_dans_resa'] ?>
                                                             </small>

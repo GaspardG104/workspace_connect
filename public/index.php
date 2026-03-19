@@ -65,7 +65,7 @@ switch ($urlParts[0]) {
         $action = $urlParts[1] ?? 'account'; // Par défaut, on affiche le compte
 
         if ($action === 'account') {
-            $controller->user();
+            $controller->account();
         } elseif ($action === 'updateImmat') {
             $controller->updateImmat();
         } elseif ($action === 'updatePassword') {
