@@ -104,6 +104,12 @@ switch ($urlParts[0]) {
         }
         break;
 
+        case 'chat':
+            $controller = new \App\Controllers\ChatController();
+            if ($urlParts[1] === 'process') {
+            $controller->process();
+        }
+        break;
 
     default:
         http_response_code(404);

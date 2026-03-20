@@ -98,4 +98,5 @@ class BookingController {
         echo json_encode($events);
         exit; // Très important pour ne pas envoyer de HTML parasite
     }
+    
 }

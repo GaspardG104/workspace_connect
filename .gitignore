@@ -1,4 +1,5 @@
 .env
 config/db_config.php
+config/api_config.php
 .htaccess
 old/

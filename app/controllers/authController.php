@@ -31,6 +31,7 @@ class AuthController {
             // On remplit la session avec les noms de colonnes de ton fichier SQL
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_nom'] = $user['nom'];
+            $_SESSION['user_prenom'] = $user['prenom'];
             $_SESSION['user_role'] = $user['id_role'];
 
             header('Location: /workspace_connect/home');
