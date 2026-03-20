@@ -1,11 +1,24 @@
+// 1. Gérer l'ouverture/fermeture du chat
+function toggleChat() {
+    const chatCard = document.getElementById('chat-card');
+    if (chatCard.style.display === "none") {
+        chatCard.style.display = "block";
+    } else {
+        chatCard.style.display = "none";
+    }
+}
+
+// 2. Envoyer le message
 function sendMessage() {
     const input = document.getElementById('user-input');
     const chatBody = document.getElementById('chat-body');
-    const message = input.value;
+    const message = input.value.trim();
 
-    // Afficher le message utilisateur
-    chatBody.innerHTML += `<div class="text-end mb-2"><span class="bg-light p-2 rounded shadow-sm">${message}</span></div>`;
+    if (!message) return;
+
+    chatBody.innerHTML += `<div class="text-end mb-2"><span class="bg-light p-2 rounded shadow-sm d-inline-block">${message}</span></div>`;
     input.value = '';
+    chatBody.scrollTop = chatBody.scrollHeight;
 
     fetch('/workspace_connect/chat/process', {
         method: 'POST',
@@ -14,13 +27,25 @@ function sendMessage() {
     })
     .then(res => res.json())
     .then(data => {
-        // Afficher la réponse de l'IA
-        chatBody.innerHTML += `<div class="text-start mb-2"><span class="bg-primary text-white p-2 rounded shadow-sm">${data.reponse}</span></div>`;
-        
-        // Si l'IA dit que c'est complet, on peut proposer un bouton "Confirmer la réservation"
-        if (data.complet) {
-            chatBody.innerHTML += `<div class="text-center"><button class="btn btn-sm btn-success">Confirmer la réservation</button></div>`;
-        }
+        // Gemini peut parfois renvoyer du texte avec des ```json ... ```
+        // On essaie de nettoyer si nécessaire
+        let responseText = data.reponse || data; 
+        chatBody.innerHTML += `<div class="text-start mb-2"><span class="bg-primary text-white p-2 rounded shadow-sm d-inline-block">${responseText}</span></div>`;
         chatBody.scrollTop = chatBody.scrollHeight;
+    })
+    .catch(err => {
+        console.error("Erreur:", err);
+        chatBody.innerHTML += `<div class="text-start mb-2"><span class="bg-danger text-white p-2 rounded shadow-sm d-inline-block">L'IA n'a pas pu répondre.</span></div>`;
     });
 }
+// 3. Écouter la touche "Entrée"
+document.addEventListener('DOMContentLoaded', function() {
+    const userInput = document.getElementById('user-input');
+    if (userInput) {
+        userInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    }
+});

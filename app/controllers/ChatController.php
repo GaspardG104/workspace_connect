@@ -2,46 +2,76 @@
 namespace App\Controllers;
 
 class ChatController {
-    private $apiKey = "TON_API_KEY_GEMINI";
+    private $apiKey;
 
-    public function process() {
-        $input = json_decode(file_get_contents('php://input'), true);
-        $userMessage = $input['message'] ?? '';
-
-        // Le rôle qu'on donne à l'IA
-        $systemPrompt = "Tu es l'assistant de Workspace Connect. 
-        Ton but est d'extraire : ressource (salle, bureau, parking), date, heure_debut, heure_fin.
-        Si c'est une salle, demande obligatoirement le nombre de participants et leurs noms.
-        Réponds TOUJOURS au format JSON strict : 
-        {
-          'complet': true/false, 
-          'donnees': {'type': '...', 'date': '...', 'debut': '...', 'fin': '...', 'participants': '...'},
-          'reponse': 'Ton message à l'utilisateur'
-        }";
-
-        $response = $this->callGemini($systemPrompt . "\nUtilisateur: " . $userMessage);
-        
-        header('Content-Type: application/json');
-        echo $response;
+    public function __construct() {
+        // On charge le fichier de config
+        $config = require __DIR__ . '/../../config/api_config.php';
+        $this->apiKey = $config['gemini_key'];
     }
 
-    private function callGemini($prompt) {
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $this->apiKey;
+public function process() {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $userMessage = $input['message'] ?? '';
 
-        $data = [
-            "contents" => [["parts" => [["text" => $prompt]]]]
-        ];
+    $systemPrompt = "Tu es l'assistant de Workspace Connect. 
+Réponds UNIQUEMENT avec ce format JSON : 
+{
+  \"complet\": true ou false,
+  \"donnees\": {\"type\": \"...\", \"date\": \"...\", \"debut\": \"...\", \"fin\": \"...\"},
+  \"reponse\": \"Ton message ici\"
+}";
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        
-        $result = curl_exec($ch);
-        $json = json_decode($result, true);
-        
-        // On extrait juste le texte de la réponse de Gemini
-        return $json['candidates'][0]['content']['parts'][0]['text'] ?? '{"reponse": "Erreur IA"}';
+    $fullPrompt = $systemPrompt . "\nMessage de l'utilisateur : " . $userMessage;
+
+    $response = $this->callGemini($fullPrompt);
+    
+    header('Content-Type: application/json');
+    echo $response;
+}
+
+private function callGemini($prompt) {
+    $config = require __DIR__ . '/../../config/api_config.php';
+    $apiKey = trim($config['gemini_key']);
+    
+    // On utilise le nom exact trouvé dans votre diagnostic : gemini-2.0-flash
+    // Et on repasse sur la version v1 qui est la version stable
+    $url = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=" . $apiKey;
+
+    $data = [
+        "contents" => [
+            ["parts" => [["text" => $prompt]]]
+        ]
+    ];
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+
+    $result = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200) {
+        $error = json_decode($result, true);
+        return json_encode([
+            "reponse" => "Erreur " . $httpCode,
+            "detail_google" => $error['error']['message'] ?? 'Erreur inconnue'
+        ]);
     }
+
+    $json = json_decode($result, true);
+    
+    // Extraction de la réponse texte
+    if (isset($json['candidates'][0]['content']['parts'][0]['text'])) {
+        $aiResponse = $json['candidates'][0]['content']['parts'][0]['text'];
+        // Nettoyage du Markdown JSON si l'IA en ajoute
+        return preg_replace('/^```json|```$/m', '', $aiResponse);
+    }
+
+    return json_encode(["reponse" => "L'IA n'a pas renvoyé de texte validable."]);
+}
 }
