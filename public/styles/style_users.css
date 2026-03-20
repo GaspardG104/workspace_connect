@@ -1,0 +1,12 @@
+/* On arrondit la carte qui contient le tableau */
+.card {
+    border-radius: 15px !important;
+    overflow: hidden; /* C'est ce qui permet de couper les coins du tableau */
+    border: none;
+}
+
+/* Optionnel : pour que le header du tableau soit assorti */
+.table thead th {
+    background-color: #f8f9fa; /* Couleur Bootstrap light */
+    border-bottom: none;
+}

@@ -1,7 +1,9 @@
+<link rel="stylesheet" href="/workspace_connect/public/styles/style_users.css">
+
 <div class="container-fluid py-4">
-                                    <?php if (isset($_SESSION['msg'])): ?>
-                        <div class="alert alert-info py-2 small"><?= $_SESSION['msg']; unset($_SESSION['msg']); ?></div>
-                    <?php endif; ?>
+    <?php if (isset($_SESSION['msg'])): ?>
+    <div class="alert alert-info py-2 small"><?= $_SESSION['msg']; unset($_SESSION['msg']); ?></div>
+    <?php endif; ?>
     <div class="row">
         <div class="col-lg-4 mb-4">
             <div class="card shadow-sm border-0" style="border-radius: 15px;">

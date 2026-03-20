@@ -1,4 +1,4 @@
-    <link rel="stylesheet" href="/workspace_connect/public/styles/style_index.css">
+<link rel="stylesheet" href="/workspace_connect/public/styles/style_index.css">
 <main class="container">
     <div class="row min-vh-100 align-items-center justify-content-center">
         <div class="col-md-8 text-center text-white">
