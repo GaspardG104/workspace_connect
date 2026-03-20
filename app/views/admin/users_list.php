@@ -1,4 +1,7 @@
 <div class="container-fluid py-4">
+                                    <?php if (isset($_SESSION['msg'])): ?>
+                        <div class="alert alert-info py-2 small"><?= $_SESSION['msg']; unset($_SESSION['msg']); ?></div>
+                    <?php endif; ?>
     <div class="row">
         <div class="col-lg-4 mb-4">
             <div class="card shadow-sm border-0" style="border-radius: 15px;">
@@ -6,10 +9,6 @@
                     <h4 class="fw-bold mb-3" id="formTitle">
                         <?= isset($userData) ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' ?>
                     </h4>
-                    
-                    <?php if (isset($_SESSION['msg'])): ?>
-                        <div class="alert alert-info py-2 small"><?= $_SESSION['msg']; unset($_SESSION['msg']); ?></div>
-                    <?php endif; ?>
 
                     <form action="<?= isset($userData) ? '/workspace_connect/admin/editUser/'.$userData['id'] : '/workspace_connect/admin/storeUser' ?>" method="POST">
                         
@@ -87,7 +86,13 @@
                                     </td>
                                     <td><?= htmlspecialchars($u['email']) ?></td>
                                     <td>
-                                        <span class="badge <?= $u['id_role'] == 1 ? 'bg-danger' : 'bg-primary' ?>">
+                                    <span class="badge <?= match($u['id_role']) {
+                                            1 => 'bg-danger',  // Administrateur
+                                            2 => 'bg-secondary', // manager
+                                            3 => 'bg-primary', // Collaborateur
+                                            4 => 'bg-success',    
+                                            default => 'bg-info'// Autre rôle
+                                            } ?>">
                                             <?= htmlspecialchars($u['role_nom']) ?>
                                         </span>
                                     </td>

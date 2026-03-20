@@ -13,28 +13,24 @@ class AdminController {
 
 
     public function register() {
-    $db = require __DIR__ . '/../../config/db.php';
+        $db = require __DIR__ . '/../../config/db.php';
 
-    // 1. On récupère les rôles pour le menu déroulant
-    $roles = $db->query("SELECT * FROM roles")->fetchAll(\PDO::FETCH_ASSOC);
+        // 1. On récupère les rôles pour le menu déroulant
+        $roles = $db->query("SELECT * FROM roles")->fetchAll(\PDO::FETCH_ASSOC);
 
-    // 2. On récupère la liste des utilisateurs pour le tableau (L'OUBLI ÉTAIT ICI)
-    $sql = "SELECT u.*, r.nom as role_nom 
-            FROM users u 
-            JOIN roles r ON u.id_role = r.id 
-            ORDER BY u.nom ASC";
-    $users = $db->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        // 2. On récupère la liste des utilisateurs pour le tableau (L'OUBLI ÉTAIT ICI)
+        $sql = "SELECT u.*, r.nom as role_nom 
+                FROM users u 
+                JOIN roles r ON u.id_role = r.id 
+                ORDER BY u.nom ASC";
+        $users = $db->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
-    // 3. Gestion des messages flash
-    $message = $_SESSION['msg'] ?? "";
-    unset($_SESSION['msg']);
-
-    $viewPath = __DIR__ . '/../views/';
-    include $viewPath . 'layouts/header.php';
-    // On passe $roles et $users à la vue
-    include $viewPath . 'admin/users_list.php'; 
-    include $viewPath . 'layouts/footer.php';
-}
+        $viewPath = __DIR__ . '/../views/';
+        include $viewPath . 'layouts/header.php';
+        // On passe $roles et $users à la vue
+        include $viewPath . 'admin/users_list.php'; 
+        include $viewPath . 'layouts/footer.php';
+    }
 
     // Traite la création du compte
     public function storeUser() {
@@ -100,23 +96,27 @@ class AdminController {
 
         // 1. Traitement de la mise à jour (POST)
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_role = $_POST['id_role'];
-            $nom = $_POST['nom'];
-            $prenom = $_POST['prenom'];
-            $email = $_POST['email'];
-            $immat = $_POST['immatriculation'];
-            
-            if (!empty($_POST['password'])) {
-                $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
-                $sql = "UPDATE users SET id_role=?, nom=?, prenom=?, email=?, immatriculation=?, password_hash=? WHERE id=?";
-                $params = [$id_role, $nom, $prenom, $email, $immat, $pass, $id];
-            } else {
-                $sql = "UPDATE users SET id_role=?, nom=?, prenom=?, email=?, immatriculation=? WHERE id=?";
-                $params = [$id_role, $nom, $prenom, $email, $immat, $id];
-            }
+            try {
+                $id_role = $_POST['id_role'];
+                $nom = $_POST['nom'];
+                $prenom = $_POST['prenom'];
+                $email = $_POST['email'];
+                $immat = $_POST['immatriculation'];
+                
+                if (!empty($_POST['password'])) {
+                    $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
+                    $sql = "UPDATE users SET id_role=?, nom=?, prenom=?, email=?, immatriculation=?, password_hash=? WHERE id=?";
+                    $params = [$id_role, $nom, $prenom, $email, $immat, $pass, $id];
+                } else {
+                    $sql = "UPDATE users SET id_role=?, nom=?, prenom=?, email=?, immatriculation=? WHERE id=?";
+                    $params = [$id_role, $nom, $prenom, $email, $immat, $id];
+                }
 
             $db->prepare($sql)->execute($params);
-            $_SESSION['msg'] = "✅ Utilisateur mis à jour avec succès !";
+            $_SESSION['msg'] = "✅ Utilisateur $prenom $nom mis à jour avec succès !";
+            } catch (\Exception $e) {
+                $_SESSION['msg'] = "❌ Erreur lors de la modification : " . $e->getMessage();
+            }
             header('Location: /workspace_connect/admin/register'); // Retour à la liste
             exit;
         }
