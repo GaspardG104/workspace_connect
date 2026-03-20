@@ -24,6 +24,11 @@
                                 <a class="nav-link text-success fw-bold" href="/workspace_connect/admin/register"><i class="fa-solid fa-user-check"></i> Gestion Utilisateurs </a>
                             </li>
                         <?php endif; ?>
+                        <?php if ($_SESSION['user_role'] == 1 || 2):?>
+                            <li class="nav-item">
+                                <a class="nav-link text-success fw-bold" href="/workspace_connect/reservations/all"><i class="fa-solid fa-user-check"></i> Gestion Réservations </a>
+                            </li>
+                        <?php endif; ?>
                         <li class="nav-item">
                             <a class="nav-link text-danger fw-bold" href="/workspace_connect/logout"> Déconnexion <i class="fa-solid fa-arrow-right-from-bracket"></i></a>
                         </li>

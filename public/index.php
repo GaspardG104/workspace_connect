@@ -104,13 +104,22 @@ switch ($urlParts[0]) {
         }
         break;
 
-        case 'chat':
-            $controller = new \App\Controllers\ChatController();
-            if ($urlParts[1] === 'process') {
-            $controller->process();
+    case 'chat':
+        $controller = new \App\Controllers\ChatController();
+        if ($urlParts[1] === 'process') {
+        $controller->process();
         }
         break;
 
+    case 'reservations':
+        $controller = new \App\Controllers\ReservationController();
+        if ($urlParts[1] === 'all') {
+            $controller->listAll();
+        } elseif ($urlParts[1] === 'search') { 
+            $controller->search();
+        }
+        break;
+        
     default:
         http_response_code(404);
         echo "Page non trouvée";
