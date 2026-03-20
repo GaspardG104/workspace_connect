@@ -25,62 +25,71 @@
         </div>
     </div>
 
-    <div class="table-responsive shadow-sm rounded">
-        <table class="table table-hover align-middle bg-white mb-0">
-            <thead class="table-dark">
-                <tr>
-                    <th>Compte</th>
-                    <th>Ressource</th>
-                    <th>Dates</th>
-                    <th>Statut</th>
-                    <?php if ($_SESSION['user_role'] == 1): ?><th>Actions</th><?php endif; ?>
-                </tr>
-            </thead>
-            <tbody id="table-results">
-                </tbody>
-        </table>
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Ressource</th>
+                        <th>Date & Heure</th>
+                        <th>Statut</th>
+                        <?php if ($_SESSION['user_role'] == 1): ?>
+                        <th class="text-end pe-4">Actions</th>
+                        <?php endif; ?>
+                    </tr>
+                </thead>
+                <tbody id="reservation-table-body">
+                    </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
-const tableBody = document.getElementById('table-results');
 const searchInput = document.getElementById('ajax-search');
 const dateInput = document.getElementById('ajax-date');
 const sortSelect = document.getElementById('ajax-sort');
+const tableBody = document.getElementById('reservation-table-body');
 
-// Fonction principale AJAX
+// On récupère le rôle PHP pour le JS
+const isAdmin = <?= $_SESSION['user_role'] == 1 ? 'true' : 'false' ?>;
+
 function fetchReservations() {
-    const params = new URLSearchParams({
-        search: searchInput.value,
-        date: dateInput.value,
-        sort: sortSelect.value
-    });
+    const search = searchInput.value;
+    const date = dateInput.value;
+    const sort = sortSelect.value;
 
-    fetch(`/workspace_connect/reservations/search?${params.toString()}`)
+    fetch(`/workspace_connect/reservations/search?search=${encodeURIComponent(search)}&date=${date}&sort=${sort}`)
         .then(response => response.json())
         .then(data => {
             renderTable(data);
-        });
+        })
+        .catch(error => console.error('Erreur:', error));
 }
 
 function renderTable(data) {
     tableBody.innerHTML = '';
-    
+
     if (data.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Aucun résultat trouvé</td></tr>';
+        tableBody.innerHTML = `<tr><td colspan="${isAdmin ? 5 : 4}" class="text-center py-4 text-muted">Aucune réservation trouvée</td></tr>`;
         return;
     }
 
     data.forEach(res => {
-        const badgeColor = res.role_label === 'Organisateur' ? 'bg-primary' : 'bg-info';
-        const statusColor = res.statut === 'confirme' ? 'bg-success' : 'bg-secondary';
+        const statusColor = res.statut === 'confirme' ? 'bg-success' : 'bg-warning';
         
-        const row = `
+        let row = `
             <tr>
                 <td>
                     <div class="d-flex align-items-center">
-                        <strong>${res.user_prenom} ${res.user_nom}</strong>
-                        <span class="ms-2 badge ${badgeColor} text-uppercase" style="font-size: 0.65rem;">${res.role_label}</span>
+                        <div class="avatar-sm me-2 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:32px; height:32px; font-size: 0.8rem;">
+                            ${res.user_prenom[0]}${res.user_nom[0]}
+                        </div>
+                        <div>
+                            <span class="fw-bold d-block text-dark">${res.user_prenom} ${res.user_nom}</span>
+                            <small class="text-muted">${res.role_label}</small>
+                        </div>
                     </div>
                 </td>
                 <td>
@@ -93,19 +102,56 @@ function renderTable(data) {
                     </div>
                 </td>
                 <td><span class="badge ${statusColor}">${res.statut}</span></td>
-                <?php if ($_SESSION['user_role'] == 1): ?>
-                <td>
-                    <button class="btn btn-sm btn-outline-danger border-0"><i class="fa-solid fa-trash-alt"></i></button>
-                </td>
-                <?php endif; ?>
-            </tr>
         `;
+
+        // Si Admin, on ajoute la colonne Action avec le bouton poubelle
+        if (isAdmin) {
+            row += `
+                <td class="text-end pe-4">
+                    <button class="btn btn-sm btn-outline-danger border-0" title="Supprimer" onclick="deleteBooking(${res.id}, this)">
+                        <i class="fa-solid fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+        }
+
+        row += `</tr>`;
         tableBody.insertAdjacentHTML('beforeend', row);
     });
 }
 
-// Événements pour la recherche fluide
-searchInput.addEventListener('input', fetchReservations); // "input" détecte chaque touche frappée
+// Nouvelle fonction de suppression
+function deleteBooking(id, btn) {
+    if (!confirm("Voulez-vous vraiment supprimer cette réservation ?")) return;
+
+    // Animation du bouton
+    const icon = btn.querySelector('i');
+    icon.className = "fa-solid fa-spinner fa-spin";
+    btn.disabled = true;
+
+    fetch(`/workspace_connect/reservations/delete/${id}`, {
+        method: 'POST'
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // On rafraîchit la liste
+            fetchReservations();
+        } else {
+            alert("Erreur : " + data.message);
+            icon.className = "fa-solid fa-trash-alt";
+            btn.disabled = false;
+        }
+    })
+    .catch(err => {
+        console.error("Erreur suppression:", err);
+        alert("Une erreur technique est survenue.");
+        icon.className = "fa-solid fa-trash-alt";
+        btn.disabled = false;
+    });
+}
+
+searchInput.addEventListener('input', fetchReservations);
 dateInput.addEventListener('change', fetchReservations);
 sortSelect.addEventListener('change', fetchReservations);
 

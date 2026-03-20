@@ -63,8 +63,36 @@ class ReservationController {
         $stmt->execute();
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-header('Content-Type: application/json'); // Indique au navigateur que c'est du JSON
+    header('Content-Type: application/json'); // Indique au navigateur que c'est du JSON
     echo json_encode($results);
     exit;
+    }
+
+    public function delete($id) {
+        header('Content-Type: application/json');
+
+        // Sécurité : Seul l'admin (role 1) peut supprimer n'importe quelle résa
+        if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
+            echo json_encode(['success' => false, 'message' => 'Autorisation refusée.']);
+            exit;
+        }
+
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID manquant.']);
+            exit;
+        }
+
+        try {
+            $stmt = $this->db->prepare("DELETE FROM bookings WHERE id = ?");
+            $result = $stmt->execute([$id]);
+
+            if ($result) {
+                echo json_encode(['success' => true, 'message' => 'Réservation supprimée avec succès.']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Erreur lors de la suppression.']);
+            }
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Erreur technique : ' . $e->getMessage()]);
+        }
     }
 }

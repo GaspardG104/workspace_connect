@@ -115,8 +115,11 @@ switch ($urlParts[0]) {
         $controller = new \App\Controllers\ReservationController();
         if ($urlParts[1] === 'all') {
             $controller->listAll();
-        } elseif ($urlParts[1] === 'search') { 
+        } elseif ($urlParts[1] === 'search') {
             $controller->search();
+        } elseif ($urlParts[1] === 'delete') { // <--- AJOUTE CECI
+            $id = $urlParts[2] ?? null;
+            $controller->delete($id);
         }
         break;
         
