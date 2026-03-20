@@ -1,10 +1,19 @@
 // 1. Gérer l'ouverture/fermeture du chat
 function toggleChat() {
     const chatCard = document.getElementById('chat-card');
+    const chatLauncher = document.getElementById('chat-launcher');
+
     if (chatCard.style.display === "none") {
+        // On affiche le chat et on cache la bulle
         chatCard.style.display = "block";
+        chatLauncher.style.display = "none";
+        
+        // Focus automatique sur l'input pour pouvoir écrire direct
+        document.getElementById('user-input').focus();
     } else {
+        // On cache le chat et on réaffiche la bulle
         chatCard.style.display = "none";
+        chatLauncher.style.display = "flex";
     }
 }
 

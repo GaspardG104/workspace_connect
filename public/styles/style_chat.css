@@ -1,0 +1,28 @@
+#chat-card {
+    transition: all 0.3s ease-in-out;
+    bottom: 20px;
+    position: relative;
+}
+
+#chat-launcher:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s;
+}
+
+/* Style des bulles de message pour que ce soit plus joli */
+.chat-msg-user {
+    background-color: #e9ecef;
+    padding: 8px 12px;
+    border-radius: 15px 15px 0 15px;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+.chat-msg-ai {
+    background-color: #0d6efd;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 15px 15px 15px 0;
+    margin-bottom: 10px;
+    display: inline-block;
+}
