@@ -7,11 +7,15 @@ class ReservationController {
     private $db;
 
     public function __construct() {
+        // Initialisation de la connexion à la base de données
         $this->db = require __DIR__ . '/../../config/db.php';
     }
 
-    // Affiche la structure de la page
+    /**
+     * Affiche la page de gestion des réservations (Vue Admin/Manager)
+     */
     public function listAll() {
+        // Vérification des droits : Seuls les rôles 1 (Admin) et 2 (Manager) y ont accès
         if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], [1, 2])) {
             header('Location: /workspace_connect/home');
             exit;
@@ -22,13 +26,16 @@ class ReservationController {
         include $viewPath . 'layouts/footer.php';
     }
 
-    // API AJAX pour la recherche
+    /**
+     * API AJAX pour la recherche et le filtrage des réservations
+     */
     public function search() {
         $search = $_GET['search'] ?? '';
         $date_filter = $_GET['date'] ?? '';
         $sort_by = $_GET['sort'] ?? 'date_debut';
         $order = $_GET['order'] ?? 'DESC';
 
+        // La requête SQL utilise maintenant la table 'attendees' pour la recherche par invité
         $sql = "SELECT b.*, u.nom as user_nom, u.prenom as user_prenom, r.nom as resource_nom, r.type as resource_type,
                 CASE 
                     WHEN (u.nom ILIKE :search OR u.prenom ILIKE :search) THEN 'Organisateur'
@@ -41,17 +48,19 @@ class ReservationController {
                     u.nom ILIKE :search 
                     OR u.prenom ILIKE :search 
                     OR r.nom ILIKE :search
+                    -- Recherche dans la table attendees au lieu de booking_invites
                     OR b.id IN (
-                        SELECT bi.id_booking FROM booking_invites bi 
-                        JOIN users ui ON bi.id_user = ui.id 
-                        WHERE ui.nom ILIKE :search OR ui.prenom ILIKE :search
+                        SELECT att.id_booking FROM attendees att 
+                        WHERE att.nom_invite ILIKE :search OR att.email ILIKE :search
                     )
                 )";
 
+        // Ajout du filtre par date si spécifié
         if (!empty($date_filter)) {
             $sql .= " AND DATE(b.date_debut) = :date_filter";
         }
 
+        // Sécurisation du tri pour éviter les injections SQL
         $allowed_sorts = ['user_nom', 'resource_nom', 'date_debut'];
         $sort_column = in_array($sort_by, $allowed_sorts) ? $sort_by : 'date_debut';
         $sql .= " ORDER BY $sort_column $order";
@@ -63,15 +72,18 @@ class ReservationController {
         $stmt->execute();
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    header('Content-Type: application/json'); // Indique au navigateur que c'est du JSON
-    echo json_encode($results);
-    exit;
+        header('Content-Type: application/json');
+        echo json_encode($results);
+        exit;
     }
 
+    /**
+     * Supprime une réservation (Action réservée à l'Administrateur)
+     */
     public function delete($id) {
         header('Content-Type: application/json');
 
-        // Sécurité : Seul l'admin (role 1) peut supprimer n'importe quelle résa
+        // Sécurité stricte : Seul le rôle 1 peut supprimer
         if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
             echo json_encode(['success' => false, 'message' => 'Autorisation refusée.']);
             exit;
@@ -83,6 +95,7 @@ class ReservationController {
         }
 
         try {
+            // La suppression en cascade en SQL s'occupera de nettoyer la table attendees
             $stmt = $this->db->prepare("DELETE FROM bookings WHERE id = ?");
             $result = $stmt->execute([$id]);
 

@@ -1,6 +1,8 @@
 <?php
 namespace App\Controllers;
 
+use PDO;
+
 class BookingController {
     
     // Affiche la page de réservation du parking
@@ -58,29 +60,69 @@ class BookingController {
 
 
     // Gère l'enregistrement 
-    public function store() {
-        $db = require __DIR__ . '/../../config/db.php';
-        
-        // On récupère les données de FullCalendar
-        $id_user = $_SESSION['user_id'];
-        $id_resource = $_POST['resource'] ?? null;
-        $date_debut = $_POST['debut'] ?? null;
-        $date_fin = $_POST['fin'] ?? null;
-
-        try {
-            $sql = "INSERT INTO bookings (id_user, id_resource, date_debut, date_fin) VALUES (:user, :res, :debut, :fin)";
-            $stmt = $db->prepare($sql);
-            $stmt->execute([
-                'user'  => $id_user,
-                'res'   => $id_resource,
-                'debut' => $date_debut,
-                'fin'   => $date_fin
-            ]);
-            echo json_encode(['success' => true, 'message' => "✅ Réservation réussie !"]);
-        } catch (\Exception $e) {
-            echo json_encode(['success' => false, 'message' => "❌ Erreur : Place déjà prise ou problème serveur."]);
-        }
+public function store() {
+    $db = require __DIR__ . '/../../config/db.php';
+    
+    // On vérifie la session
+    if (!isset($_SESSION['user_id'])) {
+        echo json_encode(['success' => false, 'message' => "Session expirée."]);
+        exit;
     }
+
+    $id_user = $_SESSION['user_id'];
+    
+    // Correction des noms : Ton formulaire semble envoyer 'resource' et non 'id_resource'
+    $id_resource = $_POST['resource'] ?? $_POST['id_resource'] ?? null;
+    $date_debut = $_POST['debut'] ?? null;
+    $date_fin = $_POST['fin'] ?? null;
+    $invites = $_POST['invites'] ?? []; // Tableau d'IDs d'utilisateurs
+
+    if (!$id_resource || !$date_debut || !$date_fin) {
+        echo json_encode(['success' => false, 'message' => "❌ Données manquantes (Ressource ou Dates)."]);
+        exit;
+    }
+
+    try {
+        $db->beginTransaction();
+
+        // 1. Insertion du Booking principal
+        $sql = "INSERT INTO bookings (id_user, id_resource, date_debut, date_fin, statut) 
+                VALUES (:user, :res, :debut, :fin, 'confirme')";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([
+            'user'  => $id_user,
+            'res'   => $id_resource,
+            'debut' => $date_debut,
+            'fin'   => $date_fin
+        ]);
+
+        $bookingId = $db->lastInsertId();
+
+        // 2. Insertion dans 'attendees' (on transforme les IDs en Emails/Noms)
+        if (!empty($invites) && is_array($invites)) {
+            $stmtUser = $db->prepare("SELECT email, nom, prenom FROM users WHERE id = ?");
+            $stmtAt = $db->prepare("INSERT INTO attendees (id_booking, email, nom_invite) VALUES (?, ?, ?)");
+
+            foreach ($invites as $id_invite) {
+                $stmtUser->execute([$id_invite]);
+                $u = $stmtUser->fetch(PDO::FETCH_ASSOC);
+                
+                if ($u) {
+                    $nomComplet = $u['prenom'] . ' ' . $u['nom'];
+                    $stmtAt->execute([$bookingId, $u['email'], $nomComplet]);
+                }
+            }
+        }
+
+        $db->commit();
+        echo json_encode(['success' => true, 'message' => "✅ Réservation réussie !"]);
+
+    } catch (\Exception $e) {
+        if ($db->inTransaction()) $db->rollBack();
+        error_log("Erreur Booking : " . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => "❌ Erreur : " . $e->getMessage()]);
+    }
+}
 
     public function getEvents() {
         $db = require __DIR__ . '/../../config/db.php';

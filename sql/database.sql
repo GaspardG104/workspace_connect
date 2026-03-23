@@ -60,8 +60,3 @@ CREATE TABLE attendees (
     nom_invite VARCHAR(100)
 );
 
-CREATE TABLE booking_invites (
-    id SERIAL PRIMARY KEY,
-    id_booking INTEGER REFERENCES bookings(id) ON DELETE CASCADE,
-    id_user INTEGER REFERENCES users(id) ON DELETE CASCADE
-);
