@@ -26,7 +26,7 @@
                         <?php endif; ?>
                         <?php if ($_SESSION['user_role'] == 1 || 2):?>
                             <li class="nav-item">
-                                <a class="nav-link text-success fw-bold" href="/workspace_connect/reservations/all"><i class="fa-solid fa-user-check"></i> Gestion Réservations </a>
+                                <a class="nav-link text-warning fw-bold" href="/workspace_connect/reservations/all"><i class="fa-solid fa-calendar"></i> Gestion Réservations </a>
                             </li>
                         <?php endif; ?>
                         <li class="nav-item">
