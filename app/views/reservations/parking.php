@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="/workspace_connect/public/styles/style_parking.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"> <!--pour l'horloge-->
 
 <body class="bg-light">
 
@@ -30,130 +31,40 @@
             </div>
 
             <div class="col-lg-4">
-                <div class="card shadow-sm border-0 p-4" id="res-form-box" style="display:none; position: sticky; top: 20px;">
-                    <h4 id="selected-title" class="fw-bold text-primary mb-4">Détails</h4>
-                    <form id="bookingForm">
-                        <input type="hidden" name="resource" id="resourceSelect" required>
+                <div class="card shadow-sm border-0 p-4" id="res-form-box" style="display:none;">
+    <h4 id="selected-title" class="fw-bold text-primary mb-1">Place : P1</h4>
+    <p id="display-date" class="text-muted fw-bold mb-4 small"></p>
 
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Date de début</label>
-                            <input type="datetime-local" name="debut" id="debutInput" class="form-control" required>
-                        </div>
+    <form id="bookingForm">
+        <input type="hidden" name="resource" id="resourceSelect" required>
+        
+        <input type="hidden" name="debut" id="finalDebut">
+        <input type="hidden" name="fin" id="finalFin">
 
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Date de fin</label>
-                            <input type="datetime-local" name="fin" id="finInput" class="form-control" required>
-                        </div>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Heure de début</label>
+            <div class="input-group">
+                <input type="text" id="heureDebutInput" class="form-control" readonly>
+                <span class="input-group-text"><i class="fa-regular fa-clock"></i></span>
+            </div>
+        </div>
 
-                        <button type="submit" id="submitBtn" class="btn btn-success w-100 fw-bold py-2 mt-2">
-                            Confirmer la réservation
-                        </button>
-                    </form>
-                </div>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Heure de fin</label>
+            <div class="input-group">
+                <input type="text" id="heureFinInput" class="form-control" readonly>
+                <span class="input-group-text"><i class="fa-regular fa-clock"></i></span>
+            </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-success w-100 fw-bold py-2">
+            Confirmer la réservation
+        </button>
+    </form>
+</div>
             </div>
         </div>
     </div>
-
-    <script>
-    let calendar;
-
-    document.addEventListener('DOMContentLoaded', function() {
-        var calendarEl = document.getElementById('calendar');
-        calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            locale: 'fr',
-            selectable: true,
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek'
-            },
-            // Fonction de formatage pour l'input datetime-local
-            select: function(info) {
-                function formatDateForInput(date) {
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    return `${year}-${month}-${day}T${hours}:${minutes}`;
-                }
-                document.getElementById('debutInput').value = formatDateForInput(info.start);
-                document.getElementById('finInput').value = formatDateForInput(info.end);
-            }
-        });
-        calendar.render();
-    });
-
-    function selectPlace(id, nom) {
-        document.querySelectorAll('.place-btn').forEach(btn => btn.classList.remove('selected'));
-        document.getElementById('btn-' + id).classList.add('selected');
-
-        document.getElementById('resourceSelect').value = id;
-        document.getElementById('selected-title').innerText = "Place : " + nom;
-        
-        document.getElementById('calendar').style.display = 'block';
-        document.getElementById('res-form-box').style.display = 'block';
-
-        setTimeout(() => {
-            calendar.updateSize();
-            calendar.setOption('events', '/workspace_connect/reservation/getEvents?id_resource=' + id);
-            calendar.refetchEvents();
-        }, 50);
-    }
-
-    // Gestion de l'envoi AJAX
-    document.getElementById('bookingForm').addEventListener('submit', function(e) {
-        e.preventDefault(); 
-
-        const formData = new FormData(this);
-        const msgDiv = document.getElementById('ajax-message');
-        const submitBtn = document.getElementById('submitBtn');
-
-        submitBtn.disabled = true;
-        submitBtn.innerText = "Traitement...";
-
-        fetch('/workspace_connect/reservation/store', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            // 1. Affichage du message avec les classes Bootstrap
-            msgDiv.innerHTML = data.message;
-            msgDiv.className = data.success ? "alert alert-success" : "alert alert-danger";
-            msgDiv.style.display = "block"; // On s'assure qu'il est visible
-
-            // 2. Remonter en haut de la page pour voir le message
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            if (data.success) {
-                calendar.refetchEvents();
-                document.getElementById('debutInput').value = "";
-                document.getElementById('finInput').value = "";
-            }
-
-            // 3. Faire disparaître le message après 3 secondes
-            setTimeout(() => {
-                // Effet de disparition douce (fade out)
-                msgDiv.style.transition = "opacity 0.5s ease";
-                msgDiv.style.opacity = "0";
-                
-                // On cache complètement après l'animation
-                setTimeout(() => {
-                    msgDiv.style.display = "none";
-                    msgDiv.style.opacity = "1"; // On remet l'opacité à 1 pour la prochaine fois
-                }, 500);
-            }, 3000);
-        })
-        .catch(error => {
-            msgDiv.innerHTML = "❌ Erreur de connexion au serveur.";
-            msgDiv.className = "alert alert-danger";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        })
-        .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "Confirmer la réservation";
-        });
-    });
-    </script>
+    
+<script src="/workspace_connect/public/js/parking.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script> <!--pour l'horloge-->

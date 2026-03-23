@@ -75,3 +75,27 @@
         grid-template-columns: repeat(3, 1fr);
     }
 }
+
+.input-group-text {
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.input-group-text:hover {
+    background-color: #e2e6ea;
+    color: #28a745;
+}
+
+#debutInput, #finInput {
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.flatpickr-calendar.noCalendar {
+    width: 150px; /* Plus étroit */
+}
+
+.flatpickr-time {
+    border-top: none !important;
+}
