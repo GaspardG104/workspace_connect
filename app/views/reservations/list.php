@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="/workspace_connect/public/styles/style_list_reservations.css">
+
 <div class="container mt-4">
     <h2><i class="fa-solid fa-list-check me-2 text-primary"></i>Gestion des réservations</h2>
 
@@ -28,7 +30,7 @@
     <div class="card shadow-sm border-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-dark">
+                <thead>
                     <tr>
                         <th>Utilisateur</th>
                         <th>Ressource</th>
@@ -46,7 +48,7 @@
     </div>
 </div>
 
-                        <!--Pour la partie de message de suppression pour prévenirs les participants-->
+<!--Pour la partie de message de suppression pour prévenirs les participants-->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
