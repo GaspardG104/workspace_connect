@@ -132,9 +132,15 @@
                                                     </div>
                                                 </td>
                                                 <td class="text-end pe-3">
-                                                    <button class="btn btn-sm btn-outline-danger border-0"><i class="fas fa-trash-alt"></i></button>
-                                                </td>
-                                            </tr>
+                                                    <?php if ($r['role_dans_resa'] === 'Organisateur'): ?>
+                                                        <button class="btn btn-sm btn-outline-danger" 
+                                                        title="Annuler ma réservation"
+                                                        onclick="prepareDelete(<?= $r['id'] ?>, '<?= addslashes($r['resource_name']) ?>', '<?= $r['resource_type'] ?>')">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                        </button>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-light text-muted border">Invité</span>
+                                                    <?php endif; ?>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
                                 </tbody>
@@ -145,6 +151,36 @@
             </div>
         </div>
     </div>
+
+    <!-- pour la suppression de réservation et prévénirs les participants-->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fa-solid fa-exclamation-triangle me-2"></i>Annuler ma réservation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">Voulez-vous vraiment annuler cette réservation ?</p>
+                
+                <div id="notificationOptions" class="mt-3 p-3 bg-light rounded border">
+                    <p class="small fw-bold mb-2 text-muted">Options de notification :</p>
+                    <div class="form-check" id="optionInvites">
+                        <input class="form-check-input" type="checkbox" id="notifyInvites" checked>
+                        <label class="form-check-label small" for="notifyInvites">
+                            Prévenir les participants par email de l'annulation
+                        </label>
+                    </div>
+                    <input type="hidden" id="notifyOrganizer" value="false">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Conserver</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Confirmer l'annulation</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 // Logique de filtrage
@@ -262,5 +298,66 @@ btnSave.addEventListener('click', () => {
         }
     });
 });
+
+let bookingToDelete = null;
+
+function prepareDelete(id, resourceName, resourceType) { // <-- On change 'hasInvites' par 'resourceType'
+    bookingToDelete = id;
+    
+    // Message personnalisé
+    document.getElementById('deleteMessage').innerHTML = `Voulez-vous vraiment annuler votre réservation pour : <strong>${resourceName}</strong> ?`;
+    
+    const optionInvites = document.getElementById('optionInvites');
+
+    // On vérifie le type de ressource pour afficher les options
+    if (resourceType && resourceType.toLowerCase() === 'salle') {
+        optionInvites.style.display = 'block'; 
+    } else {
+        optionInvites.style.display = 'none';
+        const checkbox = document.getElementById('notifyInvites');
+        if (checkbox) checkbox.checked = false;
+    }
+
+    const myModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    myModal.show();
+}
+
+document.getElementById('confirmDeleteBtn').onclick = function() {
+    const btn = this;
+    const originalText = btn.innerHTML;
+    
+    // Récupération des choix
+    const notifyInvites = document.getElementById('notifyInvites').checked;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Annulation...';
+
+    const formData = new FormData();
+    formData.append('notifyInvites', notifyInvites);
+    formData.append('notifyOrganizer', 'false'); // L'utilisateur est l'organisateur
+
+    // On utilise la même API que l'admin
+    fetch(`/workspace_connect/reservations/delete/${bookingToDelete}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Fermeture et rechargement de la page pour voir les changements
+            location.reload(); 
+        } else {
+            alert("Erreur : " + data.message);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Une erreur technique est survenue.");
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+};
 </script>
 

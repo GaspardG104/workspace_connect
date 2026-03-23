@@ -94,9 +94,27 @@ public function delete($id) {
         echo json_encode(['success' => false, 'message' => 'ID manquant.']);
         exit;
     }
-
+        
     try {
         // --- RÉCUPÉRATION DES INFOS AVANT SUPPRESSION ---
+        // On récupère d'abord la réservation pour vérifier qui l'a faite
+        $stmtCheck = $this->db->prepare("SELECT id_user FROM bookings WHERE id = ?");
+        $stmtCheck->execute([$id]);
+        $booking = $stmtCheck->fetch();
+
+        if (!$booking) {
+            echo json_encode(['success' => false, 'message' => 'Réservation introuvable.']);
+            exit;
+        }
+
+        // SÉCURITÉ : Autorisé si Admin (1) OU si c'est MA réservation
+        $isAdmin = ($_SESSION['user_role'] == 1);
+        $isOwner = ($booking['id_user'] == $_SESSION['user_id']);
+
+        if (!$isAdmin && !$isOwner) {
+            echo json_encode(['success' => false, 'message' => 'Vous n\'avez pas le droit de supprimer cette réservation.']);
+            exit;
+        }
         // On récupère les choix envoyés par la modale (checkboxes)
         $notifyInvites = isset($_POST['notifyInvites']) && $_POST['notifyInvites'] === 'true';
         $notifyOrganizer = isset($_POST['notifyOrganizer']) && $_POST['notifyOrganizer'] === 'true';
