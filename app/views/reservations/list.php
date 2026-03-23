@@ -82,16 +82,33 @@ function renderTable(data) {
         let row = `
             <tr>
                 <td>
-                    <div class="d-flex align-items-center">
-                        <div class="avatar-sm me-2 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:32px; height:32px; font-size: 0.8rem;">
-                            ${res.user_prenom[0]}${res.user_nom[0]}
-                        </div>
-                        <div>
-                            <span class="fw-bold d-block text-dark">${res.user_prenom} ${res.user_nom}</span>
-                            <small class="text-muted">${res.role_label}</small>
-                        </div>
-                    </div>
-                </td>
+    <div class="d-flex align-items-center">
+        <div class="avatar-sm me-2 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:32px; height:32px; font-size: 0.8rem;">
+            ${res.user_prenom[0]}${res.user_nom[0]}
+        </div>
+        <div>
+            <div class="d-flex align-items-center">
+                <span class="fw-bold text-dark me-2">${res.user_prenom} ${res.user_nom}</span>
+                
+                ${res.nb_invites > 0 ? `
+                    <span class="badge rounded-pill bg-info text-dark cursor-pointer" 
+                          style="cursor: pointer; font-size: 0.7rem;" 
+                          onclick="toggleAttendees(${res.id})" 
+                          title="Cliquer pour voir les invités">
+                        +${res.nb_invites}
+                    </span>
+                ` : ''}
+            </div>
+            <small class="text-muted d-block">${res.role_label}</small>
+            
+            <div id="attendees-${res.id}" class="d-none mt-1 animate__animated animate__fadeIn">
+                <small class="text-info fw-bold" style="font-size: 0.75rem;">
+                    <i class="fa-solid fa-users me-1"></i> ${res.liste_invites}
+                </small>
+            </div>
+        </div>
+    </div>
+</td>
                 <td>
                     <span class="fw-bold d-block">${res.resource_nom}</span>
                     <small class="badge bg-light text-dark border text-uppercase" style="font-size: 0.6rem;">${res.resource_type}</small>
@@ -161,6 +178,17 @@ function resetFilters() {
     sortSelect.value = 'date_debut';
     fetchReservations();
 }
+
+
+function toggleAttendees(bookingId) {
+    const element = document.getElementById(`attendees-${bookingId}`);
+    if (element.classList.contains('d-none')) {
+        element.classList.remove('d-none');
+    } else {
+        element.classList.add('d-none');
+    }
+}
+
 
 // Chargement initial
 document.addEventListener('DOMContentLoaded', fetchReservations);

@@ -26,34 +26,35 @@ class ReservationController {
         include $viewPath . 'layouts/footer.php';
     }
 
-    /**
-     * API AJAX pour la recherche et le filtrage des réservations
-     */
+
     public function search() {
         $search = $_GET['search'] ?? '';
         $date_filter = $_GET['date'] ?? '';
         $sort_by = $_GET['sort'] ?? 'date_debut';
         $order = $_GET['order'] ?? 'DESC';
 
-        // La requête SQL utilise maintenant la table 'attendees' pour la recherche par invité
-        $sql = "SELECT b.*, u.nom as user_nom, u.prenom as user_prenom, r.nom as resource_nom, r.type as resource_type,
-                CASE 
-                    WHEN (u.nom ILIKE :search OR u.prenom ILIKE :search) THEN 'Organisateur'
-                    ELSE 'Invité'
-                END as role_label
-                FROM bookings b
-                JOIN users u ON b.id_user = u.id
-                JOIN resources r ON b.id_resource = r.id
-                WHERE (
-                    u.nom ILIKE :search 
-                    OR u.prenom ILIKE :search 
-                    OR r.nom ILIKE :search
-                    -- Recherche dans la table attendees au lieu de booking_invites
-                    OR b.id IN (
-                        SELECT att.id_booking FROM attendees att 
-                        WHERE att.nom_invite ILIKE :search OR att.email ILIKE :search
-                    )
-                )";
+       // Remplace la requête SQL dans search() par celle-ci :
+$sql = "SELECT b.*, u.nom as user_nom, u.prenom as user_prenom, r.nom as resource_nom, r.type as resource_type,
+        -- Récupère les invités séparés par des virgules
+        (SELECT STRING_AGG(nom_invite, ', ') FROM attendees WHERE id_booking = b.id) as liste_invites,
+        -- Compte le nombre d'invités
+        (SELECT COUNT(*) FROM attendees WHERE id_booking = b.id) as nb_invites,
+        CASE 
+            WHEN (u.nom ILIKE :search OR u.prenom ILIKE :search) THEN 'Organisateur'
+            ELSE 'Invité'
+        END as role_label
+        FROM bookings b
+        JOIN users u ON b.id_user = u.id
+        JOIN resources r ON b.id_resource = r.id
+        WHERE (
+            u.nom ILIKE :search 
+            OR u.prenom ILIKE :search 
+            OR r.nom ILIKE :search
+            OR b.id IN (
+                SELECT id_booking FROM attendees 
+                WHERE nom_invite ILIKE :search OR email ILIKE :search
+            )
+        )";
 
         // Ajout du filtre par date si spécifié
         if (!empty($date_filter)) {
