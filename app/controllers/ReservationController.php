@@ -16,7 +16,7 @@ class ReservationController {
      */
     public function listAll() {
         // Vérification des droits : Seuls les rôles 1 (Admin) et 2 (Manager) y ont accès
-        if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], [1, 2])) {
+        if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], [1, 3])) {
             header('Location: /workspace_connect/home');
             exit;
         }
