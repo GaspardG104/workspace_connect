@@ -81,32 +81,73 @@ $sql = "SELECT b.*, u.nom as user_nom, u.prenom as user_prenom, r.nom as resourc
     /**
      * Supprime une réservation (Action réservée à l'Administrateur)
      */
-    public function delete($id) {
-        header('Content-Type: application/json');
+public function delete($id) {
+    header('Content-Type: application/json');
 
-        // Sécurité stricte : Seul le rôle 1 peut supprimer
-        if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
-            echo json_encode(['success' => false, 'message' => 'Autorisation refusée.']);
-            exit;
-        }
-
-        if (!$id) {
-            echo json_encode(['success' => false, 'message' => 'ID manquant.']);
-            exit;
-        }
-
-        try {
-            // La suppression en cascade en SQL s'occupera de nettoyer la table attendees
-            $stmt = $this->db->prepare("DELETE FROM bookings WHERE id = ?");
-            $result = $stmt->execute([$id]);
-
-            if ($result) {
-                echo json_encode(['success' => true, 'message' => 'Réservation supprimée avec succès.']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Erreur lors de la suppression.']);
-            }
-        } catch (\Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Erreur technique : ' . $e->getMessage()]);
-        }
+    // 1. Sécurité stricte 
+    if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
+        echo json_encode(['success' => false, 'message' => 'Autorisation refusée.']);
+        exit;
     }
+
+    if (!$id) {
+        echo json_encode(['success' => false, 'message' => 'ID manquant.']);
+        exit;
+    }
+
+    try {
+        // --- RÉCUPÉRATION DES INFOS AVANT SUPPRESSION ---
+        // On récupère les choix envoyés par la modale (checkboxes)
+        $notifyInvites = isset($_POST['notifyInvites']) && $_POST['notifyInvites'] === 'true';
+        $notifyOrganizer = isset($_POST['notifyOrganizer']) && $_POST['notifyOrganizer'] === 'true';
+
+        if ($notifyInvites || $notifyOrganizer) {
+            // On récupère l'email de l'organisateur et la liste des emails des invités
+            $stmtInfo = $this->db->prepare("
+                SELECT b.id_user, u.email as organizer_email, r.nom as resource_name 
+                FROM bookings b
+                JOIN users u ON b.id_user = u.id
+                JOIN resources r ON b.id_resource = r.id
+                WHERE b.id = ?
+            ");
+            $stmtInfo->execute([$id]);
+            $info = $stmtInfo->fetch(PDO::FETCH_ASSOC);
+
+            if ($info) {
+                // TODO: Plus tard, développer la logique d'envoi de mail ici
+                // Pour l'instant, on se contente de préparer les données
+                if ($notifyInvites) {
+                    $stmtAtt = $this->db->prepare("SELECT email FROM attendees WHERE id_booking = ?");
+                    $stmtAtt->execute([$id]);
+                    $emailsInvites = $stmtAtt->fetchAll(PDO::FETCH_COLUMN);
+                    
+                    // Ici on pourra appeler la fonction de mail pour les invités
+                    // ex: $this->mailService->sendCancelToInvites($emailsInvites, $info['resource_name']);
+                }
+
+                // Logique pour l'organisateur (si c'est un admin qui supprime à sa place)
+                if ($notifyOrganizer && $info['id_user'] != $_SESSION['user_id']) {
+                    // Ici tu pourras appeler ta fonction de mail pour l'organisateur
+                    // ex: $this->mailService->sendCancelToOrganizer($info['organizer_email'], $info['resource_name']);
+                }
+            }
+        }
+        // --- FIN DE LA LOGIQUE DE NOTIFICATION ---
+
+
+        // 2. Suppression (Ta logique d'origine conservée)
+        // La suppression en cascade en SQL s'occupera de nettoyer la table attendees
+        $stmt = $this->db->prepare("DELETE FROM bookings WHERE id = ?");
+        $result = $stmt->execute([$id]);
+
+        if ($result) {
+            echo json_encode(['success' => true, 'message' => 'Réservation supprimée avec succès.']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Erreur lors de la suppression.']);
+        }
+
+    } catch (\Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Erreur technique : ' . $e->getMessage()]);
+    }
+}
 }

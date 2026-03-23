@@ -46,6 +46,40 @@
     </div>
 </div>
 
+                        <!--Pour la partie de message de suppression pour prévenirs les participants-->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="fa-solid fa-exclamation-triangle me-2"></i>Confirmation de suppression</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="deleteMessage"></p>
+        <div id="notificationOptions">
+            <hr>
+            <div class="form-check mb-2" id="optionInvites">
+                <input class="form-check-input" type="checkbox" id="notifyInvites" checked>
+                <label class="form-check-label" for="notifyInvites">
+                    Prévenir les participants par email
+                </label>
+            </div>
+            <div class="form-check" id="optionOrganizer">
+                <input class="form-check-input" type="checkbox" id="notifyOrganizer" checked>
+                <label class="form-check-label" for="notifyOrganizer">
+                    Prévenir l'organisateur de l'annulation
+                </label>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Confirmer la suppression</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 const searchInput = document.getElementById('ajax-search');
 const dateInput = document.getElementById('ajax-date');
@@ -82,50 +116,52 @@ function renderTable(data) {
         let row = `
             <tr>
                 <td>
-    <div class="d-flex align-items-center">
-        <div class="avatar-sm me-2 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:32px; height:32px; font-size: 0.8rem;">
-            ${res.user_prenom[0]}${res.user_nom[0]}
-        </div>
-        <div>
-            <div class="d-flex align-items-center">
-                <span class="fw-bold text-dark me-2">${res.user_prenom} ${res.user_nom}</span>
-                
-                ${res.nb_invites > 0 ? `
-                    <span class="badge rounded-pill bg-info text-dark cursor-pointer" 
-                          style="cursor: pointer; font-size: 0.7rem;" 
-                          onclick="toggleAttendees(${res.id})" 
-                          title="Cliquer pour voir les invités">
-                        +${res.nb_invites}
-                    </span>
-                ` : ''}
-            </div>
-            <small class="text-muted d-block">${res.role_label}</small>
-            
-            <div id="attendees-${res.id}" class="d-none mt-1 animate__animated animate__fadeIn">
-                <small class="text-info fw-bold" style="font-size: 0.75rem;">
-                    <i class="fa-solid fa-users me-1"></i> ${res.liste_invites}
-                </small>
-            </div>
-        </div>
-    </div>
-</td>
-                <td>
-                    <span class="fw-bold d-block">${res.resource_nom}</span>
-                    <small class="badge bg-light text-dark border text-uppercase" style="font-size: 0.6rem;">${res.resource_type}</small>
-                </td>
-                <td>
-                    <div class="small">
-                        <span class="text-muted">Le :</span> ${new Date(res.date_debut).toLocaleString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit'})}
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm me-2 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:32px; height:32px; font-size: 0.8rem;">
+                        ${res.user_prenom[0]}${res.user_nom[0]}
                     </div>
-                </td>
-                <td><span class="badge ${statusColor}">${res.statut}</span></td>
+                <div>
+                    <div class="d-flex align-items-center">
+                    <span class="fw-bold text-dark me-2">${res.user_prenom} ${res.user_nom}</span>
+                            
+                        ${res.nb_invites > 0 ? `
+                            <span class="badge rounded-pill bg-info text-dark cursor-pointer" 
+                                style="cursor: pointer; font-size: 0.7rem;" 
+                                onclick="toggleAttendees(${res.id})" 
+                                title="Cliquer pour voir les invités">
+                                +${res.nb_invites}
+                            </span>
+                        ` : ''}
+                    </div>
+                    <small class="text-muted d-block">${res.role_label}</small>
+                    <div id="attendees-${res.id}" class="d-none mt-1 animate__animated animate__fadeIn">
+                        <small class="text-info fw-bold" style="font-size: 0.75rem;">
+                            <i class="fa-solid fa-users me-1"></i> ${res.liste_invites}
+                                        </small>
+                    </div>
+                </div>
+            </div>
+            </td>
+        <td>
+            <span class="fw-bold d-block">${res.resource_nom}</span>
+            <small class="badge bg-light text-dark border text-uppercase" style="font-size: 0.6rem;">${res.resource_type}</small>
+        </td>
+        <td>
+            <div class="small">
+                <span class="text-muted">Le :</span> ${new Date(res.date_debut).toLocaleString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit'})}
+            </div>
+        </td>
+        <td><span class="badge ${statusColor}">${res.statut}</span></td>
         `;
 
         // Si Admin, on ajoute la colonne Action avec le bouton poubelle
+        const fullName = `${res.user_prenom} ${res.user_nom}`;
+
         if (isAdmin) {
             row += `
                 <td class="text-end pe-4">
-                    <button class="btn btn-sm btn-outline-danger border-0" title="Supprimer" onclick="deleteBooking(${res.id}, this)">
+                    <button class="btn btn-sm btn-outline-danger border-0" title="Supprimer" 
+                        onclick="prepareDelete(${res.id}, '${fullName.replace(/'/g, "\\'")}', ${res.nb_invites || 0}, ${res.id_user})">
                         <i class="fa-solid fa-trash-alt"></i>
                     </button>
                 </td>
@@ -136,41 +172,78 @@ function renderTable(data) {
         tableBody.insertAdjacentHTML('beforeend', row);
     });
 }
+// --- LOGIQUE DE SUPPRESSION ---
+let bookingToDelete = null;
 
-// Nouvelle fonction de suppression
-function deleteBooking(id, btn) {
-    if (!confirm("Voulez-vous vraiment supprimer cette réservation ?")) return;
+// CETTE FONCTION DOIT S'APPELER prepareDelete (comme dans le onclick du bouton)
+function prepareDelete(id, organizerName, nbInvites, organizerId) {
+    bookingToDelete = id;
+    
+    // On récupère l'ID de session via PHP
+    const currentUserId = <?= $_SESSION['user_id'] ?>;
+    
+    // Affichage du nom dans la modale
+    document.getElementById('deleteMessage').innerHTML = `Voulez-vous vraiment supprimer la réservation de <strong>${organizerName}</strong> ?`;
+    
+    // Gestion de l'affichage des options de mail
+    const optionInvites = document.getElementById('optionInvites');
+    const optionOrganizer = document.getElementById('optionOrganizer');
+    
+    if(optionInvites) optionInvites.style.display = (nbInvites > 0) ? 'block' : 'none';
+    if(optionOrganizer) optionOrganizer.style.display = (organizerId != currentUserId) ? 'block' : 'none';
 
-    // Animation du bouton
-    const icon = btn.querySelector('i');
-    icon.className = "fa-solid fa-spinner fa-spin";
+    // Ouverture de la modale
+    const modalEl = document.getElementById('deleteModal');
+    const myModal = new bootstrap.Modal(modalEl);
+    myModal.show();
+}
+
+// Action du bouton de confirmation
+document.getElementById('confirmDeleteBtn').onclick = function() {
+    const btn = this;
+    const originalText = btn.innerHTML;
+    
+    const notifyInvites = document.getElementById('notifyInvites')?.checked || false;
+    const notifyOrganizer = document.getElementById('notifyOrganizer')?.checked || false;
+
     btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Suppression...';
 
-    fetch(`/workspace_connect/reservations/delete/${id}`, {
-        method: 'POST'
+    const formData = new FormData();
+    formData.append('notifyInvites', notifyInvites);
+    formData.append('notifyOrganizer', notifyOrganizer);
+
+    fetch(`/workspace_connect/reservations/delete/${bookingToDelete}`, {
+        method: 'POST',
+        body: formData
     })
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            // On rafraîchit la liste
-            fetchReservations();
+            // Fermer la modale
+            const modalEl = document.getElementById('deleteModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if(modalInstance) modalInstance.hide();
+            
+            fetchReservations(); // Recharger la liste
         } else {
             alert("Erreur : " + data.message);
-            icon.className = "fa-solid fa-trash-alt";
-            btn.disabled = false;
         }
     })
-    .catch(err => {
-        console.error("Erreur suppression:", err);
-        alert("Une erreur technique est survenue.");
-        icon.className = "fa-solid fa-trash-alt";
+    .catch(err => console.error(err))
+    .finally(() => {
         btn.disabled = false;
+        btn.innerHTML = originalText;
     });
-}
+};
 
-searchInput.addEventListener('input', fetchReservations);
-dateInput.addEventListener('change', fetchReservations);
-sortSelect.addEventListener('change', fetchReservations);
+// --- AUTRES FONCTIONS ---
+function toggleAttendees(bookingId) {
+    const element = document.getElementById(`attendees-${bookingId}`);
+    if (element) {
+        element.classList.toggle('d-none');
+    }
+}
 
 function resetFilters() {
     searchInput.value = '';
@@ -179,17 +252,9 @@ function resetFilters() {
     fetchReservations();
 }
 
+searchInput.addEventListener('input', fetchReservations);
+dateInput.addEventListener('change', fetchReservations);
+sortSelect.addEventListener('change', fetchReservations);
 
-function toggleAttendees(bookingId) {
-    const element = document.getElementById(`attendees-${bookingId}`);
-    if (element.classList.contains('d-none')) {
-        element.classList.remove('d-none');
-    } else {
-        element.classList.add('d-none');
-    }
-}
-
-
-// Chargement initial
 document.addEventListener('DOMContentLoaded', fetchReservations);
 </script>
