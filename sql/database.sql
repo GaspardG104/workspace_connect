@@ -60,3 +60,13 @@ CREATE TABLE attendees (
     nom_invite VARCHAR(100)
 );
 
+-- 6.1. Table pour les réservations récurentes
+CREATE TABLE booking_series (
+    id SERIAL PRIMARY KEY,
+    rrule_string TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6.2. Ajout de la clé étrangère dans ta table actuelle
+ALTER TABLE bookings 
+ADD COLUMN id_series INTEGER REFERENCES booking_series(id) ON DELETE CASCADE;
