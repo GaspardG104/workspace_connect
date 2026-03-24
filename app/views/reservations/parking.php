@@ -3,9 +3,9 @@
 
 <body class="bg-light">
 
-    <div class="container">
+    <div class="container-fluid py-4">
         <div class="text-center mb-4">
-            <h1 class="fw-bold">Réserver ma place <i class="fa-solid fa-square-parking text-primary"></i></h1>
+            <h1 class="fw-bold text-white">Réserver ma place <i class="fa-solid fa-square-parking"></i></h1>
             <div id="ajax-message" class="fw-bold mt-2"></div>
         </div>
 

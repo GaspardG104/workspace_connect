@@ -3,8 +3,8 @@
 <div id="ajax-message" class="alert shadow-lg"></div>
 
 <div class="container-fluid py-4">
-    <div class="text-center mb-4">
-        <h1 class="fw-bold">Réserver mon bureau</h1>
+    <div class="text-center mb-4 text-white" >
+        <h1><i class="fa-solid fa-list-check me-2"></i> Réserver un bureau, salle de réunion, box</h2>
     </div>
     <div class="row g-4 transition-layout justify-content-center" id="layout-wrapper">
         <div class="col-lg-7 transition-all" id="plan-column">

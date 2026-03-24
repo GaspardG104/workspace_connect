@@ -1,9 +1,14 @@
 <link rel="stylesheet" href="/workspace_connect/public/styles/style_users.css">
 
 <div class="container-fluid py-4">
+    <div class="text-center mb-4 text-white" >
+        <h1><i class="fa-solid fa-address-book"></i> Gestion des utilisateurs</h2>
+    </div>
+
     <?php if (isset($_SESSION['msg'])): ?>
     <div class="alert alert-info py-2 small"><?= $_SESSION['msg']; unset($_SESSION['msg']); ?></div>
     <?php endif; ?>
+
     <div class="row">
         <div class="col-lg-4 mb-4">
             <div class="card shadow-sm border-0" style="border-radius: 15px;">
@@ -95,6 +100,13 @@
                                             4 => 'bg-success',    
                                             default => 'bg-info'// Autre rôle
                                             } ?>">
+                                    <i class="<?= match($u['id_role']) {
+                                            1 => 'fa-solid fa-shield-halved',
+                                            2 => 'fa-solid fa-user-tie',       // Exemple pour Manager
+                                            3 => 'fa-solid fa-handshake',           // Exemple pour Collaborateur
+                                            4 => 'fa-solid fa-screwdriver-wrench',           // Exemple pour un autre rôle
+                                            default => 'fa-regular fa-user'                      // Vide si aucun rôle ne correspond
+                                        } ?> me-1"></i>
                                             <?= htmlspecialchars($u['role_nom']) ?>
                                         </span>
                                     </td>

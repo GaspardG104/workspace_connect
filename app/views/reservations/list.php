@@ -1,8 +1,9 @@
 <link rel="stylesheet" href="/workspace_connect/public/styles/style_list_reservations.css">
 
-<div class="container mt-4">
-    <h2><i class="fa-solid fa-list-check me-2 text-primary"></i>Gestion des réservations</h2>
-
+<div class="container-fluid py-4">
+    <div class="text-center mb-4 text-white" >
+        <h1><i class="fa-solid fa-list-check me-2"></i> Gestion des réservations</h2>
+    </div>
     <div class="row g-3 mb-4 mt-2 p-3 bg-light rounded shadow-sm border">
         <div class="col-md-4">
             <label class="small fw-bold">Recherche instantanée</label>
