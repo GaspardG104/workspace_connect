@@ -48,7 +48,7 @@ switch ($urlParts[0]) {
             if ($action === 'parking') {
                 $controller->parking();
             } elseif ($action === 'desk') {
-                $controller->desk(); // <-- ICI : appeler la méthode desk() !
+                $controller->desk(); 
             } elseif ($action === 'getEvents') {
                 $controller->getEvents();
             } elseif ($action === 'store') {

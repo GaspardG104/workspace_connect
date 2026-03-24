@@ -59,70 +59,83 @@ class BookingController {
     }
 
 
-    // Gère l'enregistrement 
-public function store() {
-    $db = require __DIR__ . '/../../config/db.php';
-    
-    // On vérifie la session
-    if (!isset($_SESSION['user_id'])) {
-        echo json_encode(['success' => false, 'message' => "Session expirée."]);
-        exit;
-    }
-
-    $id_user = $_SESSION['user_id'];
-    
-    // Correction des noms : Ton formulaire semble envoyer 'resource' et non 'id_resource'
-    $id_resource = $_POST['resource'] ?? $_POST['id_resource'] ?? null;
-    $date_debut = $_POST['debut'] ?? null;
-    $date_fin = $_POST['fin'] ?? null;
-    $invites = $_POST['invites'] ?? []; // Tableau d'IDs d'utilisateurs
-
-    if (!$id_resource || !$date_debut || !$date_fin) {
-        echo json_encode(['success' => false, 'message' => "❌ Données manquantes (Ressource ou Dates)."]);
-        exit;
-    }
-
-    try {
-        $db->beginTransaction();
-
-        // 1. Insertion du Booking principal
-        $sql = "INSERT INTO bookings (id_user, id_resource, date_debut, date_fin, statut) 
-                VALUES (:user, :res, :debut, :fin, 'confirme')";
-        $stmt = $db->prepare($sql);
-        $stmt->execute([
-            'user'  => $id_user,
-            'res'   => $id_resource,
-            'debut' => $date_debut,
-            'fin'   => $date_fin
-        ]);
-
-        $bookingId = $db->lastInsertId();
-
-        // 2. Insertion dans 'attendees' (on transforme les IDs en Emails/Noms)
-        if (!empty($invites) && is_array($invites)) {
-            $stmtUser = $db->prepare("SELECT email, nom, prenom FROM users WHERE id = ?");
-            $stmtAt = $db->prepare("INSERT INTO attendees (id_booking, email, nom_invite) VALUES (?, ?, ?)");
-
-            foreach ($invites as $id_invite) {
-                $stmtUser->execute([$id_invite]);
-                $u = $stmtUser->fetch(PDO::FETCH_ASSOC);
-                
-                if ($u) {
-                    $nomComplet = $u['prenom'] . ' ' . $u['nom'];
-                    $stmtAt->execute([$bookingId, $u['email'], $nomComplet]);
-                }
-            }
+        // Gère l'enregistrement 
+    public function store() {
+        $db = require __DIR__ . '/../../config/db.php';
+        
+        // On vérifie la session
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => "Session expirée."]);
+            exit;
         }
 
-        $db->commit();
-        echo json_encode(['success' => true, 'message' => "✅ Réservation réussie !"]);
+        $id_user = $_SESSION['user_id'];
+        
+        // Correction des noms : Ton formulaire semble envoyer 'resource' et non 'id_resource'
+        $id_resource = $_POST['resource'] ?? $_POST['id_resource'] ?? null;
+        $date_debut = $_POST['debut'] ?? null;
+        $date_fin = $_POST['fin'] ?? null;
+        $invites = $_POST['invites'] ?? []; // Tableau d'IDs d'utilisateurs
 
-    } catch (\Exception $e) {
-        if ($db->inTransaction()) $db->rollBack();
-        error_log("Erreur Booking : " . $e->getMessage());
-        echo json_encode(['success' => false, 'message' => "❌ Erreur : " . $e->getMessage()]);
+        $is_recurring = isset($_POST['is_recurring']) && $_POST['is_recurring'] === 'true';
+        $type_recurence = $_POST['recurrence_type'] ?? 'WEEKLY'; // DAILY, WEEKLY, MONTHLY
+        $nb_repetitions = isset($_POST['recurrence_count']) ? intval($_POST['recurrence_count']) : 1;
+
+        if (!$id_resource || !$date_debut || !$date_fin) {
+            echo json_encode(['success' => false, 'message' => "❌ Données manquantes (Ressource ou Dates)."]);
+            exit;
+        }
+
+    try {
+            $db->beginTransaction();
+
+            // On prépare les requêtes une seule fois pour être plus rapide
+            $sqlBooking = "INSERT INTO bookings (id_user, id_resource, date_debut, date_fin, statut) VALUES (?, ?, ?, ?, 'confirme')";
+            $stmtBooking = $db->prepare($sqlBooking);
+
+            // 1. Définir les dates à insérer (on commence par la date choisie)
+            $dates_a_reserver = [[$date_debut, $date_fin]];
+
+            // 2. Si récurrent, on calcule les dates suivantes
+            if ($is_recurring) {
+                for ($i = 1; $i <= $nb_repetitions; $i++) {
+                    $interval = ($type_recurence === 'DAILY') ? "P{$i}D" : (($type_recurence === 'MONTHLY') ? "P{$i}M" : "P{$i}W");
+                    
+                    $d = new \DateTime($date_debut);
+                    $f = new \DateTime($date_fin);
+                    $d->add(new \DateInterval($interval));
+                    $f->add(new \DateInterval($interval));
+
+                    $dates_a_reserver[] = [$d->format('Y-m-d H:i:s'), $f->format('Y-m-d H:i:s')];
+                }
+            }
+
+            // 3. Boucle d'insertion
+            foreach ($dates_a_reserver as $creneau) {
+                $current_debut = $creneau[0];
+                $current_fin = $creneau[1];
+
+                // OPTIONNEL : Vérifier ici si $this->isResourceAvailable($db, $id_resource, $current_debut, $current_fin)
+                
+                $stmtBooking->execute([$id_user, $id_resource, $current_debut, $current_fin]);
+                $newBookingId = $db->lastInsertId();
+
+                // 4. Ajouter les invités pour CHAQUE occurrence
+                if (!empty($invites)) {
+                    $this->addAttendees($db, $newBookingId, $invites);
+                }
+            }
+
+            $db->commit();
+            echo json_encode(['success' => true, 'message' => "✅ Réservation(s) réussie(s) !"]);
+
+
+        } catch (\Exception $e) {
+            if ($db->inTransaction()) $db->rollBack();
+            error_log("Erreur Booking : " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => "❌ Erreur : " . $e->getMessage()]);
+        }
     }
-}
 
     public function getEvents() {
         $db = require __DIR__ . '/../../config/db.php';
