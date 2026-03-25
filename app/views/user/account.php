@@ -110,17 +110,21 @@
                                 </thead>
                                 <tbody>
                                     <?php if(empty($bookings)): ?>
-                                        <tr class="no-data"><td colspan="3" class="text-center py-5 text-muted">Aucune réservation trouvée.</td></tr>
+                                        <tr class="no-data">
+                                            <td colspan="3" class="text-center py-5 text-muted">Aucune réservation trouvée.</td>
+                                        </tr>
                                     <?php else: ?>
                                         <?php foreach($bookings as $r): ?>
                                             <tr data-type="<?= htmlspecialchars($r['resource_type']) ?>">
                                                 <td>
                                                     <span class="fw-bold d-block text-dark"><?= htmlspecialchars($r['resource_name']) ?></span>
                                                     <div class="d-flex gap-1">
-                                                        <small class="badge bg-light text-dark border text-uppercase" style="font-size: 0.65rem;"><?= htmlspecialchars($r['resource_type']) ?></small>
+                                                        <small class="badge bg-light text-dark border text-uppercase" style="font-size: 0.65rem;">
+                                                            <?= htmlspecialchars($r['resource_type']) ?>
+                                                        </small>
                                                         <?php if($r['resource_type'] === 'salle'): ?>
-                                                            <small class="badge <?= $r['role_dans_resa'] === 'Organisateur' ? 'bg-primary' : 'bg-info' ?> text-uppercase" style="font-size: 0.65rem;">
-                                                            <?= $r['role_dans_resa'] ?>
+                                                            <small class="badge <?= ($r['role_dans_resa'] === 'Organisateur') ? 'bg-primary' : 'bg-info' ?> text-uppercase" style="font-size: 0.65rem;">
+                                                                <?= htmlspecialchars($r['role_dans_resa']) ?>
                                                             </small>
                                                         <?php endif; ?>
                                                     </div>
@@ -134,13 +138,20 @@
                                                 <td class="text-end pe-3">
                                                     <?php if ($r['role_dans_resa'] === 'Organisateur'): ?>
                                                         <button class="btn btn-sm btn-outline-danger" 
-                                                        title="Annuler ma réservation"
-                                                        onclick="prepareDelete(<?= $r['id'] ?>, '<?= addslashes($r['resource_name']) ?>', '<?= $r['resource_type'] ?>')">
-                                                        <i class="fa-solid fa-trash-can"></i>
+                                                                title="Annuler ma réservation"
+                                                                onclick="prepareDelete(
+                                                                    <?= $r['id'] ?>, 
+                                                                    '<?= addslashes($r['resource_name']) ?>', 
+                                                                    '<?= $r['resource_type'] ?>', 
+                                                                    <?= $r['id_series'] ?? 'null' ?>
+                                                                )">
+                                                            <i class="fa-solid fa-trash-can me-1"></i> Annuler
                                                         </button>
                                                     <?php else: ?>
                                                         <span class="badge bg-light text-muted border">Invité</span>
                                                     <?php endif; ?>
+                                                </td>
+                                            </tr>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
                                 </tbody>
@@ -152,35 +163,42 @@
         </div>
     </div>
 
-    <!-- pour la suppression de réservation et prévénirs les participants-->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"><i class="fa-solid fa-exclamation-triangle me-2"></i>Annuler ma réservation</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="deleteMessage">Voulez-vous vraiment annuler cette réservation ?</p>
-                
-                <div id="notificationOptions" class="mt-3 p-3 bg-light rounded border">
-                    <p class="small fw-bold mb-2 text-muted">Options de notification :</p>
-                    <div class="form-check" id="optionInvites">
-                        <input class="form-check-input" type="checkbox" id="notifyInvites" checked>
-                        <label class="form-check-label small" for="notifyInvites">
-                            Prévenir les participants par email de l'annulation
-                        </label>
-                    </div>
-                    <input type="hidden" id="notifyOrganizer" value="false">
+        <!-- pour la suppression de réservation et prévénirs les participants-->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="fa-solid fa-exclamation-triangle me-2"></i>Annuler ma réservation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Conserver</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Confirmer l'annulation</button>
+                <div class="modal-body">
+                    <p id="deleteMessage">Voulez-vous vraiment annuler cette réservation ?</p>
+                    
+                    <div id="notificationOptions" class="mt-3 p-3 bg-light rounded border">
+                        <p class="small fw-bold mb-2 text-muted">Options de notification :</p>
+                        <div class="form-check" id="optionInvites">
+                            <input class="form-check-input" type="checkbox" id="notifyInvites" checked>
+                            <label class="form-check-label small" for="notifyInvites">
+                                Prévenir les participants par email de l'annulation
+                            </label>
+                        </div>
+                        <div class="mb-3 form-check" id="optionSeries" style="display: none;">
+                            <input type="checkbox" class="form-check-input" id="deleteAllSeries">
+                            <label class="form-check-label text-danger fw-bold" for="deleteAllSeries">
+                                Annuler toute la série de réservations
+                            </label>
+                        </div>
+                        <input type="hidden" id="notifyOrganizer" value="false">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Conserver</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Confirmer l'annulation</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
 
 <script>
 // Logique de filtrage
@@ -299,23 +317,41 @@ btnSave.addEventListener('click', () => {
     });
 });
 
+// On déclare ces deux variables en haut de ton script pour qu'elles soient accessibles partout
 let bookingToDelete = null;
+let currentBookingSeriesId = null; 
 
-function prepareDelete(id, resourceName, resourceType) { // <-- On change 'hasInvites' par 'resourceType'
+function prepareDelete(id, resourceName, resourceType, idSeries) { 
     bookingToDelete = id;
-    
-    // Message personnalisé
+    currentBookingSeriesId = idSeries; // On stocke l'ID de série
+
+    // 1. Message personnalisé
     document.getElementById('deleteMessage').innerHTML = `Voulez-vous vraiment annuler votre réservation pour : <strong>${resourceName}</strong> ?`;
     
     const optionInvites = document.getElementById('optionInvites');
+    const optionSeries = document.getElementById('optionSeries');
+    const checkboxSeries = document.getElementById('deleteAllSeries');
 
-    // On vérifie le type de ressource pour afficher les options
+    // On réinitialise la case à cocher de la série à chaque ouverture
+    if(checkboxSeries) checkboxSeries.checked = false;
+
+    // 2. Logique d'affichage selon le type de ressource
     if (resourceType && resourceType.toLowerCase() === 'salle') {
         optionInvites.style.display = 'block'; 
     } else {
         optionInvites.style.display = 'none';
         const checkbox = document.getElementById('notifyInvites');
         if (checkbox) checkbox.checked = false;
+    }
+
+    // 3. NOUVELLE LOGIQUE : Affichage de l'option Série
+    // On l'affiche uniquement si idSeries existe et n'est pas nul
+    if(optionSeries) {
+        if (idSeries && idSeries !== null && idSeries !== 'null' && idSeries !== 0) {
+            optionSeries.style.display = 'block';
+        } else {
+            optionSeries.style.display = 'none';
+        }
     }
 
     const myModal = new bootstrap.Modal(document.getElementById('deleteModal'));
@@ -326,28 +362,36 @@ document.getElementById('confirmDeleteBtn').onclick = function() {
     const btn = this;
     const originalText = btn.innerHTML;
     
-    // Récupération des choix
-    const notifyInvites = document.getElementById('notifyInvites').checked;
+    // 1. RÉCUPÉRATION DES CHOIX (Tes anciens + le nouveau)
+    // On utilise l'optionnel chaining ?. au cas où l'élément n'existe pas sur certaines pages
+    const notifyInvites = document.getElementById('notifyInvites')?.checked || false;
+    const deleteAllSeries = document.getElementById('deleteAllSeries')?.checked || false; // <-- NOUVEAU
 
+    // Effet visuel de chargement (CONSERVÉ)
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Annulation...';
 
     const formData = new FormData();
     formData.append('notifyInvites', notifyInvites);
+    formData.append('deleteAllSeries', deleteAllSeries); // <-- ON ENVOIE L'INFO AU CONTROLLER
     formData.append('notifyOrganizer', 'false'); // L'utilisateur est l'organisateur
 
-    // On utilise la même API que l'admin
+    // Appel à l'API (CONSERVÉ)
     fetch(`/workspace_connect/reservations/delete/${bookingToDelete}`, {
         method: 'POST',
         body: formData
     })
-    .then(r => r.json())
+    .then(r => {
+        if (!r.ok) throw new Error('Erreur réseau');
+        return r.json();
+    })
     .then(data => {
         if (data.success) {
-            // Fermeture et rechargement de la page pour voir les changements
+            // Rechargement de la page pour voir les changements (CONSERVÉ)
             location.reload(); 
         } else {
             alert("Erreur : " + data.message);
+            // Réinitialisation du bouton en cas d'erreur métier (CONSERVÉ)
             btn.disabled = false;
             btn.innerHTML = originalText;
         }
@@ -355,6 +399,7 @@ document.getElementById('confirmDeleteBtn').onclick = function() {
     .catch(err => {
         console.error(err);
         alert("Une erreur technique est survenue.");
+        // Réinitialisation du bouton en cas d'erreur technique (CONSERVÉ)
         btn.disabled = false;
         btn.innerHTML = originalText;
     });

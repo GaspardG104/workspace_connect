@@ -41,19 +41,20 @@ class UserController {
         // Note : On utilise 'as debut' et 'as fin' pour que la vue s'y retrouve
         $queryBookings = "
             (SELECT bk.id, bk.statut, res.nom as resource_name, res.type as resource_type, 
-                    bk.date_debut as debut, bk.date_fin as fin, 'Organisateur' as role_dans_resa
-             FROM bookings bk
-             JOIN resources res ON bk.id_resource = res.id
-             WHERE bk.id_user = ? $typeCondition)
+                    bk.date_debut as debut, bk.date_fin as fin, 'Organisateur' as role_dans_resa,
+                    bk.id_series -- <--- AJOUT ICI
+            FROM bookings bk
+            JOIN resources res ON bk.id_resource = res.id
+            WHERE bk.id_user = ? $typeCondition)
             UNION
             (SELECT bk.id, bk.statut, res.nom as resource_name, res.type as resource_type, 
-                    bk.date_debut as debut, bk.date_fin as fin, 'Invité' as role_dans_resa
-             FROM bookings bk
-             JOIN resources res ON bk.id_resource = res.id
-             JOIN attendees att ON bk.id = att.id_booking
-             WHERE att.email = ? $typeCondition)
+                    bk.date_debut as debut, bk.date_fin as fin, 'Invité' as role_dans_resa,
+                    bk.id_series -- <--- AJOUT ICI AUSSI
+            FROM bookings bk
+            JOIN resources res ON bk.id_resource = res.id
+            JOIN attendees att ON bk.id = att.id_booking
+            WHERE att.email = ? $typeCondition)
             ORDER BY debut DESC";
-
         // 5. Préparation rigoureuse des paramètres pour éviter les décalages
         $params = [];
         
