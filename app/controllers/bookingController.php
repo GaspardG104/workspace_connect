@@ -99,7 +99,7 @@ class BookingController {
 
                 // 2. Si récurrent, on calcule les dates suivantes
                 if ($is_recurring) {
-                    for ($i = 1; $i <= $nb_repetitions; $i++) {
+                    for ($i = 1; $i < $nb_repetitions; $i++) {
                         $interval = ($type_recurence === 'DAILY') ? "P{$i}D" : (($type_recurence === 'MONTHLY') ? "P{$i}M" : "P{$i}W");
                         
                         $d = new \DateTime($date_debut);
@@ -112,13 +112,13 @@ class BookingController {
                     }
                 
                     // On crée la ligne dans booking_series AVANT d'insérer les bookings
-                    $rrule = "FREQ=" . $type_recurence . ";COUNT=" . ($nb_repetitions + 1);
+                    $rrule = "FREQ=" . $type_recurence . ";COUNT=" . $nb_repetitions;
                     $stmtSeries = $db->prepare("INSERT INTO booking_series (rrule_string) VALUES (?)");
                     $stmtSeries->execute([$rrule]);
                     
                     // On récupère l'ID pour l'utiliser dans la boucle ci-dessous
                     $id_series = $db->lastInsertId();
-                    
+
                 }
 
                 // 3. Boucle d'insertion
