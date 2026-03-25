@@ -132,8 +132,20 @@ class BookingController {
 
         } catch (\Exception $e) {
             if ($db->inTransaction()) $db->rollBack();
-            error_log("Erreur Booking : " . $e->getMessage());
-            echo json_encode(['success' => false, 'message' => "❌ Erreur : " . $e->getMessage()]);
+        
+            $message = "❌ Une erreur est survenue.";
+            $errorInfo = $e->getMessage();
+
+            // On détecte si l'erreur vient de la contrainte de date passée
+            if (strpos($errorInfo, 'check_date_future') !== false) {
+                $message = "❌ Le voyage dans le temps n'est pas encore possible ! Vous ne pouvez pas réserver dans le passé.";
+            } 
+            // Optionnel : tu peux ajouter d'autres détections ici
+            else if (strpos($errorInfo, 'Duplicate entry') !== false) {
+                $message = "❌ Ce créneau vient d'être pris par un autre utilisateur.";
+            }
+
+            echo json_encode(['success' => false, 'message' => $message]);
         }
     }
 
