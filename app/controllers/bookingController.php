@@ -153,5 +153,31 @@ class BookingController {
         echo json_encode($events);
         exit; // Très important pour ne pas envoyer de HTML parasite
     }
+
+    private function addAttendees($db, $bookingId, $invites) {
+        if (empty($invites)) return;
+
+        $stmtUser = $db->prepare("SELECT email, nom, prenom FROM users WHERE id = ?");
+        $stmtAt = $db->prepare("INSERT INTO attendees (id_booking, email, nom_invite) VALUES (?, ?, ?)");
+
+        foreach ($invites as $id_invite) {
+            $stmtUser->execute([$id_invite]);
+            $u = $stmtUser->fetch(PDO::FETCH_ASSOC);
+            
+            if ($u) {
+                $nomComplet = $u['prenom'] . ' ' . $u['nom'];
+                $stmtAt->execute([$bookingId, $u['email'], $nomComplet]);
+            }
+        }
+    }
+
+    private function isResourceAvailable($db, $resourceId, $start, $end) {
+        $sql = "SELECT COUNT(*) FROM bookings 
+                WHERE id_resource = ? 
+                AND (date_debut < ? AND date_fin > ?)";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$resourceId, $end, $start]);
+        return $stmt->fetchColumn() == 0;
+    }
     
 }

@@ -92,14 +92,16 @@
                                 <div class="row g-2">
                                     <div class="col-md-6">
                                         <label class="small fw-bold">Fréquence</label>
-                                        <select name="recurrence_type" class="form-select form-select-sm">
+                                        <select name="recurrence_type" id="recurrence_type" class="form-select form-select-sm">
                                             <option value="WEEKLY">Toutes les semaines</option>
                                             <option value="DAILY">Tous les jours</option>
                                             <option value="MONTHLY">Tous les mois</option>
                                         </select>
                                     </div>
+                                
+            
                                     <div class="col-md-6">
-                                        <label class="small fw-bold">Pendant combien de fois ?</label>
+                                        <label id="label-count" class="small fw-bold">Pendant combien de fois ?</label>
                                         <input type="number" name="recurrence_count" id="recurrence_count" class="form-select form-select-sm" value="1" min="1">
                                     </div>
                                 </div>
