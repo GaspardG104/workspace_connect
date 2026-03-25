@@ -80,74 +80,91 @@ class BookingController {
         $is_recurring = isset($_POST['is_recurring']) && $_POST['is_recurring'] === 'true';
         $type_recurence = $_POST['recurrence_type'] ?? 'WEEKLY'; // DAILY, WEEKLY, MONTHLY
         $nb_repetitions = isset($_POST['recurrence_count']) ? intval($_POST['recurrence_count']) : 1;
+        $id_series = null;
 
         if (!$id_resource || !$date_debut || !$date_fin) {
             echo json_encode(['success' => false, 'message' => "❌ Données manquantes (Ressource ou Dates)."]);
             exit;
         }
 
-    try {
-            $db->beginTransaction();
+        try {
+                $db->beginTransaction();
 
-            // On prépare les requêtes une seule fois pour être plus rapide
-            $sqlBooking = "INSERT INTO bookings (id_user, id_resource, date_debut, date_fin, statut) VALUES (?, ?, ?, ?, 'confirme')";
-            $stmtBooking = $db->prepare($sqlBooking);
+                // On prépare les requêtes une seule fois pour être plus rapide
+                $sqlBooking = "INSERT INTO bookings (id_user, id_resource, date_debut, date_fin, statut, id_series) VALUES (?, ?, ?, ?, 'confirme', ?)";
+                $stmtBooking = $db->prepare($sqlBooking);
 
-            // 1. Définir les dates à insérer (on commence par la date choisie)
-            $dates_a_reserver = [[$date_debut, $date_fin]];
+                // 1. Définir les dates à insérer (on commence par la date choisie)
+                $dates_a_reserver = [[$date_debut, $date_fin]];
 
-            // 2. Si récurrent, on calcule les dates suivantes
-            if ($is_recurring) {
-                for ($i = 1; $i <= $nb_repetitions; $i++) {
-                    $interval = ($type_recurence === 'DAILY') ? "P{$i}D" : (($type_recurence === 'MONTHLY') ? "P{$i}M" : "P{$i}W");
-                    
-                    $d = new \DateTime($date_debut);
-                    $f = new \DateTime($date_fin);
-                    $d->add(new \DateInterval($interval));
-                    $f->add(new \DateInterval($interval));
+                // 2. Si récurrent, on calcule les dates suivantes
+                if ($is_recurring) {
+                    for ($i = 1; $i <= $nb_repetitions; $i++) {
+                        $interval = ($type_recurence === 'DAILY') ? "P{$i}D" : (($type_recurence === 'MONTHLY') ? "P{$i}M" : "P{$i}W");
+                        
+                        $d = new \DateTime($date_debut);
+                        $f = new \DateTime($date_fin);
+                        $d->add(new \DateInterval($interval));
+                        $f->add(new \DateInterval($interval));
 
-                    $dates_a_reserver[] = [$d->format('Y-m-d H:i:s'), $f->format('Y-m-d H:i:s')];
-                }
-            }
-
-            // 3. Boucle d'insertion
-            foreach ($dates_a_reserver as $creneau) {
-                $current_debut = $creneau[0];
-                $current_fin = $creneau[1];
-
-                // OPTIONNEL : Vérifier ici si $this->isResourceAvailable($db, $id_resource, $current_debut, $current_fin)
+                        $dates_a_reserver[] = [$d->format('Y-m-d H:i:s'), $f->format('Y-m-d H:i:s')];
+                        
+                    }
                 
-                $stmtBooking->execute([$id_user, $id_resource, $current_debut, $current_fin]);
-                $newBookingId = $db->lastInsertId();
-
-                // 4. Ajouter les invités pour CHAQUE occurrence
-                if (!empty($invites)) {
-                    $this->addAttendees($db, $newBookingId, $invites);
+                    // On crée la ligne dans booking_series AVANT d'insérer les bookings
+                    $rrule = "FREQ=" . $type_recurence . ";COUNT=" . ($nb_repetitions + 1);
+                    $stmtSeries = $db->prepare("INSERT INTO booking_series (rrule_string) VALUES (?)");
+                    $stmtSeries->execute([$rrule]);
+                    
+                    // On récupère l'ID pour l'utiliser dans la boucle ci-dessous
+                    $id_series = $db->lastInsertId();
+                    
                 }
+
+                // 3. Boucle d'insertion
+                foreach ($dates_a_reserver as $creneau) {
+                    $current_debut = $creneau[0];
+                    $current_fin = $creneau[1];
+
+                    // OPTIONNEL : Vérifier ici si $this->isResourceAvailable($db, $id_resource, $current_debut, $current_fin)
+                    
+                    $stmtBooking->execute([
+                        $id_user, 
+                        $id_resource, 
+                        $current_debut, 
+                        $current_fin,
+                        $id_series
+                    ]);
+                    $newBookingId = $db->lastInsertId();
+
+                    // 4. Ajouter les invités pour CHAQUE occurrence
+                    if (!empty($invites)) {
+                        $this->addAttendees($db, $newBookingId, $invites);
+                    }
+                }
+
+                $db->commit();
+                echo json_encode(['success' => true, 'message' => "✅ Réservation(s) réussie(s) !"]);
+
+
+            } catch (\Exception $e) {
+                if ($db->inTransaction()) $db->rollBack();
+            
+                $message = "❌ Une erreur est survenue.";
+                $errorInfo = $e->getMessage();
+
+                // On détecte si l'erreur vient de la contrainte de date passée
+                if (strpos($errorInfo, 'check_date_future') !== false) {
+                    $message = "❌ Le voyage dans le temps n'est pas encore possible ! Vous ne pouvez pas réserver dans le passé.";
+                } 
+                // Optionnel : tu peux ajouter d'autres détections ici
+                else if (strpos($errorInfo, 'Duplicate entry') !== false) {
+                    $message = "❌ Ce créneau vient d'être pris par un autre utilisateur.";
+                }
+
+                echo json_encode(['success' => false, 'message' => $message]);
             }
-
-            $db->commit();
-            echo json_encode(['success' => true, 'message' => "✅ Réservation(s) réussie(s) !"]);
-
-
-        } catch (\Exception $e) {
-            if ($db->inTransaction()) $db->rollBack();
-        
-            $message = "❌ Une erreur est survenue.";
-            $errorInfo = $e->getMessage();
-
-            // On détecte si l'erreur vient de la contrainte de date passée
-            if (strpos($errorInfo, 'check_date_future') !== false) {
-                $message = "❌ Le voyage dans le temps n'est pas encore possible ! Vous ne pouvez pas réserver dans le passé.";
-            } 
-            // Optionnel : tu peux ajouter d'autres détections ici
-            else if (strpos($errorInfo, 'Duplicate entry') !== false) {
-                $message = "❌ Ce créneau vient d'être pris par un autre utilisateur.";
-            }
-
-            echo json_encode(['success' => false, 'message' => $message]);
         }
-    }
 
     public function getEvents() {
         $db = require __DIR__ . '/../../config/db.php';

@@ -73,6 +73,13 @@
                     Prévenir l'organisateur de l'annulation
                 </label>
             </div>
+            <div class="form-check mb-2 text-danger fw-bold" id="optionSeries" style="display:none;">
+    <input class="form-check-input" type="checkbox" id="deleteAllSeries">
+    <label class="form-check-label" for="deleteAllSeries">
+        <i class="fa-solid fa-layer-group me-1"></i> Supprimer TOUTE la série récurrente
+    </label>
+</div>
+<hr id="seriesSeparator" style="display:none;">
         </div>
       </div>
       <div class="modal-footer">
@@ -164,7 +171,7 @@ function renderTable(data) {
             row += `
                 <td class="text-end pe-4">
                     <button class="btn btn-sm btn-outline-danger border-0" title="Supprimer" 
-                        onclick="prepareDelete(${res.id}, '${fullName.replace(/'/g, "\\'")}', ${res.nb_invites || 0}, ${res.id_user})">
+                        onclick="prepareDelete(${res.id}, '${fullName.replace(/'/g, "\\'")}', ${res.nb_invites || 0}, ${res.id_user}, ${res.id_series})">
                         <i class="fa-solid fa-trash-alt"></i>
                     </button>
                 </td>
@@ -177,11 +184,13 @@ function renderTable(data) {
 }
 // --- LOGIQUE DE SUPPRESSION ---
 let bookingToDelete = null;
+let currentBookingSeriesId = null; //pour les réservations récurentes
 
 // CETTE FONCTION DOIT S'APPELER prepareDelete (comme dans le onclick du bouton)
-function prepareDelete(id, organizerName, nbInvites, organizerId) {
+function prepareDelete(id, organizerName, nbInvites, organizerId, idSeries) {
     bookingToDelete = id;
-    
+    currentBookingSeriesId = idSeries;
+
     // On récupère l'ID de session via PHP
     const currentUserId = <?= $_SESSION['user_id'] ?>;
     
@@ -191,9 +200,24 @@ function prepareDelete(id, organizerName, nbInvites, organizerId) {
     // Gestion de l'affichage des options de mail
     const optionInvites = document.getElementById('optionInvites');
     const optionOrganizer = document.getElementById('optionOrganizer');
+
+    // Affichage de l'option Série
+    const optionSeries = document.getElementById('optionSeries');
+    const separator = document.getElementById('seriesSeparator');
+    const checkboxSeries = document.getElementById('deleteAllSeries');
+    checkboxSeries.checked = false;
     
     if(optionInvites) optionInvites.style.display = (nbInvites > 0) ? 'block' : 'none';
     if(optionOrganizer) optionOrganizer.style.display = (organizerId != currentUserId) ? 'block' : 'none';
+
+    // On vérifie si idSeries existe, n'est pas nul et n'est pas 0
+    if (idSeries && idSeries !== null && idSeries !== 'null' && idSeries !== 0) {
+        optionSeries.style.display = 'block';
+        separator.style.display = 'block';
+    } else {
+        optionSeries.style.display = 'none';
+        separator.style.display = 'none';
+    }
 
     // Ouverture de la modale
     const modalEl = document.getElementById('deleteModal');
@@ -208,6 +232,8 @@ document.getElementById('confirmDeleteBtn').onclick = function() {
     
     const notifyInvites = document.getElementById('notifyInvites')?.checked || false;
     const notifyOrganizer = document.getElementById('notifyOrganizer')?.checked || false;
+    const deleteAllSeries = document.getElementById('deleteAllSeries')?.checked || false;
+    
 
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Suppression...';
@@ -215,6 +241,7 @@ document.getElementById('confirmDeleteBtn').onclick = function() {
     const formData = new FormData();
     formData.append('notifyInvites', notifyInvites);
     formData.append('notifyOrganizer', notifyOrganizer);
+    formData.append('deleteAllSeries', deleteAllSeries);
 
     fetch(`/workspace_connect/reservations/delete/${bookingToDelete}`, {
         method: 'POST',

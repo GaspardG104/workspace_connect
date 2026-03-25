@@ -33,8 +33,7 @@ class ReservationController {
         $sort_by = $_GET['sort'] ?? 'date_debut';
         $order = $_GET['order'] ?? 'DESC';
 
-       // Remplace la requête SQL dans search() par celle-ci :
-$sql = "SELECT b.*, u.nom as user_nom, u.prenom as user_prenom, r.nom as resource_nom, r.type as resource_type,
+$sql = "SELECT b.*, u.nom as user_nom, u.prenom as user_prenom, r.nom as resource_nom, r.type as resource_type, b.id_series,
         -- Récupère les invités séparés par des virgules
         (SELECT STRING_AGG(nom_invite, ', ') FROM attendees WHERE id_booking = b.id) as liste_invites,
         -- Compte le nombre d'invités
@@ -98,14 +97,11 @@ public function delete($id) {
     }
         
     try {
-        // --- RÉCUPÉRATION DES INFOS AVANT SUPPRESSION ---
-        
-        // On récupère les choix envoyés par la modale (checkboxes)
+        // --- 1. LOGIQUE DE NOTIFICATION (TON CODE) ---
         $notifyInvites = isset($_POST['notifyInvites']) && $_POST['notifyInvites'] === 'true';
         $notifyOrganizer = isset($_POST['notifyOrganizer']) && $_POST['notifyOrganizer'] === 'true';
 
         if ($notifyInvites || $notifyOrganizer) {
-            // On récupère l'email de l'organisateur et la liste des emails des invités
             $stmtInfo = $this->db->prepare("
                 SELECT b.id_user, u.email as organizer_email, r.nom as resource_name 
                 FROM bookings b
@@ -117,40 +113,45 @@ public function delete($id) {
             $info = $stmtInfo->fetch(PDO::FETCH_ASSOC);
 
             if ($info) {
-                // TODO: Plus tard, développer la logique d'envoi de mail ici
-                // Pour l'instant, on se contente de préparer les données
                 if ($notifyInvites) {
                     $stmtAtt = $this->db->prepare("SELECT email FROM attendees WHERE id_booking = ?");
                     $stmtAtt->execute([$id]);
                     $emailsInvites = $stmtAtt->fetchAll(PDO::FETCH_COLUMN);
-                    
-                    // Ici on pourra appeler la fonction de mail pour les invités
-                    // ex: $this->mailService->sendCancelToInvites($emailsInvites, $info['resource_name']);
+                    // Logique mail invités ici...
                 }
-
-                // Logique pour l'organisateur (si c'est un admin qui supprime à sa place)
                 if ($notifyOrganizer && $info['id_user'] != $_SESSION['user_id']) {
-                    // Ici tu pourras appeler ta fonction de mail pour l'organisateur
-                    // ex: $this->mailService->sendCancelToOrganizer($info['organizer_email'], $info['resource_name']);
+                    // Logique mail organisateur ici...
                 }
             }
         }
-        // --- FIN DE LA LOGIQUE DE NOTIFICATION ---
 
+        // --- 2. LOGIQUE DE SUPPRESSION (FUSIONNÉE) ---
+        $deleteAllSeries = isset($_POST['deleteAllSeries']) && $_POST['deleteAllSeries'] === 'true';
 
-        // 2. Suppression (Ta logique d'origine conservée)
-        // La suppression en cascade en SQL s'occupera de nettoyer la table attendees
-        $stmt = $this->db->prepare("DELETE FROM bookings WHERE id = ?");
-        $result = $stmt->execute([$id]);
+        // On vérifie d'abord si c'est une série
+        $stmtCheck = $this->db->prepare("SELECT id_series FROM bookings WHERE id = ?");
+        $stmtCheck->execute([$id]);
+        $booking = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
-        if ($result) {
-            echo json_encode(['success' => true, 'message' => 'Réservation supprimée avec succès.']);
+        if ($deleteAllSeries && !empty($booking['id_series'])) {
+            // Suppression de la série (le ON DELETE CASCADE s'occupe du reste)
+            $stmt = $this->db->prepare("DELETE FROM booking_series WHERE id = ?");
+            $result = $stmt->execute([$booking['id_series']]);
+            $message = "Toute la série de réservations a été supprimée.";
         } else {
-            echo json_encode(['success' => false, 'message' => 'Erreur lors de la suppression.']);
+            // Suppression unique
+            $stmt = $this->db->prepare("DELETE FROM bookings WHERE id = ?");
+            $result = $stmt->execute([$id]);
+            $message = "La réservation a été supprimée avec succès.";
         }
 
-    } catch (\Exception $e) {
-        echo json_encode(['success' => false, 'message' => 'Erreur technique : ' . $e->getMessage()]);
+        // UN SEUL ET UNIQUE ECHO JSON À LA FIN
+        echo json_encode(['success' => $result, 'message' => $message]);
+
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Erreur technique : ' . $e->getMessage()]);
+        }
+        exit; // On arrête l'exécution pour éviter tout texte parasite
     }
-}
+       
 }
