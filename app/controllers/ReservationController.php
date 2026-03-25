@@ -80,14 +80,14 @@ $sql = "SELECT b.*, u.nom as user_nom, u.prenom as user_prenom, r.nom as resourc
     }
 
     /**
-     * Supprime une réservation (Action réservée à l'Administrateur)
+     * Supprime une réservation (Action réservée à l'Administrateur et l'organisateur)
      */
 public function delete($id) {
     header('Content-Type: application/json');
 
-    // 1. Sécurité stricte 
-    if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
-        echo json_encode(['success' => false, 'message' => 'Autorisation refusée.']);
+    // 1. Vérification de la session de base
+    if (!isset($_SESSION['user_id'])) {
+        echo json_encode(['success' => false, 'message' => 'Session expirée.']);
         exit;
     }
 
@@ -95,48 +95,59 @@ public function delete($id) {
         echo json_encode(['success' => false, 'message' => 'ID manquant.']);
         exit;
     }
-        
+    
+    $userId = $_SESSION['user_id'];
+    // On définit ce qu'est un admin (selon tes variables de session)
+    $isAdmin = (isset($_SESSION['user_role']) && $_SESSION['user_role'] == 1); 
+    
     try {
-        // --- 1. LOGIQUE DE NOTIFICATION (TON CODE) ---
+        // --- NOUVEAU : VÉRIFICATION DE PROPRIÉTÉ ---
+        // On récupère les infos nécessaires pour la sécurité ET les notifications d'un coup
+        $stmtCheck = $this->db->prepare("
+            SELECT b.id_user, b.id_series, u.email as organizer_email, r.nom as resource_name 
+            FROM bookings b
+            JOIN users u ON b.id_user = u.id
+            JOIN resources r ON b.id_resource = r.id
+            WHERE b.id = ?
+        ");
+        $stmtCheck->execute([$id]);
+        $info = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+        if (!$info) {
+            echo json_encode(['success' => false, 'message' => 'Réservation introuvable.']);
+            exit;
+        }
+
+        // LA CONDITION CLÉ : Si pas admin ET pas le propriétaire -> Refus
+        if (!$isAdmin && $info['id_user'] != $userId) {
+            echo json_encode(['success' => false, 'message' => 'Autorisation refusée : ce n\'est pas votre réservation.']);
+            exit;
+        }
+
+        // --- 1. LOGIQUE DE NOTIFICATION (TON CODE PRÉSERVÉ) ---
         $notifyInvites = isset($_POST['notifyInvites']) && $_POST['notifyInvites'] === 'true';
         $notifyOrganizer = isset($_POST['notifyOrganizer']) && $_POST['notifyOrganizer'] === 'true';
 
         if ($notifyInvites || $notifyOrganizer) {
-            $stmtInfo = $this->db->prepare("
-                SELECT b.id_user, u.email as organizer_email, r.nom as resource_name 
-                FROM bookings b
-                JOIN users u ON b.id_user = u.id
-                JOIN resources r ON b.id_resource = r.id
-                WHERE b.id = ?
-            ");
-            $stmtInfo->execute([$id]);
-            $info = $stmtInfo->fetch(PDO::FETCH_ASSOC);
-
-            if ($info) {
-                if ($notifyInvites) {
-                    $stmtAtt = $this->db->prepare("SELECT email FROM attendees WHERE id_booking = ?");
-                    $stmtAtt->execute([$id]);
-                    $emailsInvites = $stmtAtt->fetchAll(PDO::FETCH_COLUMN);
-                    // Logique mail invités ici...
-                }
-                if ($notifyOrganizer && $info['id_user'] != $_SESSION['user_id']) {
-                    // Logique mail organisateur ici...
-                }
+            if ($notifyInvites) {
+                $stmtAtt = $this->db->prepare("SELECT email FROM attendees WHERE id_booking = ?");
+                $stmtAtt->execute([$id]);
+                $emailsInvites = $stmtAtt->fetchAll(PDO::FETCH_COLUMN);
+                // Ta logique mail invités ici... (ex: $this->mailService->send(...))
+            }
+            // NotifyOrganizer : seulement si celui qui supprime n'est PAS l'organisateur (donc un admin)
+            if ($notifyOrganizer && $info['id_user'] != $userId) {
+                // Ta logique mail organisateur ici...
             }
         }
 
-        // --- 2. LOGIQUE DE SUPPRESSION (FUSIONNÉE) ---
+        // --- 2. LOGIQUE DE SUPPRESSION (TON CODE FUSIONNÉ) ---
         $deleteAllSeries = isset($_POST['deleteAllSeries']) && $_POST['deleteAllSeries'] === 'true';
 
-        // On vérifie d'abord si c'est une série
-        $stmtCheck = $this->db->prepare("SELECT id_series FROM bookings WHERE id = ?");
-        $stmtCheck->execute([$id]);
-        $booking = $stmtCheck->fetch(PDO::FETCH_ASSOC);
-
-        if ($deleteAllSeries && !empty($booking['id_series'])) {
+        if ($deleteAllSeries && !empty($info['id_series'])) {
             // Suppression de la série (le ON DELETE CASCADE s'occupe du reste)
             $stmt = $this->db->prepare("DELETE FROM booking_series WHERE id = ?");
-            $result = $stmt->execute([$booking['id_series']]);
+            $result = $stmt->execute([$info['id_series']]);
             $message = "Toute la série de réservations a été supprimée.";
         } else {
             // Suppression unique
@@ -148,10 +159,10 @@ public function delete($id) {
         // UN SEUL ET UNIQUE ECHO JSON À LA FIN
         echo json_encode(['success' => $result, 'message' => $message]);
 
-        } catch (\Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Erreur technique : ' . $e->getMessage()]);
-        }
-        exit; // On arrête l'exécution pour éviter tout texte parasite
+    } catch (\Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Erreur technique : ' . $e->getMessage()]);
     }
+    exit;
+}
        
 }
