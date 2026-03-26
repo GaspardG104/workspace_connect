@@ -18,14 +18,13 @@ body {
 /* --- BOUTONS --- */
 .btn-primary { 
     background-color: #0d6efd !important; 
-    
     border: none !important; 
     font-weight: bold;
 }
 
 .btn-primary:hover { 
     background-color: #ffffff !important; 
-    color: #0d6efd;
+    color: #0d6efd !important;
     transform: translateY(-1px);
 }
 

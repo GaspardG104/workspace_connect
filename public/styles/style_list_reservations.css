@@ -2,3 +2,24 @@
     border-radius: 15px;
 }
 
+/* Supprimer les espaces inutiles dans les cellules */
+#reservation-table-body td {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    white-space: nowrap; /* Empêche le texte de passer à la ligne et d'agrandir la cellule */
+}
+
+/* Réduire la taille globale du texte du tableau */
+#reservation-table-body {
+    font-size: 0.85rem;
+}
+
+/* Rendre les badges plus compacts */
+.badge {
+    padding: 3px 6px !important;
+}
+
+/* Ajuster la largeur des colonnes pour qu'elles collent au contenu */
+th:last-child, td:last-child {
+    width: 50px;
+}

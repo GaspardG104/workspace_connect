@@ -18,12 +18,3 @@ body {
 }
 
 
-.btn-primary {
-    background-color: #183fd8; /* Vert plus vif pour le bouton principal */
-    border: none;
-}
-
-.btn-primary:hover {
-    background-color: #3a82df;
-}
-
