@@ -87,8 +87,9 @@
                                     <i class="fa-solid fa-repeat me-1"></i> Répéter cette réservation
                                 </label>
                             </div>
-
-                            <div id="recurrence-options" class="mt-3" style="display: none;">
+                            
+      
+                            <div id="recurrence-options" class="mt-3" style="display:none">
                                 <div class="row g-2">
                                     <div class="col-md-6">
                                         <label class="small fw-bold">Fréquence</label>

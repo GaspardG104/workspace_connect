@@ -49,11 +49,16 @@ function selectResource(id, nom, el) {
     const calendarCol = document.getElementById('calendar-column');
     const bookingUi = document.getElementById('booking-ui');
     const layoutWrapper = document.getElementById('layout-wrapper');
+    const resFormBox = document.getElementById('form-box-rec');
 
     // Gestion de la capacité et des invités
     const inviteSection = document.getElementById('invite-section');
     const capDisplay = document.getElementById('cap-val');
     const capaciteMax = resCapacities[id] || 1;
+
+    if (resFormBox) {
+        resFormBox.style.display = 'block'; // Le formulaire revient dès qu'on clique
+    }
 
     if (capaciteMax > 1) {
         inviteSection.style.display = 'block';
@@ -104,6 +109,7 @@ function showMsg(txt, isSuccess) {
 document.getElementById('bookingForm').addEventListener('submit', function (e) {
     e.preventDefault();
     const btn = document.getElementById('subBtn');
+    const resFormBox = document.getElementById('recurrence-options');
     btn.disabled = true;
 
     fetch('/workspace_connect/reservation/store', { method: 'POST', body: new FormData(this) })
@@ -113,6 +119,9 @@ document.getElementById('bookingForm').addEventListener('submit', function (e) {
             if (data.success) {
                 calendar.refetchEvents();
                 this.reset();
+            }
+            if (resFormBox) {
+                resFormBox.style.display = 'none';
             }
         })
         .finally(() => { btn.disabled = false; });
@@ -215,3 +224,4 @@ document.getElementById('recurrence_type').addEventListener('change', function()
         label.innerText = "Combien de mois ?";
     }
 });
+
