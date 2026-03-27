@@ -26,7 +26,7 @@ class BookingController {
             header('Location: /workspace_connect/login');
             exit;
         }
-        $db = require __DIR__ . '/../../config/db.php';SS
+        $db = require __DIR__ . '/../../config/db.php';
         $resources = Resource::getAllExceptParking($db);
 
         // Préparation des données pour la vue
