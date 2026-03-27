@@ -18,12 +18,7 @@ class AdminController {
         // 1. On récupère les rôles pour le menu déroulant
         $roles = $db->query("SELECT * FROM roles")->fetchAll(\PDO::FETCH_ASSOC);
 
-        // 2. On récupère la liste des utilisateurs pour le tableau (L'OUBLI ÉTAIT ICI)
-        $sql = "SELECT u.*, r.nom as role_nom 
-                FROM users u 
-                JOIN roles r ON u.id_role = r.id 
-                ORDER BY u.nom ASC";
-        $users = $db->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $users = \App\Models\User::getAllWithRoles($db);
 
         $viewPath = __DIR__ . '/../views/';
         include $viewPath . 'layouts/header.php';

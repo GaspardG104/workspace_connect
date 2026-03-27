@@ -21,10 +21,8 @@ class AuthController {
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
 
-        // Utilisation de guillemets doubles pour "users" car Postgres est sensible à la casse
-        $stmt = $db->prepare('SELECT * FROM "users" WHERE email = ?');
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
+        // On appelle le modèle
+        $user = \App\Models\User::findByEmail($db, $email);
 
         // password_verify compare le texte clair avec le hachage de la BDD
         if ($user && password_verify($password, $user['password_hash'])) {
