@@ -2,6 +2,8 @@
     transition: all 0.3s ease-in-out;
     bottom: 20px;
     position: relative;
+    pointer-events: auto;
+    width: 350px; /* La fenêtre garde sa taille normale */
 }
 
 #chat-launcher:hover {
@@ -25,4 +27,15 @@
     border-radius: 15px 15px 15px 0;
     margin-bottom: 10px;
     display: inline-block;
+}
+
+/* 1. Le wrapper devient "transparent" aux clics */
+#chat-wrapper {
+    pointer-events: none; /* Les clics passent à travers comme s'il n'existait pas */
+    width: auto !important; /* On ne le force plus à faire 350px de large */
+}
+
+/* 2. On redonne le droit de cliquer UNIQUEMENT sur le bouton rond */
+#chat-launcher {
+    pointer-events: auto; /* Le bouton redevient cliquable */
 }

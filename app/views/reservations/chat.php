@@ -1,4 +1,4 @@
-<div id="chat-wrapper" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999; width: 350px;">
+<div id="chat-wrapper" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
     
     <div id="chat-launcher" class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center" 
          style="width: 60px; height: 60px; cursor: pointer; float: right;" onclick="toggleChat()">

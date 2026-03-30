@@ -6,6 +6,13 @@ document.addEventListener('DOMContentLoaded', function () {
         initialView: 'dayGridMonth',
         locale: 'fr',
         selectable: true,
+        longPressDelay:150,           
+        selectLongPressDelay: 150,     
+        selectMinDistance: 5,              
+        unselectAuto: false,         
+        dragRevertDuration: 0,
+        selectMirror: true,
+
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
@@ -13,53 +20,53 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         // Fonction de formatage pour l'input datetime-local
         select: function (info) {
-    // 1. Récupération de la date pure (YYYY-MM-DD)
-    const dateStr = info.startStr.split('T')[0]; 
-    
-    // 2. Affichage lisible pour l'utilisateur
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('display-date').innerText = "Le " + info.start.toLocaleDateString('fr-FR', options);
+            // 1. Récupération de la date pure (YYYY-MM-DD)
+            const dateStr = info.startStr.split('T')[0];
 
-    // 3. Variables pour stocker les heures
-    let hDebut = "09:00";
-    let hFin = "17:00";
+            // 2. Affichage lisible pour l'utilisateur
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('display-date').innerText = "Le " + info.start.toLocaleDateString('fr-FR', options);
 
-    // Fonction pour mettre à jour les inputs cachés (ceux que SQL reçoit)
-    const updateHiddenInputs = () => {
-        document.getElementById('finalDebut').value = `${dateStr} ${hDebut}`;
-        document.getElementById('finalFin').value = `${dateStr} ${hFin}`;
-    };
+            // 3. Variables pour stocker les heures
+            let hDebut = "09:00";
+            let hFin = "17:00";
 
-    // Initialisation affichage et valeurs
-    document.getElementById('heureDebutInput').value = hDebut;
-    document.getElementById('heureFinInput').value = hFin;
-    updateHiddenInputs();
+            // Fonction pour mettre à jour les inputs cachés (ceux que SQL reçoit)
+            const updateHiddenInputs = () => {
+                document.getElementById('finalDebut').value = `${dateStr} ${hDebut}`;
+                document.getElementById('finalFin').value = `${dateStr} ${hFin}`;
+            };
 
-    // 4. Horloges Flatpickr
-    flatpickr("#heureDebutInput", {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",
-        time_24hr: true,
-        defaultDate: hDebut,
-        onChange: function(selectedDates, timeStr) {
-            hDebut = timeStr;
+            // Initialisation affichage et valeurs
+            document.getElementById('heureDebutInput').value = hDebut;
+            document.getElementById('heureFinInput').value = hFin;
             updateHiddenInputs();
-        }
-    });
 
-    flatpickr("#heureFinInput", {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",
-        time_24hr: true,
-        defaultDate: hFin,
-        onChange: function(selectedDates, timeStr) {
-            hFin = timeStr;
-            updateHiddenInputs();
+            // 4. Horloges Flatpickr
+            flatpickr("#heureDebutInput", {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                time_24hr: true,
+                defaultDate: hDebut,
+                onChange: function (selectedDates, timeStr) {
+                    hDebut = timeStr;
+                    updateHiddenInputs();
+                }
+            });
+
+            flatpickr("#heureFinInput", {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                time_24hr: true,
+                defaultDate: hFin,
+                onChange: function (selectedDates, timeStr) {
+                    hFin = timeStr;
+                    updateHiddenInputs();
+                }
+            });
         }
-    });
-}
     });
     calendar.render();
 });
@@ -75,9 +82,10 @@ function selectPlace(id, nom) {
     document.getElementById('res-form-box').style.display = 'block';
 
     setTimeout(() => {
-        calendar.updateSize();
+        calendar.render();  
         calendar.setOption('events', '/workspace_connect/reservation/getEvents?id_resource=' + id);
         calendar.refetchEvents();
+        calendar.updateSize();
     }, 50);
 }
 
@@ -107,19 +115,19 @@ document.getElementById('bookingForm').addEventListener('submit', function (e) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
             if (data.success) {
-    calendar.refetchEvents();
-    
-    // Remplace par tes nouveaux IDs pour vider les champs après succès
-    const inputD = document.getElementById('heureDebutInput');
-    const inputF = document.getElementById('heureFinInput');
-    
-    if(inputD) inputD.value = "";
-    if(inputF) inputF.value = "";
-    
-    // Si tu utilises les champs cachés pour SQL
-    if(document.getElementById('finalDebut')) document.getElementById('finalDebut').value = "";
-    if(document.getElementById('finalFin')) document.getElementById('finalFin').value = "";
-}
+                calendar.refetchEvents();
+
+                // Remplace par tes nouveaux IDs pour vider les champs après succès
+                const inputD = document.getElementById('heureDebutInput');
+                const inputF = document.getElementById('heureFinInput');
+
+                if (inputD) inputD.value = "";
+                if (inputF) inputF.value = "";
+
+                // Si tu utilises les champs cachés pour SQL
+                if (document.getElementById('finalDebut')) document.getElementById('finalDebut').value = "";
+                if (document.getElementById('finalFin')) document.getElementById('finalFin').value = "";
+            }
 
             // 3. Faire disparaître le message après 3 secondes
             setTimeout(() => {
@@ -144,4 +152,5 @@ document.getElementById('bookingForm').addEventListener('submit', function (e) {
             submitBtn.disabled = false;
             submitBtn.innerText = "Confirmer la réservation";
         });
+
 });

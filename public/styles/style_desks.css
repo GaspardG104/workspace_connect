@@ -253,14 +253,56 @@
 
 /* Message flottant pour ne pas casser le design */
 #ajax-message { 
-    position: fixed; 
+    position: relative; 
     top: 20px; 
     right: 20px; 
-    z-index: 10000; 
+    z-index: 1; 
     min-width: 250px; 
     display: none; }
 
 #calendar { 
     background: #fff; 
     padding: 10px; 
-    border-radius: 8px; }
+    border-radius: 8px; 
+    position: relative;
+    z-index: 10; 
+    background: white;
+    border-radius: 10px;
+}
+    
+
+/* Conteneur qui permet le glissement au doigt */
+.desk-scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 20px 0;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x; /* Autorise le défilement horizontal mais laisse le clic libre */
+    cursor: grab; /* Indique qu'on peut faire glisser */
+}
+
+/* On force le plan à garder sa forme sans se compresser */
+.desk-map-wrapper {
+    min-width: 850px; /* Ajuste cette valeur selon la largeur de ton plan */
+    margin: 0 auto;
+    position: relative;
+    background: #fff; /* Ton fond blanc sur l'image */
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+/* Correction pour le clic sur Mobile */
+@media (max-width: 768px) {
+    .desk-map-wrapper .bureau, 
+    .desk-map-wrapper .salle {
+        pointer-events: auto !important; /* Force la détection du clic */
+        min-height: 44px; /* Taille minimale recommandée par Google pour le tactile */
+        touch-action: manipulation;
+    }
+}
+
+.fc-view-harness {
+    background: white;
+}

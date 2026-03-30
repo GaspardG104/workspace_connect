@@ -50,6 +50,8 @@
 /* --- CALENDRIER (SPÉCIFIQUE) --- */
 #calendar {
     padding: 10px;
+    touch-action: auto !important; 
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Événements dans le calendrier */
@@ -98,4 +100,39 @@
 
 .flatpickr-time {
     border-top: none !important;
+}
+
+
+/* Empêche la sélection de texte accidentelle lors du clic sur une case */
+.fc-daygrid-day, .fc-timegrid-slot {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.parking-map-container {
+    touch-action: pan-y; /* Autorise le défilement vertical mais pas horizontal pour éviter les conflits */
+}
+
+#submitBtn {
+    position: relative !important;
+    z-index: 20 !important;
+    pointer-events: auto !important; /* Force la capture du clic */
+}
+
+#bookingForm {
+    position: relative !important;
+    z-index: 10 !important;
+    background: #fff; /* Assure-toi qu'il a un fond pour ne pas voir le calendrier dessous */
+}
+
+#calendar {
+    /* "pan-y" autorise le scroll vertical même si le clic est instantané */
+    touch-action: pan-y !important; 
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* On s'assure que les cases ne bloquent pas le toucher */
+.fc-daygrid-day {
+    pointer-events: auto !important;
 }

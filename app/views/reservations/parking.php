@@ -66,5 +66,5 @@
         </div>
     </div>
     
-<script src="/workspace_connect/public/js/parking.js"></script>
+<script src="/workspace_connect/public/js/parking.js?v=<?= time(); ?>"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script> <!--pour l'horloge-->
