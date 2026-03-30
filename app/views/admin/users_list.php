@@ -9,7 +9,7 @@
     <div class="alert alert-info py-2 small"><?= $_SESSION['msg']; unset($_SESSION['msg']); ?></div>
     <?php endif; ?>
 
-    <div class="row">
+    <div class="row justify-content-center">
         <?php if ($_SESSION['user_role'] == 1): ?>
         <div class="col-lg-4 mb-4">
             <div class="card shadow-sm border-0" style="border-radius: 15px;">
@@ -74,7 +74,7 @@
             </div>
         </div>
         <?php endif; ?>
-        
+
         <div class="col-lg-8">
             <div class="card shadow-sm border-0" style="border-radius: 15px;">
                 <div class="card-body p-0">

@@ -19,7 +19,7 @@
                         <li class="nav-item">
                             <a class="nav-link btn text-primary-.text-info-emphasis px-3 me-2 btn-sm" href="/workspace_connect/reservation/desk">Bureaux <i class="fa-solid fa-computer"></i></a>
                         </li>
-                        <?php if ($_SESSION['user_role'] == 1):?>
+                        <?php if ($_SESSION['user_role'] == 1 || 2):?>
                             <li class="nav-item">
                                 <a class="nav-link text-success fw-bold" href="/workspace_connect/admin/register"><i class="fa-solid fa-user-check"></i> Gestion Utilisateurs </a>
                             </li>
