@@ -78,7 +78,8 @@ switch ($urlParts[0]) {
         break;
 
     case 'admin':
-        if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
+        // Autorise Admin (1) ET Manager (2)
+        if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], [1, 2])) {
             header('Location: /workspace_connect/login');
             exit;
         }

@@ -16,7 +16,7 @@ class ReservationController {
      * Affiche la page de gestion des réservations (Vue Admin/Manager)
      */
     public function listAll() {
-        if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], [1, 3])) {
+        if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], [1, 2])) {
             header('Location: /workspace_connect/home');
             exit;
         }
@@ -43,6 +43,7 @@ class ReservationController {
      * Suppression (Unique ou Série) avec gestion des notifications
      */
     public function delete($id) {
+
         header('Content-Type: application/json');
         try {
             $userId = $_SESSION['user_id'];

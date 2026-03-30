@@ -10,6 +10,7 @@
     <?php endif; ?>
 
     <div class="row">
+        <?php if ($_SESSION['user_role'] == 1): ?>
         <div class="col-lg-4 mb-4">
             <div class="card shadow-sm border-0" style="border-radius: 15px;">
                 <div class="card-body p-4">
@@ -51,12 +52,14 @@
                             <input type="text" name="immatriculation" class="form-control" value="<?= $userData['immatriculation'] ?? '' ?>" placeholder="AA-123-BB">
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label small fw-bold">
-                                <?= isset($userData) ? 'Nouveau mot de passe (optionnel)' : 'Mot de passe' ?>
-                            </label>
-                            <input type="password" name="password" class="form-control" <?= isset($userData) ? '' : 'required' ?>>
-                        </div>
+                        <?php if ($_SESSION['user_role'] == 1): ?>
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold">
+                                    <?= isset($userData) ? 'Nouveau mot de passe (optionnel)' : 'Mot de passe' ?>
+                                </label>
+                                <input type="password" name="password" class="form-control" <?= isset($userData) ? '' : 'required' ?>>
+                            </div>
+                            <?php endif; ?>
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary fw-bold">
@@ -70,7 +73,8 @@
                 </div>
             </div>
         </div>
-
+        <?php endif; ?>
+        
         <div class="col-lg-8">
             <div class="card shadow-sm border-0" style="border-radius: 15px;">
                 <div class="card-body p-0">
@@ -111,12 +115,16 @@
                                         </span>
                                     </td>
                                     <td class="text-end pe-4">
+                                        <?php if ($_SESSION['user_role'] == 1): ?>
                                         <a href="/workspace_connect/admin/editUser/<?= $u['id'] ?>" class="btn btn-outline-warning btn-sm border-0">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
                                         <button onclick="confirmDelete(<?= $u['id'] ?>, '<?= addslashes($u['prenom'].' '.$u['nom']) ?>')" class="btn btn-outline-danger btn-sm border-0">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
+                                        <?php else: ?>
+                                            <span class="badge bg-secondary">Lecture seule</span>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>

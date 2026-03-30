@@ -5,7 +5,7 @@ class AdminController {
 
     public function __construct() {
         // Double sécurité : on vérifie que l'utilisateur est admin (ID de rôle 1)
-        if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
+        if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], [1, 2])) {
             header('Location: /workspace_connect/login');
             exit;
         }
@@ -13,6 +13,11 @@ class AdminController {
 
 
     public function register() {
+        if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], [1, 2])) {
+            header('Location: /workspace_connect/login');
+            exit;
+        }
+
         $db = require __DIR__ . '/../../config/db.php';
 
         // 1. On récupère les rôles pour le menu déroulant
@@ -29,6 +34,12 @@ class AdminController {
 
     // Traite la création du compte
     public function storeUser() {
+        if ($_SESSION['user_role'] != 1) {
+        $_SESSION['msg'] = "🚫 Droits insuffisants : Seul un administrateur peut créer un compte.";
+        header('Location: /workspace_connect/admin/users_list');
+        exit;
+        }
+    
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: /workspace_connect/admin/users_list');
             exit;
@@ -70,6 +81,7 @@ class AdminController {
 
         // --- Affiche la liste des utilisateurs ---
     public function users_list() {
+        
         $db = require __DIR__ . '/../../config/db.php';
         
         // On récupère les users avec le nom de leur rôle
@@ -87,6 +99,12 @@ class AdminController {
 
     // --- Modifie un utilisateur ---
     public function editUser($id) {
+        if ($_SESSION['user_role'] != 1) {
+        $_SESSION['msg'] = "🚫 Droits insuffisants : Seul un administrateur peut éditer un compte.";
+        header('Location: /workspace_connect/admin/users_list');
+        exit;
+        }
+
         $db = require __DIR__ . '/../../config/db.php';
 
         // 1. Traitement de la mise à jour (POST)
@@ -135,6 +153,12 @@ class AdminController {
     }
 
     public function deleteUser($id) {
+        if ($_SESSION['user_role'] != 1) {
+        $_SESSION['msg'] = "🚫 Droits insuffisants : Seul un administrateur peut supprimer un compte.";
+        header('Location: /workspace_connect/admin/users_list');
+        exit;
+        }
+
         $db = require __DIR__ . '/../../config/db.php';
 
         // Sécurité supplémentaire : on ne s'auto-supprime pas
