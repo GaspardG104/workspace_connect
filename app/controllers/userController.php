@@ -42,14 +42,14 @@ class UserController {
         $queryBookings = "
             (SELECT bk.id, bk.statut, res.nom as resource_name, res.type as resource_type, 
                     bk.date_debut as debut, bk.date_fin as fin, 'Organisateur' as role_dans_resa,
-                    bk.id_series 
+                    bk.id_series -- <--- AJOUT ICI
             FROM bookings bk
             JOIN resources res ON bk.id_resource = res.id
             WHERE bk.id_user = ? $typeCondition)
             UNION
             (SELECT bk.id, bk.statut, res.nom as resource_name, res.type as resource_type, 
                     bk.date_debut as debut, bk.date_fin as fin, 'Invité' as role_dans_resa,
-                    bk.id_series 
+                    bk.id_series -- <--- AJOUT ICI
             FROM bookings bk
             JOIN resources res ON bk.id_resource = res.id
             JOIN attendees att ON bk.id = att.id_booking
