@@ -6,10 +6,10 @@ document.addEventListener('DOMContentLoaded', function () {
         initialView: 'dayGridMonth',
         locale: 'fr',
         selectable: true,
-        longPressDelay:150,           
-        selectLongPressDelay: 150,     
-        selectMinDistance: 5,              
-        unselectAuto: false,         
+        longPressDelay: 150,
+        selectLongPressDelay: 150,
+        selectMinDistance: 5,
+        unselectAuto: false,
         dragRevertDuration: 0,
         selectMirror: true,
 
@@ -19,11 +19,11 @@ document.addEventListener('DOMContentLoaded', function () {
             right: 'dayGridMonth,timeGridWeek'
         },
         // Fonction de formatage pour l'input datetime-local
-select: function (info) {
+        select: function (info) {
             // 1. Récupération des dates (Début et Fin réelle)
             // On utilise 'let' pour pouvoir les mettre à jour globalement
             let currentStartDate = info.startStr.split('T')[0];
-            
+
             // FullCalendar donne J+1 pour la fin, on garde la date brute pour le calcul SQL
             // mais on calcule une version lisible pour l'affichage
             let endDateObj = new Date(info.end);
@@ -33,7 +33,7 @@ select: function (info) {
             // 2. Affichage lisible
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             let texteDate = "Le " + info.start.toLocaleDateString('fr-FR', options);
-            
+
             if (currentStartDate !== currentEndDate) {
                 texteDate = "Du " + info.start.toLocaleDateString('fr-FR', options) + " au " + endDateObj.toLocaleDateString('fr-FR', options);
             }
@@ -45,12 +45,12 @@ select: function (info) {
 
             // 4. Liaison avec ton formulaire (LES NOMS DE VARIABLES IMPORTANTS)
             // On définit les fonctions globalement pour qu'elles soient accessibles partout
-            window.updateFinalDebut = function(val) {
+            window.updateFinalDebut = function (val) {
                 hDebut = val;
                 document.getElementById('finalDebut').value = currentStartDate + " " + hDebut + ":00";
             };
 
-            window.updateFinalFin = function(val) {
+            window.updateFinalFin = function (val) {
                 hFin = val;
                 // CRUCIAL : On utilise currentEndDate ici pour ne pas écraser la période !
                 document.getElementById('finalFin').value = currentEndDate + " " + hFin + ":00";
@@ -86,7 +86,7 @@ select: function (info) {
             }
 
             // 7. Dégel du calendrier
-            calendar.unselect(); 
+            calendar.unselect();
 
             if (window.innerWidth < 768 && formBox) {
                 window.scrollTo({
@@ -110,7 +110,7 @@ function selectPlace(id, nom) {
     document.getElementById('res-form-box').style.display = 'block';
 
     setTimeout(() => {
-        calendar.render();  
+        calendar.render();
         calendar.setOption('events', '/workspace_connect/reservation/getEvents?id_resource=' + id);
         calendar.refetchEvents();
         calendar.updateSize();
