@@ -1,14 +1,21 @@
 <?php
 namespace App\Controllers;
 
-class AdminController {
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
+class AdminController {
+    private $userModel; // pour faire l'importation du fichier excel (csv en vrais pck j'ai sois disant 
+                        // pas la bonne version de php pour utiliser une bibliotheque php)
     public function __construct() {
+        
+
         // Double sécurité : on vérifie que l'utilisateur est admin (ID de rôle 1)
         if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], [1, 2])) {
             header('Location: /workspace_connect/login');
             exit;
         }
+        $this->userModel = new \App\Models\User();
     }
 
 
@@ -114,15 +121,15 @@ class AdminController {
                 $nom = $_POST['nom'];
                 $prenom = $_POST['prenom'];
                 $email = $_POST['email'];
-                $immat = $_POST['immatriculation'];
+                $immatriculation = $_POST['immatriculation'];
                 
                 if (!empty($_POST['password'])) {
                     $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
                     $sql = "UPDATE users SET id_role=?, nom=?, prenom=?, email=?, immatriculation=?, password_hash=? WHERE id=?";
-                    $params = [$id_role, $nom, $prenom, $email, $immat, $pass, $id];
+                    $params = [$id_role, $nom, $prenom, $email, $immatriculation, $pass, $id];
                 } else {
                     $sql = "UPDATE users SET id_role=?, nom=?, prenom=?, email=?, immatriculation=? WHERE id=?";
-                    $params = [$id_role, $nom, $prenom, $email, $immat, $id];
+                    $params = [$id_role, $nom, $prenom, $email, $immatriculation, $id];
                 }
 
             $db->prepare($sql)->execute($params);
@@ -178,7 +185,101 @@ class AdminController {
 
     header('Location: /workspace_connect/admin/users_list');
     exit;
-}
+    }
+public function import() {
+    $db = require __DIR__ . '/../../config/db.php';
 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['user_file'])) {
+        $file = $_FILES['user_file']['tmp_name'];
+        $handle = fopen($file, "r");
+
+        $roleMapping = [
+            'admin' => 1, 'administrateur' => 1, 'manager' => 2,
+            'collaborateur' => 3, 'collaboratrice' => 3, 'employé' => 4, 'employe' => 4, 'employée' => 4
+        ];
+
+        $successCount = 0;
+        $errors = [];
+        $lineNum = 0;
+
+        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+            $lineNum++;
+            
+            // On nettoie juste les espaces blancs, rien d'autre.
+            $data = array_map('trim', $data);
+
+            // 1. Détection de l'entête : on saute la ligne 1 si elle contient du texte connu
+            $firstCell = strtolower($data[0] ?? '');
+            if ($lineNum === 1 && (in_array($firstCell, ['rôle', 'role', 'fonction']))) {
+                continue;
+            }
+
+            // On saute les lignes vides
+            if (empty($data[1]) && empty($data[3])) continue;
+
+            // 2. Récupération des colonnes (Ordre : Rôle, Nom, Prénom, Email, Immat)
+            $roleTxt = $firstCell;
+            $nom     = $data[1] ?? '';
+            $prenom  = $data[2] ?? '';
+            $email   = $data[3] ?? '';
+            $immatriculation   = $data[4] ?? '';
+
+            // 3. VERIFICATION STRICTE DE L'EMAIL
+            // Si la colonne 3 ne contient pas d'email valide, on ne l'insère pas.
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Ligne $lineNum : Email invalide ($email)";
+                continue;
+            }
+
+            // 4. TRADUCTION DU RÔLE
+            $id_role = 4; // Par défaut
+            foreach ($roleMapping as $key => $id) {
+                if (str_contains($roleTxt, $key)) {
+                    $id_role = $id;
+                    break;
+                }
+            }
+
+            $password_hash = password_hash($nom . "123", PASSWORD_DEFAULT);
+
+            try {
+                // Utilisation de l'INSERT direct (comme dans ton storeUser)
+                $sql = "INSERT INTO users (id_role, nom, prenom, email, immatriculation, password_hash) 
+                        VALUES (:id_role, :nom, :prenom, :email, :imma, :pass)";
+                
+                $stmt = $db->prepare($sql);
+                $stmt->execute([
+                    ':id_role' => $id_role,
+                    ':nom'     => $nom,
+                    ':prenom'  => $prenom,
+                    ':email'   => $email,
+                    ':imma'    => $immatriculation,
+                    ':pass'    => $password_hash
+                ]);
+                $successCount++;
+
+            } catch (\Exception $e) {
+                // Si l'erreur est un doublon
+                if ($e->getCode() == 23000) {
+                    $errors[] = "Ligne $lineNum : L'email $email existe déjà.";
+                } else {
+                    $errors[] = "Ligne $lineNum : Erreur base de données.";
+                }
+            }
+        }
+        fclose($handle);
+
+        // Message de fin
+        $msg = "✅ $successCount utilisateurs importés avec succès.";
+        if (!empty($errors)) {
+            $msg .= " | ⚠️ Notes : " . implode(" / ", array_slice($errors, 0, 3)); 
+            if (count($errors) > 3) $msg .= "...";
+        }
+        
+        $_SESSION['msg'] = $msg;
+        header('Location: /workspace_connect/admin/register');
+        exit;
+    }
+}
 
 }

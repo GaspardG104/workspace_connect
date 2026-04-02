@@ -74,7 +74,21 @@
             </div>
         </div>
         <?php endif; ?>
-
+<div class="container mt-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h3 class="card-title mb-4">Import groupé</h3>
+            <form action="/workspace_connect/admin/import" method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Fichier CSV uniquement</label>
+                    <input type="file" name="user_file" class="form-control" accept=".csv" required>
+                    <div class="form-text">Format attendu : Fonction, Nom, Prénom, Email, Immatriculation, MDP Temporaire</div>
+                </div>
+                <button type="submit">Importer</button>
+            </form>
+        </div>
+    </div>
+</div>
         <div class="col-lg-8">
             <div class="card shadow-sm border-0" style="border-radius: 15px;">
                 <div class="card-body p-0">

@@ -25,4 +25,11 @@ class User {
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    // Fichier : models/UserModel.php
+    public function createFromImport($db, $id_role, $nom, $prenom, $email, $immatriculation, $password) {
+        $sql = "INSERT INTO users (id_role, nom, prenom, email, immatriculation, password_hash) VALUES (?, ?, ?, ?, ?, ?)";
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([$id_role, $nom, $prenom, $email, $immatriculation, $password]);
+    }
 }

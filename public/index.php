@@ -96,6 +96,8 @@ switch ($urlParts[0]) {
         } elseif ($action === 'editUser') {
             $id = $urlParts[2] ?? null;
             $controller->editUser($id);
+        } elseif ($action === 'import') {
+            $controller->import();
         } elseif ($action === 'deleteUser') {
         $id = $urlParts[2] ?? null;
         $controller->deleteUser($id);
