@@ -1,0 +1,42 @@
+/* Rend les week-ends grisés */
+.fc-day-sat, .fc-day-sun {
+    background-color: #f8f9fa !important; /* Gris très clair */
+    background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,.02) 5px, rgba(0,0,0,.02) 10px);
+    cursor: not-allowed !important;
+}
+
+/* On retire l'effet de survol (hover) sur les week-ends */
+.fc-day-sat:hover, .fc-day-sun:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* Empêche la barre d'outils de chevaucher le calendrier */
+.fc .fc-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5em !important; /* Espace crucial sous la barre d'outils */
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Redonne de la hauteur aux en-têtes des jours (dim., lun., etc.) */
+.fc .fc-col-header-cell {
+    padding: 10px 0 !important;
+    background-color: rgba(255, 255, 255, 0.1); /* Optionnel : léger fond pour lisibilité */
+}
+
+/* Assure que le conteneur global ne compresse pas le contenu */
+#calendar {
+    min-height: 500px; /* Force une hauteur minimale */
+    background: white; /* Fond blanc pour que le texte reste lisible sur ton bleu */
+    padding: 15px;
+    border-radius: 8px;
+    color: #333; /* Texte sombre pour contraster avec le fond blanc */
+}
+
+/* Style spécifique pour tes boutons qui semblent un peu serrés */
+.fc .fc-button {
+    padding: 0.4em 0.65em !important;
+    font-size: 0.9em !important;
+}
