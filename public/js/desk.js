@@ -224,4 +224,3 @@ document.getElementById('recurrence_type').addEventListener('change', function()
         label.innerText = "Combien de mois ?";
     }
 });
-
