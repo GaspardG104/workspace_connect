@@ -194,8 +194,12 @@ document.querySelectorAll('.user-option').forEach(option => {
 
         // Vérification : pas déjà ajouté et respect de la capacité (soi-même + invités)
         if (!selectedUsers.includes(id)) {
-            if (selectedUsers.length + 1 < capaciteMax) {
+            if (selectedUsers.length + 1 <= capaciteMax) {
                 addTag(id, name);
+                // Griser l'utilisateur sélectionné dans la liste
+                this.style.opacity = '0.5';
+                this.style.pointerEvents = 'none';
+                this.style.cursor = 'not-allowed';
             } else {
                 alert("Capacité maximale de la salle atteinte !");
             }
@@ -228,6 +232,14 @@ function removeTag(id, element) {
     selectedUsers = selectedUsers.filter(uid => uid !== id);
     element.parentElement.remove();
     document.getElementById('input-invite-' + id).remove();
+    
+    // Rendre visible à nouveau l'utilisateur dans la liste des suggestions
+    const userOption = document.querySelector(`.user-option[data-id="${id}"]`);
+    if (userOption) {
+        userOption.style.opacity = '1';
+        userOption.style.pointerEvents = 'auto';
+        userOption.style.cursor = 'pointer';
+    }
 }
 
 // Fermer la liste si on clique ailleurs

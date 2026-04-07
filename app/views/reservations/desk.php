@@ -81,7 +81,7 @@
                             <div id="tags-container" class="d-flex flex-wrap gap-2 mb-2"></div>
                             <div class="dropdown">
                                 <input type="text" id="userSearch" class="form-control"
-                                    placeholder="Rechercher un collègue..." autocomplete="off">
+                                    placeholder="Rechercher un(e) collègue..." autocomplete="off">
                                 <ul id="userSuggestions" class="dropdown-menu w-100 shadow-sm"
                                     style="max-height: 200px; overflow-y: auto;">
                                     <?php foreach($all_users as $u): ?>
