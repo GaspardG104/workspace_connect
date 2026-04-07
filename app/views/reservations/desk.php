@@ -112,7 +112,7 @@
                                     <div class="col-md-6">
                                         <label class="small fw-bold">Fréquence</label>
                                         <select name="recurrence_type" id="recurrence_type"
-                                            class="form-select form-select-sm">
+                                            class="form-select form-select-sm" value="WEEKLY">
                                             <option value="WEEKLY">Toutes les semaines</option>
                                             <option value="DAILY">Tous les jours</option>
                                             <option value="MONTHLY">Tous les mois</option>
@@ -121,7 +121,7 @@
 
 
                                     <div class="col-md-6">
-                                        <label id="label-count" class="small fw-bold">Pendant combien de fois ?</label>
+                                        <label id="label-count" class="small fw-bold"> </label>
                                         <input type="number" name="recurrence_count" id="recurrence_count"
                                             class="form-select form-select-sm" value="1" min="1">
                                     </div>
@@ -182,6 +182,29 @@
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fermer</button>
                 <button type="button" class="btn btn-danger" id="confirmDeleteBookingBtn">Supprimer cette
                     réservation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour les conflits de réservation -->
+<div class="modal fade" id="conflictModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="fa-solid fa-exclamation-circle me-2"></i>Réservations en conflit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="fw-bold mb-3">Des réservations existent déjà sur votre sélection :</p>
+                <div id="conflictsList" class="mb-3">
+                    <!-- Les conflits seront listés ici -->
+                </div>
+                <p class="text-muted small mb-0" id="availableCountText"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler tout</button>
+                <button type="button" class="btn btn-warning" id="reserveAvailableBtn">Réserver seulement les dates disponibles</button>
             </div>
         </div>
     </div>

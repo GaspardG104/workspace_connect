@@ -16,6 +16,25 @@ class Booking {
     }
 
     /**
+     * 1b. DÉTECTION DES CONFLITS : Retourner les réservations en conflit
+     */
+    public static function getConflicts($db, $resourceId, $start, $end) {
+        $sql = "SELECT b.id, b.date_debut, b.date_fin, 
+                CONCAT(u.prenom, ' ', u.nom) as user_name,
+                r.nom as resource_name
+                FROM bookings b
+                JOIN users u ON b.id_user = u.id
+                JOIN resources r ON b.id_resource = r.id
+                WHERE b.id_resource = ? 
+                AND (b.date_debut < ? AND b.date_fin > ?)
+                ORDER BY b.date_debut ASC";
+        
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$resourceId, $end, $start]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * 2. CRÉATION : Insérer une nouvelle réservation
      */
     public static function create($db, $userId, $resourceId, $start, $end, $idSeries = null) {

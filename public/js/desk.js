@@ -147,6 +147,14 @@ document.getElementById('bookingForm').addEventListener('submit', function (e) {
     fetch('/workspace_connect/reservation/store', { method: 'POST', body: new FormData(this) })
         .then(r => r.json())
         .then(data => {
+            // Cas 1 : Conflits détectés
+            if (data.hasConflicts) {
+                showConflictModalDesk(data);
+                btn.disabled = false;
+                return;
+            }
+
+            // Cas 2 : Succès ou erreur standard
             showMsg(data.message, data.success);
             if (data.success) {
                 calendar.refetchEvents();
@@ -154,6 +162,68 @@ document.getElementById('bookingForm').addEventListener('submit', function (e) {
             }
             if (resFormBox) {
                 resFormBox.style.display = 'none';
+            }
+        })
+        .finally(() => { btn.disabled = false; });
+});
+
+// Fonction pour afficher le modal des conflits (desk)
+function showConflictModalDesk(data) {
+    const conflictsList = document.getElementById('conflictsList');
+    const availableCountText = document.getElementById('availableCountText');
+    
+    // Construire la liste des conflits
+    let conflictHTML = '';
+    data.conflicts.forEach(conflict => {
+        conflictHTML += `
+            <div class="alert alert-warning mb-2 py-2">
+                <strong>${conflict.date}</strong><br>
+                <small>
+                    De ${conflict.heure_debut} à ${conflict.heure_fin}<br>
+                    Réservé par: ${conflict.user}
+                </small>
+            </div>
+        `;
+    });
+    
+    conflictsList.innerHTML = conflictHTML;
+    
+    // Afficher le nombre de dates disponibles
+    const totalDates = data.conflicts.length + data.availableDatesCount;
+    availableCountText.innerText = `📅 Vous avez ${data.availableDatesCount} date(s) disponible(s) sur ${totalDates} jours sélectionnés.`;
+    
+    // Afficher le modal
+    const modal = new bootstrap.Modal(document.getElementById('conflictModal'));
+    modal.show();
+}
+
+// Gestionnaire pour le bouton "Réserver seulement les dates disponibles" (desk)
+document.getElementById('reserveAvailableBtn').addEventListener('click', function() {
+    const form = document.getElementById('bookingForm');
+    const formData = new FormData(form);
+    formData.append('skipConflicts', 'true');
+    
+    const btn = document.getElementById('subBtn');
+    const resFormBox = document.getElementById('recurrence-options');
+    
+    btn.disabled = true;
+    
+    // Fermer le modal
+    const modalEl = document.getElementById('conflictModal');
+    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    if (modalInstance) modalInstance.hide();
+    
+    fetch('/workspace_connect/reservation/store', {
+        method: 'POST',
+        body: formData
+    })
+        .then(r => r.json())
+        .then(data => {
+            showMsg(data.message, data.success);
+            if (data.success) {
+                calendar.refetchEvents();
+                form.reset();
+                if (resFormBox) resFormBox.style.display = 'none';
             }
         })
         .finally(() => { btn.disabled = false; });
@@ -247,18 +317,11 @@ document.addEventListener('click', (e) => {
     if (!userSearch.contains(e.target)) userSuggestions.classList.remove('show');
 });
 
-document.getElementById('is_recurring').addEventListener('change', function() {
-    const options = document.getElementById('recurrence-options');
-    if (this.checked) {
-        options.style.display = 'block';
-    } else {
-        options.style.display = 'none';
-    }
-});
-
-document.getElementById('recurrence_type').addEventListener('change', function() {
+// Fonction pour mettre à jour le label de fréquence
+function updateRecurrenceLabel() {
     const label = document.getElementById('label-count');
-    const value = this.value;
+    const recurrenceType = document.getElementById('recurrence_type');
+    const value = recurrenceType.value;
 
     if (value === 'DAILY') {
         label.innerText = "Combien de jours ?";
@@ -267,6 +330,20 @@ document.getElementById('recurrence_type').addEventListener('change', function()
     } else if (value === 'MONTHLY') {
         label.innerText = "Combien de mois ?";
     }
+}
+
+document.getElementById('is_recurring').addEventListener('change', function() {
+    const options = document.getElementById('recurrence-options');
+    if (this.checked) {
+        options.style.display = 'block';
+        updateRecurrenceLabel(); // Mettre à jour le label dès l'affichage
+    } else {
+        options.style.display = 'none';
+    }
+});
+
+document.getElementById('recurrence_type').addEventListener('change', function() {
+    updateRecurrenceLabel(); // Utiliser la fonction commune
 });
 
 // --- GESTION DE LA MODALE DE DÉTAILS DE RÉSERVATION ---

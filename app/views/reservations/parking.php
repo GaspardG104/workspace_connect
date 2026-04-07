@@ -147,6 +147,29 @@
         </div>
     </div>
 
+    <!-- Modal pour les conflits de réservation -->
+    <div class="modal fade" id="conflictModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="fa-solid fa-exclamation-circle me-2"></i>Réservations en conflit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="fw-bold mb-3">Des réservations existent déjà sur votre sélection :</p>
+                    <div id="conflictsList" class="mb-3">
+                        <!-- Les conflits seront listés ici -->
+                    </div>
+                    <p class="text-muted small mb-0" id="availableCountText"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler tout</button>
+                    <button type="button" class="btn btn-warning" id="reserveAvailableBtn">Réserver seulement les dates disponibles</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const currentUserId = <?= $_SESSION['user_id'] ?>;
     </script>

@@ -171,39 +171,43 @@ document.getElementById('bookingForm').addEventListener('submit', function (e) {
     })
         .then(response => response.json())
         .then(data => {
-            // 1. Affichage du message avec les classes Bootstrap
+            // Cas 1 : Conflits détectés
+            if (data.hasConflicts) {
+                // Afficher le modal avec les conflits
+                showConflictModal(data);
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Confirmer la réservation";
+                return;
+            }
+
+            // Cas 2 : Succès ou erreur standard
             msgDiv.innerHTML = data.message;
             msgDiv.className = data.success ? "alert alert-success" : "alert alert-danger";
-            msgDiv.style.display = "block"; // On s'assure qu'il est visible
+            msgDiv.style.display = "block";
 
-            // 2. Remonter en haut de la page pour voir le message
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
             if (data.success) {
                 calendar.refetchEvents();
 
-                // Remplace par tes nouveaux IDs pour vider les champs après succès
                 const inputD = document.getElementById('heureDebutInput');
                 const inputF = document.getElementById('heureFinInput');
 
                 if (inputD) inputD.value = "";
                 if (inputF) inputF.value = "";
 
-                // Si tu utilises les champs cachés pour SQL
                 if (document.getElementById('finalDebut')) document.getElementById('finalDebut').value = "";
                 if (document.getElementById('finalFin')) document.getElementById('finalFin').value = "";
             }
 
-            // 3. Faire disparaître le message après 3 secondes
+            // Faire disparaître le message après 3 secondes
             setTimeout(() => {
-                // Effet de disparition douce (fade out)
                 msgDiv.style.transition = "opacity 0.5s ease";
                 msgDiv.style.opacity = "0";
 
-                // On cache complètement après l'animation
                 setTimeout(() => {
                     msgDiv.style.display = "none";
-                    msgDiv.style.opacity = "1"; // On remet l'opacité à 1 pour la prochaine fois
+                    msgDiv.style.opacity = "1";
                 }, 500);
             }, 3000);
         })
@@ -218,6 +222,100 @@ document.getElementById('bookingForm').addEventListener('submit', function (e) {
             submitBtn.innerText = "Confirmer la réservation";
         });
 
+});
+
+// Fonction pour afficher le modal des conflits
+function showConflictModal(data) {
+    const conflictsList = document.getElementById('conflictsList');
+    const availableCountText = document.getElementById('availableCountText');
+    
+    // Construire la liste des conflits
+    let conflictHTML = '';
+    data.conflicts.forEach(conflict => {
+        conflictHTML += `
+            <div class="alert alert-warning mb-2 py-2">
+                <strong>${conflict.date}</strong><br>
+                <small>
+                    De ${conflict.heure_debut} à ${conflict.heure_fin}<br>
+                    Réservé par: ${conflict.user}
+                </small>
+            </div>
+        `;
+    });
+    
+    conflictsList.innerHTML = conflictHTML;
+    
+    // Afficher le nombre de dates disponibles
+    const totalDates = data.conflicts.length + data.availableDatesCount;
+    availableCountText.innerText = `📅 Vous avez ${data.availableDatesCount} date(s) disponible(s) sur ${totalDates} jours sélectionnés.`;
+    
+    // Afficher le modal
+    const modal = new bootstrap.Modal(document.getElementById('conflictModal'));
+    modal.show();
+}
+
+// Gestionnaire pour le bouton "Réserver seulement les dates disponibles"
+document.getElementById('reserveAvailableBtn').addEventListener('click', function() {
+    const form = document.getElementById('bookingForm');
+    const formData = new FormData(form);
+    formData.append('skipConflicts', 'true');
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const msgDiv = document.getElementById('ajax-message');
+    
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Traitement...";
+    
+    // Fermer le modal
+    const modalEl = document.getElementById('conflictModal');
+    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    if (modalInstance) modalInstance.hide();
+    
+    fetch('/workspace_connect/reservation/store', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            msgDiv.innerHTML = data.message;
+            msgDiv.className = data.success ? "alert alert-success" : "alert alert-danger";
+            msgDiv.style.display = "block";
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            if (data.success) {
+                calendar.refetchEvents();
+                
+                const inputD = document.getElementById('heureDebutInput');
+                const inputF = document.getElementById('heureFinInput');
+                
+                if (inputD) inputD.value = "";
+                if (inputF) inputF.value = "";
+                
+                if (document.getElementById('finalDebut')) document.getElementById('finalDebut').value = "";
+                if (document.getElementById('finalFin')) document.getElementById('finalFin').value = "";
+            }
+            
+            setTimeout(() => {
+                msgDiv.style.transition = "opacity 0.5s ease";
+                msgDiv.style.opacity = "0";
+                
+                setTimeout(() => {
+                    msgDiv.style.display = "none";
+                    msgDiv.style.opacity = "1";
+                }, 500);
+            }, 3000);
+        })
+        .catch(error => {
+            msgDiv.innerHTML = "❌ Erreur lors de la réservation.";
+            msgDiv.className = "alert alert-danger";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            console.error(error);
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Confirmer la réservation";
+        });
 });
 
 // --- GESTION DE LA MODALE DE DÉTAILS DE RÉSERVATION ---
@@ -332,18 +430,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Gestion du formulaire de récurrence
-document.getElementById('is_recurring').addEventListener('change', function() {
-    const options = document.getElementById('recurrence-options');
-    if (this.checked) {
-        options.style.display = 'block';
-    } else {
-        options.style.display = 'none';
-    }
-});
-
-document.getElementById('recurrence_type').addEventListener('change', function() {
+// Fonction pour mettre à jour le label de fréquence
+function updateRecurrenceLabel() {
     const label = document.getElementById('label-count');
-    const value = this.value;
+    const recurrenceType = document.getElementById('recurrence_type');
+    const value = recurrenceType.value;
 
     if (value === 'DAILY') {
         label.innerText = "Combien de jours ?";
@@ -352,4 +443,18 @@ document.getElementById('recurrence_type').addEventListener('change', function()
     } else if (value === 'MONTHLY') {
         label.innerText = "Combien de mois ?";
     }
+}
+
+document.getElementById('is_recurring').addEventListener('change', function() {
+    const options = document.getElementById('recurrence-options');
+    if (this.checked) {
+        options.style.display = 'block';
+        updateRecurrenceLabel(); // Mettre à jour le label dès l'affichage
+    } else {
+        options.style.display = 'none';
+    }
+});
+
+document.getElementById('recurrence_type').addEventListener('change', function() {
+    updateRecurrenceLabel(); // Utiliser la fonction commune
 });
