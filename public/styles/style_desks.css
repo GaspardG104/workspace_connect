@@ -193,6 +193,14 @@
     -webkit-user-select: auto !important;
 }
 
+/* Couleur plus douce pour les jours de week-end (samedi et dimanche) */
+.fc-col-header-cell.fc-day-sun,
+.fc-col-header-cell.fc-day-sat,
+.fc-daygrid-day.fc-day-sun,
+.fc-daygrid-day.fc-day-sat {
+    background-color: #f0f4f8 !important;
+}
+
 /* --- ANIMATION DE DÉCALAGE --- */
 
 /* On donne une transition douce à la ligne qui contient les deux colonnes */

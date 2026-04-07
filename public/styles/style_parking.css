@@ -149,3 +149,11 @@
 .fc-daygrid-day {
     pointer-events: auto !important;
 }
+
+/* Couleur plus douce pour les jours de week-end */
+.fc-col-header-cell.fc-day-sun,
+.fc-col-header-cell.fc-day-sat,
+.fc-daygrid-day.fc-day-sun,
+.fc-daygrid-day.fc-day-sat {
+    background-color: #f0f4f8 !important;
+}
