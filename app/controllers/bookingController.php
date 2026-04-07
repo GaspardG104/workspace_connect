@@ -92,6 +92,8 @@ class BookingController {
                 $period = new \DatePeriod(new \DateTime($startObj->format('Y-m-d')), $interval, $tempEnd);
 
                 foreach ($period as $dt) {
+                    // N est le numéro du jour : 6 (Samedi), 7 (Dimanche)
+                    if ((int)$dt->format('N') >= 6) continue; // On ignore le week-end
                     // Pour chaque jour, on garde l'heure de début et de fin choisie
                     $d = $dt->format('Y-m-d') . ' ' . $startObj->format('H:i:s');
                     $f = $dt->format('Y-m-d') . ' ' . $endObj->format('H:i:s');
@@ -107,6 +109,8 @@ class BookingController {
                 $nb_repetitions = intval($_POST['recurrence_count'] ?? 1);
                 
                 for ($i = 1; $i < $nb_repetitions; $i++) {
+                    // N est le numéro du jour : 6 (Samedi), 7 (Dimanche)
+                    if ((int)$dt->format('N') >= 6) continue; // On ignore le week-end
                     $interval = ($type_recurence === 'DAILY') ? "P{$i}D" : (($type_recurence === 'MONTHLY') ? "P{$i}M" : "P{$i}W");
                     $d = new \DateTime($date_debut);
                     $f = new \DateTime($date_fin);
@@ -119,7 +123,10 @@ class BookingController {
                 $stmtSeries->execute(["FREQ=$type_recurence;COUNT=$nb_repetitions"]);
                 $id_series = $db->lastInsertId();
             } else {
-                // Cas simple : un seul jour, pas de récurrence
+                // Cas simple : On vérifie si le jour unique est un week-end
+                if ((int)$startObj->format('N') >= 6) {
+                    throw new \Exception("❌ Les réservations sont interdites le week-end.");
+                }
                 $dates_a_reserver[] = [$date_debut, $date_fin];
             }
 
