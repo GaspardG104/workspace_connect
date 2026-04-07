@@ -12,6 +12,21 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         selectable: true,
         select: function (info) {
+            // Vérifier s'il y a un avertissement sur les weekends
+            let hasWeekend = false;
+            const startDate = new Date(info.start);
+            const endDateCheck = new Date(info.end);
+            
+            const interval = new Date(startDate);
+            while (interval < endDateCheck) {
+                const dayOfWeek = interval.getDay();
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    hasWeekend = true;
+                    break;
+                }
+                interval.setDate(interval.getDate() + 1);
+            }
+
             document.getElementById('startInput').value = info.startStr + "T09:00";
             let endDate = new Date(info.end);
 

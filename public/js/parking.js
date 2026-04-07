@@ -6,9 +6,6 @@ document.addEventListener('DOMContentLoaded', function () {
         initialView: 'dayGridMonth',
         locale: 'fr',
         selectable: true,
-        longPressDelay: 150,
-        selectLongPressDelay: 150,
-        selectMinDistance: 5,
         unselectAuto: false,
         dragRevertDuration: 0,
         selectMirror: true,
@@ -20,6 +17,29 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         // Fonction de formatage pour l'input datetime-local
         select: function (info) {
+            // Vérifier s'il y a un avertissement sur les weekends
+            let hasWeekend = false;
+            const startDate = new Date(info.start);
+            const endDate = new Date(info.end);
+            
+            const interval = new Date(startDate);
+            while (interval < endDate) {
+                const dayOfWeek = interval.getDay();
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    hasWeekend = true;
+                    break;
+                }
+                interval.setDate(interval.getDate() + 1);
+            }
+            
+            if (hasWeekend) {
+                // Afficher un avertissement sans bloquer
+                const warningMsg = document.getElementById('display-date');
+                if (warningMsg) {
+                    warningMsg.innerHTML = '<span style="color: #ffc107;"><i class="fa-solid fa-triangle-exclamation me-2"></i>Les jours du week-end seront ignorés.</span>';
+                }
+            }
+            
             // 1. Récupération des dates (Début et Fin réelle)
             // On utilise 'let' pour pouvoir les mettre à jour globalement
             let currentStartDate = info.startStr.split('T')[0];
@@ -35,7 +55,11 @@ document.addEventListener('DOMContentLoaded', function () {
             let texteDate = "Le " + info.start.toLocaleDateString('fr-FR', options);
 
             if (currentStartDate !== currentEndDate) {
-                texteDate = "Du " + info.start.toLocaleDateString('fr-FR', options) + " au " + endDateObj.toLocaleDateString('fr-FR', options);
+                if (!hasWeekend) {
+                    texteDate = "Du " + info.start.toLocaleDateString('fr-FR', options) + " au " + endDateObj.toLocaleDateString('fr-FR', options);
+                } else {
+                    texteDate = "Du " + info.start.toLocaleDateString('fr-FR', options) + " au " + endDateObj.toLocaleDateString('fr-FR', options);
+                }
             }
             document.getElementById('display-date').innerText = texteDate;
 
@@ -181,4 +205,27 @@ document.getElementById('bookingForm').addEventListener('submit', function (e) {
             submitBtn.innerText = "Confirmer la réservation";
         });
 
+});
+
+// Gestion du formulaire de récurrence
+document.getElementById('is_recurring').addEventListener('change', function() {
+    const options = document.getElementById('recurrence-options');
+    if (this.checked) {
+        options.style.display = 'block';
+    } else {
+        options.style.display = 'none';
+    }
+});
+
+document.getElementById('recurrence_type').addEventListener('change', function() {
+    const label = document.getElementById('label-count');
+    const value = this.value;
+
+    if (value === 'DAILY') {
+        label.innerText = "Combien de jours ?";
+    } else if (value === 'WEEKLY') {
+        label.innerText = "Combien de semaines ?";
+    } else if (value === 'MONTHLY') {
+        label.innerText = "Combien de mois ?";
+    }
 });

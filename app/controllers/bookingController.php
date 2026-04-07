@@ -92,27 +92,36 @@ class BookingController {
                 $period = new \DatePeriod(new \DateTime($startObj->format('Y-m-d')), $interval, $tempEnd);
 
                 foreach ($period as $dt) {
-                    // Pour chaque jour, on garde l'heure de début et de fin choisie
-                    $d = $dt->format('Y-m-d') . ' ' . $startObj->format('H:i:s');
-                    $f = $dt->format('Y-m-d') . ' ' . $endObj->format('H:i:s');
-                    $dates_a_reserver[] = [$d, $f];
+                    // Vérifier que ce n'est pas un weekend (0=dimanche, 6=samedi)
+                    $dayOfWeek = intval($dt->format('w'));
+                    if ($dayOfWeek !== 0 && $dayOfWeek !== 6) {
+                        // Pour chaque jour, on garde l'heure de début et de fin choisie
+                        $d = $dt->format('Y-m-d') . ' ' . $startObj->format('H:i:s');
+                        $f = $dt->format('Y-m-d') . ' ' . $endObj->format('H:i:s');
+                        $dates_a_reserver[] = [$d, $f];
+                    }
                 }
             } 
             // --- FIN DETECTION AUTO ---
             
             // 1. Gestion de la récurrence classique (Si cochée via le formulaire)
             elseif ($is_recurring) {
-                $dates_a_reserver[] = [$date_debut, $date_fin]; // On ajoute le premier créneau
                 $type_recurence = $_POST['recurrence_type'] ?? 'WEEKLY';
                 $nb_repetitions = intval($_POST['recurrence_count'] ?? 1);
                 
-                for ($i = 1; $i < $nb_repetitions; $i++) {
+                // Pour la récurrence, on génère les dates et on filtre les weekends
+                for ($i = 0; $i < $nb_repetitions; $i++) {
                     $interval = ($type_recurence === 'DAILY') ? "P{$i}D" : (($type_recurence === 'MONTHLY') ? "P{$i}M" : "P{$i}W");
                     $d = new \DateTime($date_debut);
                     $f = new \DateTime($date_fin);
                     $d->add(new \DateInterval($interval));
                     $f->add(new \DateInterval($interval));
-                    $dates_a_reserver[] = [$d->format('Y-m-d H:i:s'), $f->format('Y-m-d H:i:s')];
+                    
+                    // Vérifier que ce n'est pas un weekend
+                    $dayOfWeek = intval($d->format('w'));
+                    if ($dayOfWeek !== 0 && $dayOfWeek !== 6) {
+                        $dates_a_reserver[] = [$d->format('Y-m-d H:i:s'), $f->format('Y-m-d H:i:s')];
+                    }
                 }
 
                 $stmtSeries = $db->prepare("INSERT INTO booking_series (rrule_string) VALUES (?)");
@@ -120,7 +129,18 @@ class BookingController {
                 $id_series = $db->lastInsertId();
             } else {
                 // Cas simple : un seul jour, pas de récurrence
-                $dates_a_reserver[] = [$date_debut, $date_fin];
+                // Vérifier que ce n'est pas un weekend
+                $dayOfWeek = intval($startObj->format('w'));
+                if ($dayOfWeek !== 0 && $dayOfWeek !== 6) {
+                    $dates_a_reserver[] = [$date_debut, $date_fin];
+                } else {
+                    throw new \Exception("❌ Impossible de réserver un samedi ou un dimanche.");
+                }
+            }
+
+            // Vérifier qu'au moins une date a été ajoutée
+            if (empty($dates_a_reserver)) {
+                throw new \Exception("❌ Aucun jour valide n'a pu être réservé (weekends exclus).");
             }
 
             // 2. Insertion des bookings

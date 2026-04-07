@@ -57,6 +57,37 @@
             </div>
         </div>
 
+        <div class="mb-3 p-3 border rounded bg-light">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="is_recurring" id="is_recurring" value="true">
+                <label class="form-check-label fw-bold" for="is_recurring">
+                    <i class="fa-solid fa-repeat me-1"></i> Répéter cette réservation
+                </label>
+            </div>
+            
+            <div id="recurrence-options" class="mt-3" style="display:none">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="small fw-bold">Fréquence</label>
+                        <select name="recurrence_type" id="recurrence_type" class="form-select form-select-sm">
+                            <option value="WEEKLY">Toutes les semaines</option>
+                            <option value="DAILY">Tous les jours</option>
+                            <option value="MONTHLY">Tous les mois</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label id="label-count" class="small fw-bold">Pendant combien de fois ?</label>
+                        <input type="number" name="recurrence_count" id="recurrence_count" class="form-select form-select-sm" value="1" min="1">
+                    </div>
+                </div>
+                <div class="form-text mt-2 text-muted">
+                    <i class="fa-solid fa-circle-info me-1"></i> 
+                    Les jours du samedi et dimanche seront automatiquement ignorés.
+                </div>
+            </div>
+        </div>
+
         <button type="submit" id="submitBtn" class="btn btn-success w-100 fw-bold py-2">
             Confirmer la réservation
         </button>
