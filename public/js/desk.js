@@ -59,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('endInput').value = formattedEndDate;
         },
         eventClick: function(info) {
-            console.log('Event clicked in desk:', info.event);
             showBookingDetailsModal(info.event);
         }
     });
@@ -263,9 +262,7 @@ let currentBookingId = null;
 let currentBookingSeriesId = null;
 
 function showBookingDetailsModal(event) {
-    console.log('showBookingDetailsModal called with event:', event);
-    console.log('currentUserId:', currentUserId);
-    console.log('event.extendedProps:', event.extendedProps);
+    // Récupérer les données de l'événement
     currentBookingId = event.id;
     currentBookingSeriesId = event.extendedProps.id_series || null;
     const organizerName = event.extendedProps.prenom + ' ' + event.extendedProps.nom;
@@ -295,7 +292,7 @@ function showBookingDetailsModal(event) {
     const separator = document.getElementById('seriesSeparator');
     document.getElementById('deleteAllSeries').checked = false;
     
-    if (currentBookingSeriesId && currentBookingSeriesId !== null && currentBookingSeriesId !== 'null' && currentBookingSeriesId !== 0) {
+    if (isOwnBooking && currentBookingSeriesId && currentBookingSeriesId !== null && currentBookingSeriesId !== 'null' && currentBookingSeriesId !== 0) {
         optionSeries.style.display = 'block';
         separator.style.display = 'block';
     } else {

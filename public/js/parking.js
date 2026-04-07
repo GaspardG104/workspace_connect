@@ -249,7 +249,7 @@ function showBookingDetailsModal(event) {
     const separator = document.getElementById('seriesSeparator');
     document.getElementById('deleteAllSeries').checked = false;
     
-    if (currentBookingSeriesId && currentBookingSeriesId !== null && currentBookingSeriesId !== 'null' && currentBookingSeriesId !== 0) {
+    if (isOwnBooking && currentBookingSeriesId && currentBookingSeriesId !== null && currentBookingSeriesId !== 'null' && currentBookingSeriesId !== 0) {
         optionSeries.style.display = 'block';
         separator.style.display = 'block';
     } else {
