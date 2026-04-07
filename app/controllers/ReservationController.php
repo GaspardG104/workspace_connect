@@ -31,9 +31,11 @@ class ReservationController {
      */
     public function search() {
         $search = $_GET['search'] ?? '';
+        $date = $_GET['date'] ?? null;
+        $sort = $_GET['sort'] ?? 'date_debut';
         
-        // Appel au modèle
-        $reservations = Booking::search($this->db, $search);
+        // Appel au modèle avec les 3 paramètres
+        $reservations = Booking::search($this->db, $search, $date, $sort);
 
         header('Content-Type: application/json');
         echo json_encode($reservations);

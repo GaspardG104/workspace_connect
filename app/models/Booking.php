@@ -28,7 +28,7 @@ class Booking {
     /**
      * 3. RECHERCHE : Ta requête SQL GÉANTE (Optimisée MVC)
      */
-    public static function search($db, $searchTerm) {
+    public static function search($db, $searchTerm, $date = null, $sortBy = 'date_debut') {
         $sql = "SELECT b.*, u.nom as user_nom, u.prenom as user_prenom, r.nom as resource_nom, r.type as resource_type, b.id_series,
                 (SELECT STRING_AGG(nom_invite, ', ') FROM attendees WHERE id_booking = b.id) as liste_invites,
                 (SELECT COUNT(*) FROM attendees WHERE id_booking = b.id) as nb_invites,
@@ -46,11 +46,34 @@ class Booking {
                         SELECT id_booking FROM attendees 
                         WHERE nom_invite ILIKE :search OR email ILIKE :search
                     )
-                )
-                ORDER BY b.date_debut DESC";
+                )";
+        
+        // Ajout du filtre par date si fourni
+        if (!empty($date)) {
+            $sql .= " AND DATE(b.date_debut) = :date";
+        }
+        
+        // Ajout du tri
+        $sortColumn = 'b.date_debut';
+        $sortOrder = 'DESC';
+        
+        if ($sortBy === 'user_nom') {
+            $sortColumn = 'u.nom, u.prenom';
+        } elseif ($sortBy === 'resource_nom') {
+            $sortColumn = 'r.nom';
+            $sortOrder = 'ASC';
+        }
+        
+        $sql .= " ORDER BY $sortColumn $sortOrder";
 
         $stmt = $db->prepare($sql);
-        $stmt->execute(['search' => "%$searchTerm%"]);
+        $params = ['search' => "%$searchTerm%"];
+        
+        if (!empty($date)) {
+            $params['date'] = $date;
+        }
+        
+        $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

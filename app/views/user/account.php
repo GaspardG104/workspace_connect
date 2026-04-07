@@ -69,22 +69,22 @@
                         <div class="d-flex justify-content-center mb-4">
                             <div class="btn-group w-100 shadow-sm" role="group">
                                 
-                                <a href="/workspace_connect/user/account?type=all" 
+                                <button type="button" data-filter="all" 
                                 class="btn <?= ($filterType === 'all') ? 'btn-primary' : 'btn-outline-primary' ?> filter-btn d-flex align-items-center justify-content-center">
                                 Toutes
-                                </a>
+                                </button>
                                 
-                                <a href="/workspace_connect/user/account?type=parking" 
+                                <button type="button" data-filter="parking" 
                                 class="btn <?= ($filterType === 'parking') ? 'btn-primary' : 'btn-outline-primary' ?> filter-btn">
                                     <i class="fas fa-car me-1"></i> Parking
-                                </a>
+                                </button>
 
-                                <select class="form-select border-primary" id="workFilterSelect" onchange="location = this.value;">
+                                <select class="form-select border-primary" id="workFilterSelect">
                                     <option value="" selected disabled>Bureaux, Salles, Boxs...</option>
                                     <?php foreach($types_uniques as $type): ?>
                                         <?php if($type === 'parking') continue; ?>
                                         
-                                        <option value="/workspace_connect/user/account?type=<?= htmlspecialchars($type) ?>" 
+                                        <option data-filter="<?= htmlspecialchars($type) ?>" 
                                                 <?= ($filterType === $type) ? 'selected' : '' ?>>
                                             <?php 
                                                 $label = ucfirst(htmlspecialchars($type));
@@ -211,7 +211,8 @@ function applyFilter(value) {
 }
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault(); // Empêcher la navigation
         document.getElementById('workFilterSelect').selectedIndex = 0;
         // Style visuel des boutons
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.replace('btn-primary', 'btn-outline-primary'));
@@ -223,7 +224,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 document.getElementById('workFilterSelect').addEventListener('change', function() {
     // Si on utilise le select, on remet le bouton parking en outline
     document.querySelectorAll('.filter-btn[data-filter="parking"]').forEach(b => b.classList.replace('btn-primary', 'btn-outline-primary'));
-    applyFilter(this.value);
+    applyFilter(this.options[this.selectedIndex].getAttribute('data-filter') || this.value);
 });
 
 // Tri par date
@@ -387,8 +388,23 @@ document.getElementById('confirmDeleteBtn').onclick = function() {
     })
     .then(data => {
         if (data.success) {
-            // Rechargement de la page pour voir les changements (CONSERVÉ)
-            location.reload(); 
+            // Supprimer la ligne du tableau au lieu de recharger la page
+            const row = document.querySelector(`button[onclick*="prepareDelete(${bookingToDelete}"]`)?.closest('tr');
+            if (row) {
+                row.remove();
+                // Vérifier s'il reste des réservations
+                const tbody = document.querySelector('#bookingTable tbody');
+                const remainingRows = tbody.querySelectorAll('tr:not(.no-data)');
+                if (remainingRows.length === 0) {
+                    const noDataRow = tbody.querySelector('tr.no-data');
+                    if (!noDataRow) {
+                        tbody.innerHTML = '<tr class="no-data"><td colspan="3" class="text-center py-5 text-muted">Aucune réservation trouvée.</td></tr>';
+                    }
+                }
+            }
+            // Fermer la modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+            if (modal) modal.hide();
         } else {
             alert("Erreur : " + data.message);
             // Réinitialisation du bouton en cas d'erreur métier (CONSERVÉ)

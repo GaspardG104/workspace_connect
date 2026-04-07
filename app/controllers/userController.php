@@ -123,4 +123,46 @@ class UserController {
         exit;
     }
 
+    /**
+     * Met à jour la plaque d'immatriculation
+     */
+    public function updateImmat() {
+        header('Content-Type: application/json');
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Session expirée']);
+            exit;
+        }
+
+        $db = require __DIR__ . '/../../config/db.php';
+        $userId = $_SESSION['user_id'];
+        $immatriculation = $_POST['immatriculation'] ?? '';
+        
+        // Nettoyage et validation basique
+        $immatriculation = trim($immatriculation);
+        $immatriculation = strtoupper($immatriculation);
+        
+        // Vérification de la longueur (max 12 caractères)
+        if (strlen($immatriculation) > 12) {
+            echo json_encode(['success' => false, 'message' => 'La plaque ne doit pas dépasser 12 caractères']);
+            exit;
+        }
+        
+        // Pas de caractères spéciaux dangereux (alphanumériques, tirets et espaces uniquement)
+        if (!empty($immatriculation) && !preg_match('/^[A-Z0-9\s\-]*$/', $immatriculation)) {
+            echo json_encode(['success' => false, 'message' => 'Caractères non autorisés dans la plaque']);
+            exit;
+        }
+
+        // Mise à jour (prepared statement = protection contre injection SQL)
+        $stmt = $db->prepare("UPDATE users SET immatriculation = ? WHERE id = ?");
+        
+        if ($stmt->execute([$immatriculation, $userId])) {
+            $message = !empty($immatriculation) ? "✅ Plaque enregistrée : $immatriculation" : "✅ Plaque supprimée";
+            echo json_encode(['success' => true, 'message' => $message]);
+        } else {
+            echo json_encode(['success' => false, 'message' => "❌ Erreur lors de la mise à jour."]);
+        }
+        exit;
+    }
+
 }

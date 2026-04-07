@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="/workspace_connect/public/styles/style_list_reservations.css">
 <div class="row justify-content-center">
-    <div id="app-container" class="col-lg-8 mb-4">
+    <div id="app-container" class="col-lg-8 mb-4" data-user-id="<?= $_SESSION['user_id'] ?>">
         <div class="text-center mb-4 text-white">
             <h1><i class="fa-solid fa-list-check me-2"></i> Gestion des réservations</h2>
         </div>
