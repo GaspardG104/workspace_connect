@@ -10,7 +10,7 @@
             <?php else: ?>
                 <div class="d-flex justify-content-center gap-3">
                     <a href="/workspace_connect/reservation/parking" class="btn btn-lg btn-primary fw-bold px-4 shadow">Réserver un Parking</a>
-                    <a href="/workspace_connect/reservation/desk" class="btn btn-lg btn-outline-light fw-bold px-4">Réserver un Bureau</a>
+                    <a href="/workspace_connect/reservation/desk" class="btn btn-lg btn-light fw-bold text-primary px-4">Réserver un Bureau</a>
                 </div>
             <?php endif; ?>
         </div>
