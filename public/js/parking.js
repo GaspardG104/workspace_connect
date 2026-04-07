@@ -1,7 +1,9 @@
 let calendar;
 
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('DOMContentLoaded - initializing calendar');
     var calendarEl = document.getElementById('calendar');
+    console.log('Calendar element found:', calendarEl);
     calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'fr',
@@ -127,10 +129,12 @@ document.addEventListener('DOMContentLoaded', function () {
             showBookingDetailsModal(info.event);
         }
     });
-    calendar.render();
+    console.log('Calendar initialized (not rendered yet)');
+    // calendar.render(); // Commenté car on le fait dans selectPlace quand la div est visible
 });
 
 function selectPlace(id, nom) {
+    console.log('selectPlace called with id:', id, 'nom:', nom);
     document.querySelectorAll('.place-btn').forEach(btn => btn.classList.remove('selected'));
     document.getElementById('btn-' + id).classList.add('selected');
 
@@ -140,11 +144,13 @@ function selectPlace(id, nom) {
     document.getElementById('calendar').style.display = 'block';
     document.getElementById('res-form-box').style.display = 'block';
 
+    console.log('About to render calendar');
     setTimeout(() => {
         calendar.render();
         calendar.setOption('events', '/workspace_connect/reservation/getEvents?id_resource=' + id);
         calendar.refetchEvents();
         calendar.updateSize();
+        console.log('Calendar rendered and events loaded');
     }, 50);
 }
 
