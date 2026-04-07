@@ -1,12 +1,12 @@
 -- 1. Ajout des Salles de réunion
 INSERT INTO resources (nom, type, localisation, capacite, equipements) VALUES 
-('S1', 'salle', 'Zone Nord', 10, '{}'::jsonb),
-('S2', 'salle', 'Zone Sud', 8, '{}'::jsonb);
+('S2', 'salle', 'Zone Nord', 5, '{}'::jsonb),
+('S1', 'salle', 'Zone Sud', 10, '{}'::jsonb);
 
 -- 2. Ajout des Boxes
 INSERT INTO resources (nom, type, localisation, capacite, equipements) VALUES 
-('B1', 'box', 'Zone Centrale', 2, '{}'::jsonb),
-('B2', 'box', 'Zone Centrale', 2, '{}'::jsonb);
+('B1', 'box', 'Zone Centrale', 1, '{}'::jsonb),
+('B2', 'box', 'Zone Centrale', 1, '{}'::jsonb);
 
 -- 3. Ajout des 36 Bureaux (Ilots I1 à I6, Bureaux B1 à B6)
 INSERT INTO resources (nom, type, localisation, capacite, equipements)

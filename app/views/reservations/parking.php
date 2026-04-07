@@ -61,14 +61,87 @@
                             </div>
                         </div>
 
+                        <div class="mb-3 p-3 border rounded bg-light">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_recurring" id="is_recurring" value="true">
+                                <label class="form-check-label fw-bold" for="is_recurring">
+                                    <i class="fa-solid fa-repeat me-1"></i> Répéter cette réservation
+                                </label>
+                            </div>
+
+                            <div id="recurrence-options" class="mt-3" style="display:none">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="small fw-bold">Fréquence</label>
+                                        <select name="recurrence_type" id="recurrence_type" class="form-select form-select-sm">
+                                            <option value="WEEKLY">Toutes les semaines</option>
+                                            <option value="DAILY">Tous les jours</option>
+                                            <option value="MONTHLY">Tous les mois</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label id="label-count" class="small fw-bold">Pendant combien de fois ?</label>
+                                        <input type="number" name="recurrence_count" id="recurrence_count" class="form-select form-select-sm" value="1" min="1">
+                                    </div>
+                                </div>
+                                <div class="form-text mt-2 text-muted">
+                                    <i class="fa-solid fa-circle-info me-1"></i>
+                                    Les jours du samedi et dimanche seront automatiquement ignorés.
+                                </div>
+                            </div>
+                        </div>
+
                         <button type="submit" id="submitBtn" class="btn btn-success w-100 fw-bold py-2">
                             Confirmer la réservation
                         </button>
                     </form>
+<div class="modal fade" id="bookingDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fa-solid fa-calendar-check me-2"></i>Détails de la réservation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Place de parking</label>
+                    <p id="modalResourceName" class="fw-bold mb-0"></p>
                 </div>
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Organisateur</label>
+                    <p id="modalOrganizerName" class="fw-bold mb-0"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Période</label>
+                    <p id="modalPeriod" class="mb-0"></p>
+                </div>
+                <hr>
+                <div id="notificationOptions">
+                    <div class="form-check mb-2" id="optionInvites">
+                        <input class="form-check-input" type="checkbox" id="notifyInvites" checked>
+                        <label class="form-check-label" for="notifyInvites">
+                            Prévenir les participants par email
+                        </label>
+                    </div>
+                    <div class="form-check text-danger fw-bold" id="optionSeries" style="display:none;">
+                        <input class="form-check-input" type="checkbox" id="deleteAllSeries">
+                        <label class="form-check-label" for="deleteAllSeries">
+                            <i class="fa-solid fa-layer-group me-1"></i> Supprimer TOUTE la série récurrente
+                        </label>
+                    </div>
+                    <hr id="seriesSeparator" style="display:none;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBookingBtn">Supprimer cette réservation</button>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="/workspace_connect/public/js/parking.js?v=<?= time(); ?>"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script> <!--pour l'horloge-->
+<script>
+    const currentUserId = <?= $_SESSION['user_id'] ?>;
+</script>
+>>>>>>> debug-calendar

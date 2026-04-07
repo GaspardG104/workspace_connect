@@ -7,6 +7,11 @@ use App\Models\Resource;
 
 class BookingController {
     
+    private $db;
+
+    public function __construct() {
+        $this->db = require __DIR__ . '/../../config/db.php';
+    }
     public function parking() {
         if (!isset($_SESSION['user_id'])) {
             header('Location: /workspace_connect/login');
@@ -185,6 +190,57 @@ class BookingController {
         $stmt = $db->prepare($sql);
         $stmt->execute([$resourceId, $end, $start]);
         return $stmt->fetchColumn() == 0;
+    }
+
+    public function delete($id) {
+        header('Content-Type: application/json');
+        try {
+            $userId = $_SESSION['user_id'];
+            $notifyInvites = isset($_POST['notifyInvites']) && $_POST['notifyInvites'] === 'true';
+            $notifyOrganizer = isset($_POST['notifyOrganizer']) && $_POST['notifyOrganizer'] === 'true';
+            $deleteAllSeries = isset($_POST['deleteAllSeries']) && $_POST['deleteAllSeries'] === 'true';
+
+            // 1. Récupération des infos avant suppression pour les mails
+            $stmtInfo = $this->db->prepare("SELECT b.*, u.email as organizer_email FROM bookings b JOIN users u ON b.id_user = u.id WHERE b.id = ?");
+            $stmtInfo->execute([$id]);
+            $info = $stmtInfo->fetch(PDO::FETCH_ASSOC);
+
+            if (!$info) {
+                echo json_encode(['success' => false, 'message' => 'Réservation introuvable.']);
+                return;
+            }
+
+            // Vérification de sécurité : l'utilisateur doit être le propriétaire ou admin
+            $isAdmin = isset($_SESSION['user_role']) && $_SESSION['user_role'] == 1;
+            $isOwner = $info['id_user'] == $userId;
+            
+            if (!$isAdmin && !$isOwner) {
+                echo json_encode(['success' => false, 'message' => 'Vous n\'avez pas le droit de supprimer cette réservation.']);
+                return;
+            }
+
+            // 2. Logique des notifications (on garde ton code tel quel)
+            if ($notifyInvites) {
+                $stmtAtt = $this->db->prepare("SELECT email FROM attendees WHERE id_booking = ?");
+                $stmtAtt->execute([$id]);
+                $emailsInvites = $stmtAtt->fetchAll(PDO::FETCH_COLUMN);
+                // Logique d'envoi de mail aux invités...
+            }
+
+            // 3. Exécution de la suppression via le Modèle
+            if ($deleteAllSeries && !empty($info['id_series'])) {
+                $result = Booking::delete($this->db, $id, true); // true pour supprimer toute la série
+                $message = "Toute la série de réservations a été supprimée.";
+            } else {
+                $result = Booking::delete($this->db, $id);
+                $message = "La réservation a été supprimée avec succès.";
+            }
+
+            echo json_encode(['success' => $result, 'message' => $message]);
+
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
 }

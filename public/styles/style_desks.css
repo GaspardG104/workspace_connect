@@ -180,6 +180,27 @@
 #ajax-message { position: fixed; top: 20px; right: 20px; z-index: 10000; min-width: 250px; display: none; }
 #calendar { background: #fff; padding: 10px; border-radius: 8px; }
 
+/* Permet les interactions avec les événements du calendrier */
+.fc-event {
+    user-select: auto !important;
+    -webkit-user-select: auto !important;
+    pointer-events: auto !important;
+}
+
+/* Permet la sélection des jours dans le calendrier */
+.fc-daygrid-day {
+    user-select: auto !important;
+    -webkit-user-select: auto !important;
+}
+
+/* Couleur plus douce pour les jours de week-end (samedi et dimanche) */
+.fc-col-header-cell.fc-day-sun,
+.fc-col-header-cell.fc-day-sat,
+.fc-daygrid-day.fc-day-sun,
+.fc-daygrid-day.fc-day-sat {
+    background-color: #f0f4f8 !important;
+}
+
 /* --- ANIMATION DE DÉCALAGE --- */
 
 /* On donne une transition douce à la ligne qui contient les deux colonnes */

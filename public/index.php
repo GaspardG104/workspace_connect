@@ -53,6 +53,9 @@ switch ($urlParts[0]) {
                 $controller->getEvents();
             } elseif ($action === 'store') {
                 $controller->store();
+            } elseif ($action === 'delete') {
+                $id = $urlParts[2] ?? null;
+                $controller->delete($id);
             } else {
                 http_response_code(404);
                 echo "Action de réservation inconnue";

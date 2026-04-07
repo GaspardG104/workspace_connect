@@ -109,6 +109,13 @@
     -webkit-user-select: none;
 }
 
+/* Permet les interactions avec les événements */
+.fc-event {
+    user-select: auto !important;
+    -webkit-user-select: auto !important;
+    pointer-events: auto !important;
+}
+
 .parking-map-container {
     touch-action: pan-y; /* Autorise le défilement vertical mais pas horizontal pour éviter les conflits */
 }
@@ -132,7 +139,21 @@
     user-select: none;
 }
 
+/* Permet la sélection des jours dans le calendrier */
+.fc-daygrid-day {
+    user-select: auto !important;
+    -webkit-user-select: auto !important;
+}
+
 /* On s'assure que les cases ne bloquent pas le toucher */
 .fc-daygrid-day {
     pointer-events: auto !important;
+}
+
+/* Couleur plus douce pour les jours de week-end */
+.fc-col-header-cell.fc-day-sun,
+.fc-col-header-cell.fc-day-sat,
+.fc-daygrid-day.fc-day-sun,
+.fc-daygrid-day.fc-day-sat {
+    background-color: #f0f4f8 !important;
 }
