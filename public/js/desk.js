@@ -27,6 +27,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 interval.setDate(interval.getDate() + 1);
             }
 
+            if (hasWeekend) {
+                // Afficher un avertissement sans bloquer
+                const warningMsg = document.getElementById('display-date');
+                if (warningMsg) {
+                    warningMsg.innerHTML = '<span style="color: #ffc107;"><i class="fa-solid fa-triangle-exclamation me-2"></i>Les jours du week-end seront ignorés.</span>';
+                }
+            } else {
+                // Effacer l'avertissement s'il n'y a pas de weekend
+                const warningMsg = document.getElementById('display-date');
+                if (warningMsg) {
+                    warningMsg.innerHTML = '';
+                }
+            }
+
             document.getElementById('startInput').value = info.startStr + "T09:00";
             let endDate = new Date(info.end);
 
@@ -43,6 +57,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             let formattedEndDate = `${year}-${month}-${day}T18:00`;
             document.getElementById('endInput').value = formattedEndDate;
+        },
+        eventClick: function(info) {
+            console.log('Event clicked in desk:', info.event);
+            showBookingDetailsModal(info.event);
         }
     });
     calendar.render();
@@ -237,5 +255,118 @@ document.getElementById('recurrence_type').addEventListener('change', function()
         label.innerText = "Combien de semaines ?";
     } else if (value === 'MONTHLY') {
         label.innerText = "Combien de mois ?";
+    }
+});
+
+// --- GESTION DE LA MODALE DE DÉTAILS DE RÉSERVATION ---
+let currentBookingId = null;
+let currentBookingSeriesId = null;
+
+function showBookingDetailsModal(event) {
+    console.log('showBookingDetailsModal called with event:', event);
+    console.log('currentUserId:', currentUserId);
+    console.log('event.extendedProps:', event.extendedProps);
+    currentBookingId = event.id;
+    currentBookingSeriesId = event.extendedProps.id_series || null;
+    const organizerName = event.extendedProps.prenom + ' ' + event.extendedProps.nom;
+    const resourceName = event.extendedProps.resource_name || 'Bureau';
+    const startDate = new Date(event.start).toLocaleString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'});
+    const endDate = new Date(event.end).toLocaleString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'});
+
+    // Remplir la modale
+    document.getElementById('modalResourceName').innerText = resourceName;
+    document.getElementById('modalOrganizerName').innerText = organizerName;
+    document.getElementById('modalPeriod').innerText = `Du ${startDate} au ${endDate}`;
+
+    // Vérifier si c'est la réservation de l'utilisateur courant et gérer l'option de suppression
+    const isOwnBooking = event.extendedProps.id_user === currentUserId;
+    const deleteBtn = document.getElementById('confirmDeleteBookingBtn');
+    
+    if (isOwnBooking) {
+        deleteBtn.style.display = 'block';
+        document.getElementById('optionInvites').style.display = 'block';
+    } else {
+        deleteBtn.style.display = 'none';
+        document.getElementById('optionInvites').style.display = 'none';
+    }
+
+    // Gérer l'affichage de l'option série
+    const optionSeries = document.getElementById('optionSeries');
+    const separator = document.getElementById('seriesSeparator');
+    document.getElementById('deleteAllSeries').checked = false;
+    
+    if (currentBookingSeriesId && currentBookingSeriesId !== null && currentBookingSeriesId !== 'null' && currentBookingSeriesId !== 0) {
+        optionSeries.style.display = 'block';
+        separator.style.display = 'block';
+    } else {
+        optionSeries.style.display = 'none';
+        separator.style.display = 'none';
+    }
+
+    // Afficher la modale
+    const modal = new bootstrap.Modal(document.getElementById('bookingDetailsModal'));
+    modal.show();
+}
+
+// Fonction de suppression
+function handleDeleteBooking() {
+    if (!currentBookingId) {
+        console.error('No booking ID set');
+        return;
+    }
+
+    const btn = this;
+    const originalText = btn.innerHTML;
+    
+    const notifyInvites = document.getElementById('notifyInvites')?.checked || false;
+    const deleteAllSeries = document.getElementById('deleteAllSeries')?.checked || false;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Suppression...';
+
+    const formData = new FormData();
+    formData.append('notifyInvites', notifyInvites);
+    formData.append('deleteAllSeries', deleteAllSeries);
+
+    fetch(`/workspace_connect/reservation/delete/${currentBookingId}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        const msg = document.getElementById('ajax-message');
+        if (msg) {
+            msg.innerHTML = data.message;
+            msg.className = data.success ? "alert alert-success" : "alert alert-danger";
+            msg.style.display = "block";
+        }
+
+        if (data.success) {
+            // Fermer la modale et rafraîchir le calendrier
+            bootstrap.Modal.getInstance(document.getElementById('bookingDetailsModal')).hide();
+            calendar.refetchEvents();
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        const msg = document.getElementById('ajax-message');
+        if (msg) {
+            msg.innerHTML = '❌ Erreur de connexion au serveur.';
+            msg.className = 'alert alert-danger';
+            msg.style.display = 'block';
+        }
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
+
+// Attacher le gestionnaire d'événement au bouton de suppression
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBookingBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', handleDeleteBooking);
     }
 });

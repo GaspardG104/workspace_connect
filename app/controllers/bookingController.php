@@ -7,6 +7,11 @@ use App\Models\Resource;
 
 class BookingController {
     
+    private $db;
+
+    public function __construct() {
+        $this->db = require __DIR__ . '/../../config/db.php';
+    }
     public function parking() {
         if (!isset($_SESSION['user_id'])) {
             header('Location: /workspace_connect/login');
@@ -92,36 +97,33 @@ class BookingController {
                 $period = new \DatePeriod(new \DateTime($startObj->format('Y-m-d')), $interval, $tempEnd);
 
                 foreach ($period as $dt) {
-                    // Vérifier que ce n'est pas un weekend (0=dimanche, 6=samedi)
-                    $dayOfWeek = intval($dt->format('w'));
-                    if ($dayOfWeek !== 0 && $dayOfWeek !== 6) {
-                        // Pour chaque jour, on garde l'heure de début et de fin choisie
-                        $d = $dt->format('Y-m-d') . ' ' . $startObj->format('H:i:s');
-                        $f = $dt->format('Y-m-d') . ' ' . $endObj->format('H:i:s');
-                        $dates_a_reserver[] = [$d, $f];
+                    // Vérifier si c'est un weekend (0 = dimanche, 6 = samedi)
+                    $dayOfWeek = $dt->format('w');
+                    if ($dayOfWeek == 0 || $dayOfWeek == 6) {
+                        continue; // Ignorer les weekends
                     }
+                    
+                    // Pour chaque jour, on garde l'heure de début et de fin choisie
+                    $d = $dt->format('Y-m-d') . ' ' . $startObj->format('H:i:s');
+                    $f = $dt->format('Y-m-d') . ' ' . $endObj->format('H:i:s');
+                    $dates_a_reserver[] = [$d, $f];
                 }
             } 
             // --- FIN DETECTION AUTO ---
             
             // 1. Gestion de la récurrence classique (Si cochée via le formulaire)
             elseif ($is_recurring) {
+                $dates_a_reserver[] = [$date_debut, $date_fin]; // On ajoute le premier créneau
                 $type_recurence = $_POST['recurrence_type'] ?? 'WEEKLY';
                 $nb_repetitions = intval($_POST['recurrence_count'] ?? 1);
                 
-                // Pour la récurrence, on génère les dates et on filtre les weekends
-                for ($i = 0; $i < $nb_repetitions; $i++) {
+                for ($i = 1; $i < $nb_repetitions; $i++) {
                     $interval = ($type_recurence === 'DAILY') ? "P{$i}D" : (($type_recurence === 'MONTHLY') ? "P{$i}M" : "P{$i}W");
                     $d = new \DateTime($date_debut);
                     $f = new \DateTime($date_fin);
                     $d->add(new \DateInterval($interval));
                     $f->add(new \DateInterval($interval));
-                    
-                    // Vérifier que ce n'est pas un weekend
-                    $dayOfWeek = intval($d->format('w'));
-                    if ($dayOfWeek !== 0 && $dayOfWeek !== 6) {
-                        $dates_a_reserver[] = [$d->format('Y-m-d H:i:s'), $f->format('Y-m-d H:i:s')];
-                    }
+                    $dates_a_reserver[] = [$d->format('Y-m-d H:i:s'), $f->format('Y-m-d H:i:s')];
                 }
 
                 $stmtSeries = $db->prepare("INSERT INTO booking_series (rrule_string) VALUES (?)");
@@ -129,18 +131,7 @@ class BookingController {
                 $id_series = $db->lastInsertId();
             } else {
                 // Cas simple : un seul jour, pas de récurrence
-                // Vérifier que ce n'est pas un weekend
-                $dayOfWeek = intval($startObj->format('w'));
-                if ($dayOfWeek !== 0 && $dayOfWeek !== 6) {
-                    $dates_a_reserver[] = [$date_debut, $date_fin];
-                } else {
-                    throw new \Exception("❌ Impossible de réserver un samedi ou un dimanche.");
-                }
-            }
-
-            // Vérifier qu'au moins une date a été ajoutée
-            if (empty($dates_a_reserver)) {
-                throw new \Exception("❌ Aucun jour valide n'a pu être réservé (weekends exclus).");
+                $dates_a_reserver[] = [$date_debut, $date_fin];
             }
 
             // 2. Insertion des bookings
@@ -198,6 +189,57 @@ class BookingController {
         $stmt = $db->prepare($sql);
         $stmt->execute([$resourceId, $end, $start]);
         return $stmt->fetchColumn() == 0;
+    }
+
+    public function delete($id) {
+        header('Content-Type: application/json');
+        try {
+            $userId = $_SESSION['user_id'];
+            $notifyInvites = isset($_POST['notifyInvites']) && $_POST['notifyInvites'] === 'true';
+            $notifyOrganizer = isset($_POST['notifyOrganizer']) && $_POST['notifyOrganizer'] === 'true';
+            $deleteAllSeries = isset($_POST['deleteAllSeries']) && $_POST['deleteAllSeries'] === 'true';
+
+            // 1. Récupération des infos avant suppression pour les mails
+            $stmtInfo = $this->db->prepare("SELECT b.*, u.email as organizer_email FROM bookings b JOIN users u ON b.id_user = u.id WHERE b.id = ?");
+            $stmtInfo->execute([$id]);
+            $info = $stmtInfo->fetch(PDO::FETCH_ASSOC);
+
+            if (!$info) {
+                echo json_encode(['success' => false, 'message' => 'Réservation introuvable.']);
+                return;
+            }
+
+            // Vérification de sécurité : l'utilisateur doit être le propriétaire ou admin
+            $isAdmin = isset($_SESSION['user_role']) && $_SESSION['user_role'] == 1;
+            $isOwner = $info['id_user'] == $userId;
+            
+            if (!$isAdmin && !$isOwner) {
+                echo json_encode(['success' => false, 'message' => 'Vous n\'avez pas le droit de supprimer cette réservation.']);
+                return;
+            }
+
+            // 2. Logique des notifications (on garde ton code tel quel)
+            if ($notifyInvites) {
+                $stmtAtt = $this->db->prepare("SELECT email FROM attendees WHERE id_booking = ?");
+                $stmtAtt->execute([$id]);
+                $emailsInvites = $stmtAtt->fetchAll(PDO::FETCH_COLUMN);
+                // Logique d'envoi de mail aux invités...
+            }
+
+            // 3. Exécution de la suppression via le Modèle
+            if ($deleteAllSeries && !empty($info['id_series'])) {
+                $result = Booking::delete($this->db, $id, true); // true pour supprimer toute la série
+                $message = "Toute la série de réservations a été supprimée.";
+            } else {
+                $result = Booking::delete($this->db, $id);
+                $message = "La réservation a été supprimée avec succès.";
+            }
+
+            echo json_encode(['success' => $result, 'message' => $message]);
+
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
 }

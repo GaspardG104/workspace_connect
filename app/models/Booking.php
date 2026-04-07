@@ -65,8 +65,15 @@ class Booking {
             $seriesId = $stmt->fetchColumn();
 
             if ($seriesId) {
-                $stmtDel = $db->prepare("DELETE FROM booking_series WHERE id = ?");
-                return $stmtDel->execute([$seriesId]);
+                // Supprimer toutes les réservations de la série
+                $stmtDel = $db->prepare("DELETE FROM bookings WHERE id_series = ?");
+                $result1 = $stmtDel->execute([$seriesId]);
+                
+                // Supprimer la série elle-même
+                $stmtDelSeries = $db->prepare("DELETE FROM booking_series WHERE id = ?");
+                $result2 = $stmtDelSeries->execute([$seriesId]);
+                
+                return $result1 && $result2;
             }
         }
 
@@ -77,11 +84,41 @@ class Booking {
 
     public static function getEventsByResource($db, $id_resource) {
         $stmt = $db->prepare("SELECT b.id, b.date_debut as start, b.date_fin as end, 
-                            CONCAT(u.prenom, ' ', u.nom) as title 
+                            CONCAT(u.prenom, ' ', u.nom) as title, 
+                            b.id_user, b.id_series, b.id_resource,
+                            u.prenom, u.nom, r.nom as resource_name
                             FROM bookings b 
                             JOIN users u ON b.id_user = u.id 
+                            JOIN resources r ON b.id_resource = r.id
                             WHERE b.id_resource = ?");
         $stmt->execute([$id_resource]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rawEvents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Formater les événements pour FullCalendar avec extendedProps
+        $events = [];
+        foreach ($rawEvents as $event) {
+            $events[] = [
+                'id' => $event['id'],
+                'title' => $event['title'],
+                'start' => $event['start'],
+                'end' => $event['end'],
+                'id_user' => $event['id_user'],
+                'id_series' => $event['id_series'],
+                'id_resource' => $event['id_resource'],
+                'prenom' => $event['prenom'],
+                'nom' => $event['nom'],
+                'resource_name' => $event['resource_name'],
+                'extendedProps' => [
+                    'id_user' => $event['id_user'],
+                    'id_series' => $event['id_series'],
+                    'id_resource' => $event['id_resource'],
+                    'prenom' => $event['prenom'],
+                    'nom' => $event['nom'],
+                    'resource_name' => $event['resource_name']
+                ]
+            ];
+        }
+        
+        return $events;
     }
 }

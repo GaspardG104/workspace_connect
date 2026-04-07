@@ -109,6 +109,13 @@
     -webkit-user-select: none;
 }
 
+/* Permet les interactions avec les événements */
+.fc-event {
+    user-select: auto !important;
+    -webkit-user-select: auto !important;
+    pointer-events: auto !important;
+}
+
 .parking-map-container {
     touch-action: pan-y; /* Autorise le défilement vertical mais pas horizontal pour éviter les conflits */
 }
@@ -130,6 +137,12 @@
     touch-action: pan-y !important; 
     -webkit-user-select: none;
     user-select: none;
+}
+
+/* Permet la sélection des jours dans le calendrier */
+.fc-daygrid-day {
+    user-select: auto !important;
+    -webkit-user-select: auto !important;
 }
 
 /* On s'assure que les cases ne bloquent pas le toucher */
