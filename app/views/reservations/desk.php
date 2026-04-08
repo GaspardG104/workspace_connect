@@ -61,7 +61,7 @@
 
                 <div class="card shadow-sm border-0 p-3">
                     <form id="bookingForm">
-                        <input type="hidden" name="resource" id="res_id">
+                        <input type="hidden" name="id_resource" id="id_resource">
                         <div class="row g-2">
                             <div class="col-6">
                                 <label class="small fw-bold">Début</label>
@@ -75,7 +75,7 @@
                         <div id="display-date" class="mt-2"></div>
                         <div id="invite-section" class="mt-3" style="display:none;">
                             <label class="small fw-bold text-muted mb-2">
-                                Inviter des collègues (Capacité max : <span id="cap-val"></span>)
+                                Inviter des collègues (Capacité max : <span id="max-invites"></span>)
                             </label>
                             <div id="tags-container" class="d-flex flex-wrap gap-2 mb-2"></div>
                             <div class="dropdown">
@@ -93,7 +93,7 @@
                                     <?php endforeach; ?>
                                 </ul>
                             </div>
-                            <div id="hidden-inputs"></div>
+                            <div id="hidden-invites"></div>
                         </div>
                         <div class="mb-3 p-3 border rounded bg-light">
 

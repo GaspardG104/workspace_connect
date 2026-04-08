@@ -1,87 +1,45 @@
+let calendar;
+
 document.addEventListener('DOMContentLoaded', function () {
-    // 1. On vérifie si l'élément "calendar" existe sur la page
-    var calendarEl = document.getElementById('calendar');
-    if (!calendarEl) return; // Si pas de calendrier, on arrête le script proprement
+    const calendarEl = document.getElementById('calendar');
+    if (!calendarEl) return;
 
-    // 2. Initialisation de FullCalendar
-    var calendar = new FullCalendar.Calendar(calendarEl, {
+    calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        locale: 'fr', // Calendrier en français
-        selectable: true, // Permet la sélection à la souris
-        selectMirror: true,
-        unselectAuto: false,
-        firstDay: 1, // La semaine commence le lundi
-        height: 'auto', // Permet au calendrier de s'adapter au contenu plutôt que de se tasser
-        handleWindowResize: true,
-        expandRows: true,
-
-        // --- CONFIGURATION DES JOURS OUVRES ---
-        businessHours: {
-            daysOfWeek: [1, 2, 3, 4, 5], // Lundi à Vendredi
+        locale: 'fr',
+        selectable: true,
+        firstDay: 1,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek'
         },
-
-        // --- SÉCURITÉ : EMPÊCHER DE SÉLECTIONNER UN WEEK-END ---
-        selectAllow: function (selectInfo) {
-            let checkDate = new Date(selectInfo.start);
-            let endDate = new Date(selectInfo.end);
-
-            // On parcourt chaque jour de la sélection
-            while (checkDate < endDate) {
-                let day = checkDate.getDay(); // 0 = Dimanche, 6 = Samedi
-                if (day === 0 || day === 6) {
-                    return false; // Si un seul jour est un weekend, on interdit TOUTE la sélection
-                }
+        // Sécurité week-end
+        selectAllow: function (info) {
+            let checkDate = new Date(info.start);
+            while (checkDate < info.end) {
+                if (checkDate.getDay() === 0 || checkDate.getDay() === 6) return false;
                 checkDate.setDate(checkDate.getDate() + 1);
             }
             return true;
         },
-
-        // --- ACTION LORS DE LA SÉLECTION ---
         select: function (info) {
-            // On récupère les dates formatées pour PHP
-            // FullCalendar donne les dates en ISO8601 (YYYY-MM-DDTHH:MM:SS)
-            const dateDebut = info.startStr;
-            const dateFin = info.endStr;
+            let actualEnd = new Date(info.end);
+            if (info.allDay) actualEnd.setDate(actualEnd.getDate() - 1);
 
-            // Ici, tu peux ouvrir ta modal de confirmation ou envoyer l'AJAX
-            // Exemple de confirmation simple avant envoi :
-            if (confirm("Voulez-vous réserver du " + info.start.toLocaleDateString() + " au " + actualEnd.toLocaleDateString() + " ?")) {
-                envoyerReservation(dateDebut, dateFin);
+            if (typeof window.onCalendarSelect === 'function') {
+                window.onCalendarSelect(info, actualEnd);
             }
-
-            calendar.unselect(); // On déselectionne visuellement après l'action
+            calendar.unselect();
         },
-
-        // --- CHARGEMENT DES ÉVÉNEMENTS EXISTANTS ---
-        events: '/workspace_connect/admin/get_bookings', // Ton URL pour lire les réservations
+        events: '/workspace_connect/reservation/getEvents'
     });
 
     calendar.render();
-
-    // 3. FONCTION POUR ENVOYER LA RÉSERVATION AU CONTROLLER (AJAX)
-    function envoyerReservation(debut, fin) {
-        let formData = new FormData();
-        formData.append('debut', debut);
-        formData.append('fin', fin);
-        // Ajoute ici l'ID de la ressource si nécessaire
-        // formData.append('id_resource', document.getElementById('resource_id').value);
-
-        fetch('/workspace_connect/admin/store', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    calendar.refetchEvents(); // Recharge le calendrier sans rafraîchir la page
-                } else {
-                    alert("Erreur : " + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Erreur AJAX:', error);
-                alert("Une erreur critique est survenue.");
-            });
-    }
 });
+
+window.refreshCalendarResource = function(resourceId) {
+    if (!calendar) return;
+    calendar.setOption('events', `/workspace_connect/reservation/getEvents?id_resource=${resourceId}`);
+    calendar.refetchEvents();
+};

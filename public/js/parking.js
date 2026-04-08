@@ -1,512 +1,95 @@
-let calendar;
+/**
+ * LOGIQUE PARKING - Horaires et Places
+ */
 
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('DOMContentLoaded - initializing calendar');
-    var calendarEl = document.getElementById('calendar');
-    console.log('Calendar element found:', calendarEl);
-    calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'fr',
-        selectable: true,
-        unselectAuto: false,
-        dragRevertDuration: 0,
-        selectMirror: true,
-        selectMinDistance: 0, // Permettre la sélection immédiate sur mobile
-        dayMaxEvents: 3, // Limiter les événements pour éviter l'encombrement
-
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek'
-        },
-        // Fonction de formatage pour l'input datetime-local
-        select: function (info) {
-            // Vérifier s'il y a un avertissement sur les weekends
-            let hasWeekend = false;
-            const startDate = new Date(info.start);
-            const endDate = new Date(info.end);
-            
-            const interval = new Date(startDate);
-            while (interval < endDate) {
-                const dayOfWeek = interval.getDay();
-                if (dayOfWeek === 0 || dayOfWeek === 6) {
-                    hasWeekend = true;
-                    break;
-                }
-                interval.setDate(interval.getDate() + 1);
-            }
-            
-            if (hasWeekend) {
-                // Afficher un avertissement sans bloquer
-                const warningMsg = document.getElementById('display-date');
-                if (warningMsg) {
-                    warningMsg.innerHTML = '<span style="color: #ffc107;"><i class="fa-solid fa-triangle-exclamation me-2"></i>Les jours du week-end seront ignorés.</span>';
-                }
-            }
-            
-            // 1. Récupération des dates (Début et Fin réelle)
-            // On utilise 'let' pour pouvoir les mettre à jour globalement
-            let currentStartDate = info.startStr.split('T')[0];
-
-            // FullCalendar donne J+1 pour la fin, on garde la date brute pour le calcul SQL
-            // mais on calcule une version lisible pour l'affichage
-            let endDateObj = new Date(info.end);
-            endDateObj.setDate(endDateObj.getDate());
-            let currentEndDate = endDateObj.toISOString().split('T')[0];
-
-            // 2. Affichage lisible
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            let texteDate = "Le " + info.start.toLocaleDateString('fr-FR', options);
-
-            if (currentStartDate !== currentEndDate) {
-                texteDate = "Du " + info.start.toLocaleDateString('fr-FR', options) + " au " + endDateObj.toLocaleDateString('fr-FR', options);
-            }
-
-            const displayDateElement = document.getElementById('display-date');
-            if (displayDateElement) {
-                if (hasWeekend) {
-                    displayDateElement.innerHTML = `${texteDate} <br><span style="color:#b15f00;"><i class="fa-solid fa-triangle-exclamation me-1"></i>Les jours du week-end seront ignorés.</span>`;
-                } else {
-                    displayDateElement.innerText = texteDate;
-                }
-            }
-
-            // 3. Heures par défaut
-            let hDebut = "08:30";
-            let hFin = "17:00";
-
-            // 4. Liaison avec ton formulaire (LES NOMS DE VARIABLES IMPORTANTS)
-            // On définit les fonctions globalement pour qu'elles soient accessibles partout
-            window.updateFinalDebut = function (val) {
-                hDebut = val;
-                document.getElementById('finalDebut').value = currentStartDate + " " + hDebut + ":00";
-            };
-
-            window.updateFinalFin = function (val) {
-                hFin = val;
-                // CRUCIAL : On utilise currentEndDate ici pour ne pas écraser la période !
-                document.getElementById('finalFin').value = currentEndDate + " " + hFin + ":00";
-            };
-
-            // Initialisation des champs
-            document.getElementById('heureDebutInput').value = hDebut;
-            document.getElementById('heureFinInput').value = hFin;
-            window.updateFinalDebut(hDebut);
-            window.updateFinalFin(hFin);
-
-            // 5. Configuration des horloges (Flatpickr)
-            flatpickr("#heureDebutInput", {
-                enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true,
-                defaultDate: hDebut,
-                onChange: function (selectedDates, timeStr) {
-                    window.updateFinalDebut(timeStr);
-                }
-            });
-
-            flatpickr("#heureFinInput", {
-                enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true,
-                defaultDate: hFin,
-                onChange: function (selectedDates, timeStr) {
-                    window.updateFinalFin(timeStr);
-                }
-            });
-
-            // 6. Affichage du formulaire (ID : res-form-box)
-            const formBox = document.getElementById('res-form-box');
-            if (formBox) {
-                formBox.style.display = 'block';
-            }
-
-            // 7. Dégel du calendrier (seulement si c'est une sélection invalide ou après traitement)
-            // calendar.unselect(); // Commenté pour garder la sélection visible
-
-            if (window.innerWidth < 768 && formBox) {
-                window.scrollTo({
-                    top: formBox.offsetTop - 20,
-                    behavior: 'smooth'
-                });
-            }
-        },
-        eventClick: function(info) {
-            showBookingDetailsModal(info.event);
-        }
-    });
-    console.log('Calendar initialized (not rendered yet)');
-    // calendar.render(); // Commenté car on le fait dans selectPlace quand la div est visible
-
-    // === FIX POUR LE TACTILE - Capturer les clics et remplir les dates ===
-    
-    setTimeout(function() {
-        calendarEl.addEventListener('click', function(e) {
-            const dayCell = e.target.closest('.fc-daygrid-day');
-            if (!dayCell) return;
-
-            try {
-                let dateStr = dayCell.getAttribute('data-date');
-                
-                if (!dateStr) {
-                    const dayNum = dayCell.querySelector('.fc-daygrid-day-number');
-                    if (!dayNum) return;
-                    
-                    const text = dayNum.textContent.trim();
-                    if (!text) return;
-                    
-                    if (calendar && calendar.view) {
-                        const start = calendar.view.activeStart;
-                        const year = start.getFullYear();
-                        const month = String(start.getMonth() + 1).padStart(2, '0');
-                        const day = String(text).padStart(2, '0');
-                        dateStr = `${year}-${month}-${day}`;
-                    }
-                }
-                
-                if (!dateStr) return;
-
-                console.log('Parking date selected:', dateStr);
-
-                // Déclencher la fonction select du calendrier
-                const selectFunction = calendar.getOption('select');
-                if (selectFunction) {
-                    const startDate = new Date(dateStr + 'T00:00:00');
-                    const endDate = new Date(startDate);
-                    endDate.setDate(endDate.getDate() + 1);
-                    
-                    selectFunction({
-                        start: startDate,
-                        end: endDate,
-                        startStr: dateStr,
-                        allDay: true
-                    });
-                }
-            } catch(err) {
-                console.error('Error selecting parking date:', err);
-            }
+    // Initialisation des horloges (Flatpickr) seulement si les éléments existent
+    if (document.getElementById('heureDebutInput')) {
+        flatpickr("#heureDebutInput", { 
+            enableTime: true, 
+            noCalendar: true, 
+            dateFormat: "H:i", 
+            time_24hr: true, 
+            defaultDate: "08:00" 
         });
-    }, 500);
+    }
+
+    if (document.getElementById('heureFinInput')) {
+        flatpickr("#heureFinInput", { 
+            enableTime: true, 
+            noCalendar: true, 
+            dateFormat: "H:i", 
+            time_24hr: true, 
+            defaultDate: "18:00" 
+        });
+    }
+
+    // Gestion du formulaire en AJAX
+    const form = document.getElementById('reservationForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const msgDiv = document.getElementById('ajax-message');
+            
+            btn.disabled = true;
+            const formData = new FormData(this);
+
+            fetch('/workspace_connect/reservation/store', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                msgDiv.innerText = data.message;
+                msgDiv.className = data.success ? "alert alert-success" : "alert alert-danger";
+                msgDiv.style.display = "block";
+                if (data.success && typeof calendar !== 'undefined') {
+                    calendar.refetchEvents();
+                    form.reset();
+                }
+            })
+            .catch(() => {
+                msgDiv.innerText = "Erreur de connexion.";
+                msgDiv.className = "alert alert-danger";
+            })
+            .finally(() => btn.disabled = false);
+        });
+    }
 });
 
-function selectPlace(id, nom) {
-    console.log('selectPlace called with id:', id, 'nom:', nom);
+// Liaison avec le calendrier (appelée par calendar.js)
+window.onCalendarSelect = function(info, actualEnd) {
+    if (document.getElementById('finalDebut')) {
+        document.getElementById('finalDebut').value = info.startStr;
+        document.getElementById('finalFin').value = info.endStr;
+    }
+
+    const resBox = document.getElementById('res-form-box');
+    if (resBox) resBox.style.display = 'block';
+    
+    const label = document.getElementById('display-date');
+    if (label) label.innerText = "Du " + info.start.toLocaleDateString() + " au " + actualEnd.toLocaleDateString();
+};
+
+// Sélection visuelle de la place
+window.selectPlace = function(id, nom) {
+    console.log("Place sélectionnée :", id); // Pour vérifier que ça tourne !
+
+    // Mise à jour visuelle des boutons
     document.querySelectorAll('.place-btn').forEach(btn => btn.classList.remove('selected'));
-    document.getElementById('btn-' + id).classList.add('selected');
+    const btn = document.getElementById('btn-' + id);
+    if (btn) btn.classList.add('selected');
 
-    document.getElementById('resourceSelect').value = id;
-    document.getElementById('selected-title').innerText = "Place : " + nom;
+    // Mise à jour du formulaire (vérifie que ces IDs existent dans parking.php)
+    const resInput = document.getElementById('resourceSelect'); 
+    if (resInput) resInput.value = id;
 
-    document.getElementById('calendar').style.display = 'block';
-    document.getElementById('res-form-box').style.display = 'block';
+    const title = document.getElementById('selected-title');
+    if (title) title.innerText = "Place : " + nom;
 
-    console.log('About to render calendar');
-    setTimeout(() => {
-        calendar.render();
-        calendar.setOption('events', '/workspace_connect/reservation/getEvents?id_resource=' + id);
-        calendar.refetchEvents();
-        calendar.updateSize();
-        console.log('Calendar rendered and events loaded');
-    }, 50);
-}
-
-// Gestion de l'envoi AJAX
-document.getElementById('bookingForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const formData = new FormData(this);
-    const msgDiv = document.getElementById('ajax-message');
-    const submitBtn = document.getElementById('submitBtn');
-
-    submitBtn.disabled = true;
-    submitBtn.innerText = "Traitement...";
-
-    fetch('/workspace_connect/reservation/store', {
-        method: 'POST',
-        body: formData
-    })
-        .then(response => response.json())
-        .then(data => {
-            // Cas 1 : Conflits détectés
-            if (data.hasConflicts) {
-                // Afficher le modal avec les conflits
-                showConflictModal(data);
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Confirmer la réservation";
-                return;
-            }
-
-            // Cas 2 : Succès ou erreur standard
-            msgDiv.innerHTML = data.message;
-            msgDiv.className = "alert text-center mx-auto " + (data.success ? "alert-success" : "alert-danger");
-            msgDiv.style.display = "block";
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            if (data.success) {
-                calendar.refetchEvents();
-
-                const inputD = document.getElementById('heureDebutInput');
-                const inputF = document.getElementById('heureFinInput');
-
-                if (inputD) inputD.value = "";
-                if (inputF) inputF.value = "";
-
-                if (document.getElementById('finalDebut')) document.getElementById('finalDebut').value = "";
-                if (document.getElementById('finalFin')) document.getElementById('finalFin').value = "";
-            }
-
-            // Faire disparaître le message après 3 secondes
-            setTimeout(() => {
-                msgDiv.style.transition = "opacity 0.5s ease";
-                msgDiv.style.opacity = "0";
-
-                setTimeout(() => {
-                    msgDiv.style.display = "none";
-                    msgDiv.style.opacity = "1";
-                }, 500);
-            }, 3000);
-        })
-        .catch(error => {
-            msgDiv.innerHTML = "❌ Erreur de connexion au serveur.";
-            msgDiv.className = "alert alert-danger";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            console.error("Erreur brute du serveur :", error);
-        })
-        .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "Confirmer la réservation";
-        });
-
-});
-
-// Fonction pour afficher le modal des conflits
-function showConflictModal(data) {
-    const conflictsList = document.getElementById('conflictsList');
-    const availableCountText = document.getElementById('availableCountText');
-    
-    // Construire la liste des conflits
-    let conflictHTML = '';
-    data.conflicts.forEach(conflict => {
-        conflictHTML += `
-            <div class="alert alert-warning mb-2 py-2">
-                <strong>${conflict.date}</strong><br>
-                <small>
-                    De ${conflict.heure_debut} à ${conflict.heure_fin}<br>
-                    Réservé par: ${conflict.user}
-                </small>
-            </div>
-        `;
-    });
-    
-    conflictsList.innerHTML = conflictHTML;
-    
-    // Afficher le nombre de dates disponibles
-    const totalDates = data.conflicts.length + data.availableDatesCount;
-    availableCountText.innerText = `📅 Vous avez ${data.availableDatesCount} date(s) disponible(s) sur ${totalDates} jours sélectionnés.`;
-    
-    // Afficher le modal
-    const modal = new bootstrap.Modal(document.getElementById('conflictModal'));
-    modal.show();
-}
-
-// Gestionnaire pour le bouton "Réserver seulement les dates disponibles"
-document.getElementById('reserveAvailableBtn').addEventListener('click', function() {
-    const form = document.getElementById('bookingForm');
-    const formData = new FormData(form);
-    formData.append('skipConflicts', 'true');
-    
-    const submitBtn = document.getElementById('submitBtn');
-    const msgDiv = document.getElementById('ajax-message');
-    
-    submitBtn.disabled = true;
-    submitBtn.innerText = "Traitement...";
-    
-    // Fermer le modal
-    const modalEl = document.getElementById('conflictModal');
-    const modalInstance = bootstrap.Modal.getInstance(modalEl);
-    if (modalInstance) modalInstance.hide();
-    
-    fetch('/workspace_connect/reservation/store', {
-        method: 'POST',
-        body: formData
-    })
-        .then(response => response.json())
-        .then(data => {
-            msgDiv.innerHTML = data.message;
-            msgDiv.className = "alert text-center mx-auto " + (data.success ? "alert-success" : "alert-danger");
-            msgDiv.style.display = "block";
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            if (data.success) {
-                calendar.refetchEvents();
-                
-                const inputD = document.getElementById('heureDebutInput');
-                const inputF = document.getElementById('heureFinInput');
-                
-                if (inputD) inputD.value = "";
-                if (inputF) inputF.value = "";
-                
-                if (document.getElementById('finalDebut')) document.getElementById('finalDebut').value = "";
-                if (document.getElementById('finalFin')) document.getElementById('finalFin').value = "";
-            }
-            
-            setTimeout(() => {
-                msgDiv.style.transition = "opacity 0.5s ease";
-                msgDiv.style.opacity = "0";
-                
-                setTimeout(() => {
-                    msgDiv.style.display = "none";
-                    msgDiv.style.opacity = "1";
-                }, 500);
-            }, 3000);
-        })
-        .catch(error => {
-            msgDiv.innerHTML = "❌ Erreur lors de la réservation.";
-            msgDiv.className = "alert alert-danger";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            console.error(error);
-        })
-        .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "Confirmer la réservation";
-        });
-});
-
-// --- GESTION DE LA MODALE DE DÉTAILS DE RÉSERVATION ---
-let currentBookingId = null;
-let currentBookingSeriesId = null;
-
-function showBookingDetailsModal(event) {
-    // Récupérer les données de l'événement
-    currentBookingId = event.id;
-    currentBookingSeriesId = event.extendedProps.id_series || null;
-    const organizerName = event.extendedProps.prenom + ' ' + event.extendedProps.nom;
-    const resourceName = event.extendedProps.resource_name || 'Place de parking';
-    const startDate = new Date(event.start).toLocaleString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'});
-    const endDate = new Date(event.end).toLocaleString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'});
-
-    // Remplir la modale
-    document.getElementById('modalResourceName').innerText = resourceName;
-    document.getElementById('modalOrganizerName').innerText = organizerName;
-    document.getElementById('modalPeriod').innerText = `Du ${startDate} au ${endDate}`;
-
-    // Vérifier si c'est la réservation de l'utilisateur courant et gérer l'option de suppression
-    const isOwnBooking = event.extendedProps.id_user === currentUserId;
-    const deleteBtn = document.getElementById('confirmDeleteBookingBtn');
-    
-    if (isOwnBooking) {
-        deleteBtn.style.display = 'block';
-        document.getElementById('optionInvites').style.display = 'block';
-    } else {
-        deleteBtn.style.display = 'none';
-        document.getElementById('optionInvites').style.display = 'none';
+    // Rafraîchir le calendrier si la fonction existe
+    if (typeof window.refreshCalendarResource === 'function') {
+        window.refreshCalendarResource(id);
     }
-
-    // Gérer l'affichage de l'option série
-    const optionSeries = document.getElementById('optionSeries');
-    const separator = document.getElementById('seriesSeparator');
-    document.getElementById('deleteAllSeries').checked = false;
-    
-    if (isOwnBooking && currentBookingSeriesId && currentBookingSeriesId !== null && currentBookingSeriesId !== 'null' && currentBookingSeriesId !== 0) {
-        optionSeries.style.display = 'block';
-        separator.style.display = 'block';
-    } else {
-        optionSeries.style.display = 'none';
-        separator.style.display = 'none';
-    }
-
-    // Afficher la modale
-    const modal = new bootstrap.Modal(document.getElementById('bookingDetailsModal'));
-    modal.show();
-}
-
-// Fonction de suppression
-function handleDeleteBooking() {
-    if (!currentBookingId) {
-        console.error('No booking ID set');
-        return;
-    }
-
-    const btn = this;
-    const originalText = btn.innerHTML;
-    
-    const notifyInvites = document.getElementById('notifyInvites')?.checked || false;
-    const deleteAllSeries = document.getElementById('deleteAllSeries')?.checked || false;
-
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Suppression...';
-
-    const formData = new FormData();
-    formData.append('notifyInvites', notifyInvites);
-    formData.append('deleteAllSeries', deleteAllSeries);
-
-    fetch(`/workspace_connect/reservation/delete/${currentBookingId}`, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        const msg = document.getElementById('ajax-message');
-        if (msg) {
-            msg.innerHTML = data.message;
-            msg.className = "alert text-center mx-auto " + (data.success ? "alert-success" : "alert-danger");
-            msg.style.display = "block";
-        }
-
-        if (data.success) {
-            // Fermer la modale et rafraîchir le calendrier
-            bootstrap.Modal.getInstance(document.getElementById('bookingDetailsModal')).hide();
-            calendar.refetchEvents();
-        }
-
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-    })
-    .catch(error => {
-        console.error('Erreur:', error);
-        const msg = document.getElementById('ajax-message');
-        if (msg) {
-            msg.innerHTML = '❌ Erreur de connexion au serveur.';
-            msg.className = 'alert text-center mx-auto alert-danger';
-            msg.style.display = 'block';
-        }
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-    });
-}
-
-// Attacher le gestionnaire d'événement au bouton de suppression
-document.addEventListener('DOMContentLoaded', function() {
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBookingBtn');
-    if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', handleDeleteBooking);
-    }
-});
-
-// Gestion du formulaire de récurrence
-// Fonction pour mettre à jour le label de fréquence
-function updateRecurrenceLabel() {
-    const label = document.getElementById('label-count');
-    const recurrenceType = document.getElementById('recurrence_type');
-    const value = recurrenceType.value;
-
-    if (value === 'DAILY') {
-        label.innerText = "Combien de jours ?";
-    } else if (value === 'WEEKLY') {
-        label.innerText = "Combien de semaines ?";
-    } else if (value === 'MONTHLY') {
-        label.innerText = "Combien de mois ?";
-    }
-}
-
-document.getElementById('is_recurring').addEventListener('change', function() {
-    const options = document.getElementById('recurrence-options');
-    if (this.checked) {
-        options.style.display = 'block';
-        updateRecurrenceLabel(); // Mettre à jour le label dès l'affichage
-    } else {
-        options.style.display = 'none';
-    }
-});
-
-document.getElementById('recurrence_type').addEventListener('change', function() {
-    updateRecurrenceLabel(); // Utiliser la fonction commune
-});
+};

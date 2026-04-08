@@ -13,5 +13,8 @@
         }
     ?>
 
+
+    <script src="/workspace_connect/public/js/date-selection-touch.js"></script>
+
 </body>
 </html>
