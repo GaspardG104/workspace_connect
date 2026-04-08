@@ -1,4 +1,5 @@
 let calendar;
+let isMeetingRoom = false;
 
 document.addEventListener('DOMContentLoaded', function () {
     const calendarEl = document.getElementById('calendar');
@@ -56,7 +57,8 @@ document.addEventListener('DOMContentLoaded', function () {
             let month = (endDate.getMonth() + 1).toString().padStart(2, '0');
             let year = endDate.getFullYear();
 
-            let formattedEndDate = `${year}-${month}-${day}T18:00`;
+            let endTime = isMeetingRoom ? "10:00" : "18:00";
+            let formattedEndDate = `${year}-${month}-${day}T${endTime}`;
             document.getElementById('endInput').value = formattedEndDate;
         },
         eventClick: function(info) {
@@ -107,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     startInput.value = dateStr + 'T09:00';
                 }
                 if (endInput) {
-                    endInput.value = dateStr + 'T18:00';
+                    endInput.value = dateStr + (isMeetingRoom ? 'T10:00' : 'T18:00');
                 }
                 
                 // Aussi déclencher la fonction select du calendrier
@@ -142,6 +144,9 @@ function selectResource(id, nom, el) {
     // 1. Gérer la sélection visuelle (couleur du bureau)
     document.querySelectorAll('.selected-resource').forEach(b => b.classList.remove('selected-resource'));
     el.classList.add('selected-resource');
+
+    // Déterminer le type de ressource pour ajuster les heures par défaut
+    isMeetingRoom = nom.startsWith('Salle') || nom.startsWith('Box');
 
     // 2. Afficher le bloc de réservation et déclencher l'animation de décalage
     const calendarCol = document.getElementById('calendar-column');
@@ -200,7 +205,7 @@ function showMsg(txt, isSuccess) {
     const m = document.getElementById('ajax-message');
     if (!m) return;
     m.innerHTML = txt;
-    m.className = "alert " + (isSuccess ? "alert-success" : "alert-danger");
+    m.className = "alert text-center mx-auto " + (isSuccess ? "alert-success" : "alert-danger");
     m.style.display = "block";
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => { m.style.display = "none"; }, 4000);

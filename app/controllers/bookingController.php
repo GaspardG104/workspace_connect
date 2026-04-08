@@ -79,6 +79,12 @@ class BookingController {
 
             $startObj = new \DateTime($date_debut);
             $endObj = new \DateTime($date_fin);
+
+            $now = new \DateTime();
+            if ($startObj < $now) {
+                echo json_encode(['success' => false, 'message' => "❌ Vous ne pouvez pas réserver une date dans le passé."]);
+                exit;
+            }
             
             // --- NOUVEAU : DETECTION AUTO SÉLECTION SOURIS (MULTI-JOURS) ---
             // On vérifie si la date de début et la date de fin sont des jours différents

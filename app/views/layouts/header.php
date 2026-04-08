@@ -14,6 +14,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <style>
+        #ajax-message {
+            max-width: 90%;
+            word-wrap: break-word;
+            white-space: normal;
+            position: static !important;
+            top: auto !important;
+            right: auto !important;
+            min-width: auto !important;
+        }
+    </style>
+
 
 </head>
 <body>

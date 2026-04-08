@@ -1,11 +1,10 @@
 <link rel="stylesheet" href="/workspace_connect/public/styles/style_desks.css">
 
-<div id="ajax-message" class="alert shadow-lg"></div>
-
 <div class="container-fluid py-4">
     <div class="text-center mb-4 text-white">
         <h1><i class="fa-solid fa-list-check me-2"></i> Réserver un bureau, salle de réunion, box</h2>
     </div>
+    <div id="ajax-message" class="alert shadow-lg text-center mx-auto" style="max-width: 600px;"></div>
     <div class="row g-4 transition-layout justify-content-center" id="layout-wrapper">
         <div class="col-lg-7 transition-all" id="plan-column">
             <div class="card shadow p-3 border-0">
@@ -122,8 +121,18 @@
 
                                     <div class="col-md-6">
                                         <label id="label-count" class="small fw-bold"> </label>
-                                        <input type="number" name="recurrence_count" id="recurrence_count"
-                                            class="form-select form-select-sm" value="1" min="1">
+                                        <select name="recurrence_count" id="recurrence_count" class="form-select form-select-sm">
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                            <option value="7">7</option>
+                                            <option value="8">8</option>
+                                            <option value="9">9</option>
+                                            <option value="10">10</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="form-text mt-2 text-muted">

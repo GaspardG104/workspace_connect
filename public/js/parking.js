@@ -234,7 +234,7 @@ document.getElementById('bookingForm').addEventListener('submit', function (e) {
 
             // Cas 2 : Succès ou erreur standard
             msgDiv.innerHTML = data.message;
-            msgDiv.className = data.success ? "alert alert-success" : "alert alert-danger";
+            msgDiv.className = "alert text-center mx-auto " + (data.success ? "alert-success" : "alert-danger");
             msgDiv.style.display = "block";
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -330,7 +330,7 @@ document.getElementById('reserveAvailableBtn').addEventListener('click', functio
         .then(response => response.json())
         .then(data => {
             msgDiv.innerHTML = data.message;
-            msgDiv.className = data.success ? "alert alert-success" : "alert alert-danger";
+            msgDiv.className = "alert text-center mx-auto " + (data.success ? "alert-success" : "alert-danger");
             msgDiv.style.display = "block";
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -447,7 +447,7 @@ function handleDeleteBooking() {
         const msg = document.getElementById('ajax-message');
         if (msg) {
             msg.innerHTML = data.message;
-            msg.className = data.success ? "alert alert-success" : "alert alert-danger";
+            msg.className = "alert text-center mx-auto " + (data.success ? "alert-success" : "alert-danger");
             msg.style.display = "block";
         }
 
@@ -465,7 +465,7 @@ function handleDeleteBooking() {
         const msg = document.getElementById('ajax-message');
         if (msg) {
             msg.innerHTML = '❌ Erreur de connexion au serveur.';
-            msg.className = 'alert alert-danger';
+            msg.className = 'alert text-center mx-auto alert-danger';
             msg.style.display = 'block';
         }
         btn.disabled = false;
