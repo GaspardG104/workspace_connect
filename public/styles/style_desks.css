@@ -20,6 +20,39 @@
     box-shadow: 0 10px 25px rgba(0,0,0,0.05);
 }
 
+/* --- RESPONSIVE POUR MOBILE --- */
+@media (max-width: 768px) {
+    .plan-container {
+        max-width: 100% !important;
+        aspect-ratio: 1 / 1.3;
+        padding: 5px;
+    }
+
+    .btn-meeting, .btn-box {
+        font-size: 0.65rem !important;
+        padding: 1px !important;
+    }
+
+    .desk-unit {
+        font-size: 0.55rem !important;
+    }
+}
+
+@media (max-width: 992px) and (min-width: 768px) {
+    .plan-container {
+        max-width: 100%;
+        aspect-ratio: 1 / 1.2;
+    }
+
+    .btn-meeting, .btn-box {
+        font-size: 0.8rem;
+    }
+
+    .desk-unit {
+        font-size: 0.7rem;
+    }
+}
+
 /* --- STYLE DES ÉLÉMENTS --- */
 .btn-meeting,.btn-box {
     font-weight: 700;
@@ -175,6 +208,38 @@
     opacity: 1;
 }
 
+/* LAYOUT MOBILE - Colonnes empilées verticalement */
+@media (max-width: 768px) {
+    #plan-column {
+        width: 100% !important;
+        margin-bottom: 20px !important;
+    }
+
+    #calendar-column {
+        width: 100% !important;
+        margin-top: 20px !important;
+    }
+
+    .transition-layout {
+        flex-direction: column !important;
+    }
+
+    .transition-all {
+        transition: none !important;
+    }
+}
+
+@media (max-width: 992px) and (min-width: 768px) {
+    #plan-column {
+        width: 100% !important;
+        margin-bottom: 20px !important;
+    }
+
+    #calendar-column {
+        width: 100% !important;
+    }
+}
+
 
 /* Message flottant */
 #ajax-message { position: fixed; top: 20px; right: 20px; z-index: 10000; min-width: 250px; display: none; }
@@ -191,6 +256,52 @@
 .fc-daygrid-day {
     user-select: auto !important;
     -webkit-user-select: auto !important;
+    touch-action: auto !important;
+}
+
+/* Améliorer la touchabilité sur mobile */
+@media (max-width: 768px) {
+    .fc-daygrid-day {
+        min-height: 50px !important;
+        padding: 0 !important;
+        cursor: pointer !important;
+    }
+
+    .fc-daygrid-day-frame {
+        pointer-events: auto !important;
+        min-height: 50px !important;
+    }
+
+    .fc-event {
+        font-size: 0.65rem !important;
+        padding: 2px 3px !important;
+        pointer-events: auto !important;
+    }
+
+    .fc-button {
+        padding: 8px 10px !important;
+        font-size: 0.75rem !important;
+    }
+
+    .fc-button-primary {
+        background-color: #0d6efd !important;
+        border-color: #0d6efd !important;
+    }
+
+    .fc-button-primary:not(:disabled).fc-button-active {
+        background-color: #0b5ed7 !important;
+    }
+
+    #calendar {
+        touch-action: auto !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    .fc {
+        font-size: 0.85rem !important;
+    }
 }
 
 /* Couleur plus douce pour les jours de week-end (samedi et dimanche) */

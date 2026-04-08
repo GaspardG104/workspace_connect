@@ -2,7 +2,6 @@
 .fc-day-sat, .fc-day-sun {
     background-color: #f8f9fa !important; /* Gris très clair */
     background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,.02) 5px, rgba(0,0,0,.02) 10px);
-    cursor: not-allowed !important;
 }
 
 /* On retire l'effet de survol (hover) sur les week-ends */
@@ -28,15 +27,109 @@
 
 /* Assure que le conteneur global ne compresse pas le contenu */
 #calendar {
-    min-height: 500px; /* Force une hauteur minimale */
+    min-height: 400px;
     background: white; /* Fond blanc pour que le texte reste lisible sur ton bleu */
     padding: 15px;
     border-radius: 8px;
     color: #333; /* Texte sombre pour contraster avec le fond blanc */
+    touch-action: auto !important;
 }
 
 /* Style spécifique pour tes boutons qui semblent un peu serrés */
 .fc .fc-button {
     padding: 0.4em 0.65em !important;
     font-size: 0.9em !important;
+}
+
+/* === SUPPORT TACTILE === */
+
+.fc-daygrid-day {
+    touch-action: auto !important;
+    -webkit-touch-callout: none !important;
+    cursor: pointer;
+    position: relative;
+}
+
+.fc-daygrid-day-frame {
+    pointer-events: auto !important;
+    min-height: 100%;
+}
+
+.fc-daygrid-day:active {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+/* --- OPTIMISATION POUR MOBILE --- */
+@media (max-width: 768px) {
+    #calendar {
+        min-height: 350px !important;
+        padding: 8px !important;
+        touch-action: auto !important;
+    }
+
+    .fc {
+        font-size: 0.9rem !important;
+    }
+
+    .fc-daygrid-day {
+        min-height: 50px !important;
+        padding: 0 !important;
+    }
+
+    .fc-daygrid-day-frame {
+        min-height: 50px !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .fc-daygrid-day-number {
+        padding: 4px 2px !important;
+        font-size: 0.75rem !important;
+    }
+
+    .fc-daygrid-day-events {
+        margin-top: 2px !important;
+    }
+
+    .fc-event {
+        font-size: 0.65rem !important;
+        padding: 2px 3px !important;
+    }
+
+    .fc-event-title {
+        font-size: 0.65rem !important;
+    }
+
+    .fc-button-group {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 5px !important;
+    }
+
+    .fc .fc-button {
+        padding: 8px 10px !important;
+        font-size: 0.75rem !important;
+    }
+
+    .fc .fc-col-header-cell {
+        padding: 6px 2px !important;
+        font-size: 0.7rem !important;
+    }
+
+    .fc .fc-toolbar {
+        flex-direction: column !important;
+        gap: 8px !important;
+        margin-bottom: 1em !important;
+    }
+
+    .fc-toolbar-chunk {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 5px !important;
+        flex-wrap: wrap !important;
+    }
+
+    .fc-daygrid-day.fc-daygrid-day-selected {
+        background-color: rgba(13, 110, 253, 0.15) !important;
+    }
 }

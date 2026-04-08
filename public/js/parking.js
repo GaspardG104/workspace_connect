@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', function () {
         unselectAuto: false,
         dragRevertDuration: 0,
         selectMirror: true,
+        selectMinDistance: 0, // Permettre la sélection immédiate sur mobile
+        dayMaxEvents: 3, // Limiter les événements pour éviter l'encombrement
 
         headerToolbar: {
             left: 'prev,next today',
@@ -131,6 +133,56 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     console.log('Calendar initialized (not rendered yet)');
     // calendar.render(); // Commenté car on le fait dans selectPlace quand la div est visible
+
+    // === FIX POUR LE TACTILE - Capturer les clics et remplir les dates ===
+    
+    setTimeout(function() {
+        calendarEl.addEventListener('click', function(e) {
+            const dayCell = e.target.closest('.fc-daygrid-day');
+            if (!dayCell) return;
+
+            try {
+                let dateStr = dayCell.getAttribute('data-date');
+                
+                if (!dateStr) {
+                    const dayNum = dayCell.querySelector('.fc-daygrid-day-number');
+                    if (!dayNum) return;
+                    
+                    const text = dayNum.textContent.trim();
+                    if (!text) return;
+                    
+                    if (calendar && calendar.view) {
+                        const start = calendar.view.activeStart;
+                        const year = start.getFullYear();
+                        const month = String(start.getMonth() + 1).padStart(2, '0');
+                        const day = String(text).padStart(2, '0');
+                        dateStr = `${year}-${month}-${day}`;
+                    }
+                }
+                
+                if (!dateStr) return;
+
+                console.log('Parking date selected:', dateStr);
+
+                // Déclencher la fonction select du calendrier
+                const selectFunction = calendar.getOption('select');
+                if (selectFunction) {
+                    const startDate = new Date(dateStr + 'T00:00:00');
+                    const endDate = new Date(startDate);
+                    endDate.setDate(endDate.getDate() + 1);
+                    
+                    selectFunction({
+                        start: startDate,
+                        end: endDate,
+                        startStr: dateStr,
+                        allDay: true
+                    });
+                }
+            } catch(err) {
+                console.error('Error selecting parking date:', err);
+            }
+        });
+    }, 500);
 });
 
 function selectPlace(id, nom) {

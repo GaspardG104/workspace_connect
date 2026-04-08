@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
             right: 'dayGridMonth,timeGridWeek'
         },
         selectable: true,
+        unselectAuto: false,
         select: function (info) {
             // Vérifier s'il y a un avertissement sur les weekends
             let hasWeekend = false;
@@ -63,6 +64,71 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
     calendar.render();
+
+    // === FIX POUR LE TACTILE - FullCalendar ne réagit pas aux clics simples ===
+    // Capturer directement les clics et setAr les values des inputs
+    
+    // Reporter le setup après un délai pour s'assurer que le calendrier est prêt
+    setTimeout(function() {
+        calendarEl.addEventListener('click', function(e) {
+            const dayCell = e.target.closest('.fc-daygrid-day');
+            if (!dayCell) return;
+
+            try {
+                // Essayer de récupérer la date via data-date
+                let dateStr = dayCell.getAttribute('data-date');
+                
+                // Fallback: parser le contenu HTML
+                if (!dateStr) {
+                    const dayNum = dayCell.querySelector('.fc-daygrid-day-number');
+                    if (!dayNum) return;
+                    
+                    const text = dayNum.textContent.trim();
+                    if (!text) return;
+                    
+                    // Obtenir mois/année du view
+                    if (calendar && calendar.view) {
+                        const start = calendar.view.activeStart;
+                        const year = start.getFullYear();
+                        const month = String(start.getMonth() + 1).padStart(2, '0');
+                        const day = String(text).padStart(2, '0');
+                        dateStr = `${year}-${month}-${day}`;
+                    }
+                }
+                
+                if (!dateStr) return;
+
+                // Remplir directement les champs
+                console.log('Selected date:', dateStr);
+                const startInput = document.getElementById('startInput');
+                const endInput = document.getElementById('endInput');
+                
+                if (startInput) {
+                    startInput.value = dateStr + 'T09:00';
+                }
+                if (endInput) {
+                    endInput.value = dateStr + 'T18:00';
+                }
+                
+                // Aussi déclencher la fonction select du calendrier
+                const selectFunction = calendar.getOption('select');
+                if (selectFunction) {
+                    const startDate = new Date(dateStr + 'T00:00:00');
+                    const endDate = new Date(startDate);
+                    endDate.setDate(endDate.getDate() + 1);
+                    
+                    selectFunction({
+                        start: startDate,
+                        end: endDate,
+                        startStr: dateStr,
+                        allDay: true
+                    });
+                }
+            } catch(err) {
+                console.error('Error selecting date:', err);
+            }
+        });
+    }, 500);
 });
 
 
@@ -115,8 +181,7 @@ function selectResource(id, nom, el) {
 
     // 4. Charger les événements et forcer le calendrier à recalculer sa taille
     calendar.setOption('events', '/workspace_connect/reservation/getEvents?id_resource=' + id);
-    calendar.refetchEvents();
-
+    
     // TRÈS IMPORTANT : On attend un court instant que l'animation commence 
     // pour que FullCalendar ajuste sa largeur, sinon il reste invisible ou buggé.
     setTimeout(() => {
@@ -124,8 +189,10 @@ function selectResource(id, nom, el) {
         // On attend un peu plus (500ms au lieu de 200ms) pour que 
         // l'espace soit suffisant avant de dessiner le calendrier
         setTimeout(() => {
+            calendar.render(); // Assurer que le calendrier est rendu après affichage
+            calendar.refetchEvents();
             calendar.updateSize();
-        }, 500);
+        }, 200);
     }, 10);
 }
 
@@ -133,8 +200,9 @@ function showMsg(txt, isSuccess) {
     const m = document.getElementById('ajax-message');
     if (!m) return;
     m.innerHTML = txt;
-    m.className = "alert shadow-lg " + (isSuccess ? "alert-success" : "alert-danger");
+    m.className = "alert " + (isSuccess ? "alert-success" : "alert-danger");
     m.style.display = "block";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => { m.style.display = "none"; }, 4000);
 }
 
