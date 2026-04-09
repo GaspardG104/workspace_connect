@@ -200,5 +200,5 @@
     </div>
 
 
-<script src="/workspace_connect/public/scripts/account.js"></script>
+<script src="/workspace_connect/public/js/account.js"></script>
 
