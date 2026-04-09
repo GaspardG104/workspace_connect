@@ -157,10 +157,10 @@ class UserController {
         $stmt = $db->prepare("UPDATE users SET immatriculation = ? WHERE id = ?");
         
         if ($stmt->execute([$immatriculation, $userId])) {
-            $message = !empty($immatriculation) ? "✅ Plaque enregistrée : $immatriculation" : "✅ Plaque supprimée";
+            $message = !empty($immatriculation) ? " Plaque enregistrée : $immatriculation" : " Plaque supprimée";
             echo json_encode(['success' => true, 'message' => $message]);
         } else {
-            echo json_encode(['success' => false, 'message' => "❌ Erreur lors de la mise à jour."]);
+            echo json_encode(['success' => false, 'message' => " Erreur lors de la mise à jour."]);
         }
         exit;
     }
