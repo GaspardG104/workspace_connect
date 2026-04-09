@@ -79,7 +79,7 @@
                             <input type="file" name="user_file" class="form-control" accept=".csv" required>
                             <div class="form-text">
                                 Format attendu : Fonction, Nom, Prénom, Email, Immatriculation (facultatif).<br>
-                                Le mot de passe par défaut pour les utilisateurs importés est "Nom123".
+                                Le mot de passe par défaut pour les utilisateurs importés est "nom123".
                             </div>
                         </div>
                         <button type="submit">Importer</button>
