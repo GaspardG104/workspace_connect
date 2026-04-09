@@ -14,119 +14,88 @@ document.addEventListener('DOMContentLoaded', function () {
         selectMinDistance: 0, // Permettre la sélection immédiate sur mobile
         dayMaxEvents: 3, // Limiter les événements pour éviter l'encombrement
 
+
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
             right: 'dayGridMonth,timeGridWeek'
         },
         // Fonction de formatage pour l'input datetime-local
-        select: function (info) {
-            // Vérifier s'il y a un avertissement sur les weekends
-            let hasWeekend = false;
-            const startDate = new Date(info.start);
-            const endDate = new Date(info.end);
-            
-            const interval = new Date(startDate);
-            while (interval < endDate) {
-                const dayOfWeek = interval.getDay();
-                if (dayOfWeek === 0 || dayOfWeek === 6) {
-                    hasWeekend = true;
-                    break;
-                }
-                interval.setDate(interval.getDate() + 1);
-            }
-            
-            if (hasWeekend) {
-                // Afficher un avertissement sans bloquer
-                const warningMsg = document.getElementById('display-date');
-                if (warningMsg) {
-                    warningMsg.innerHTML = '<span style="color: #ffc107;"><i class="fa-solid fa-triangle-exclamation me-2"></i>Les jours du week-end seront ignorés.</span>';
-                }
-            }
-            
-            // 1. Récupération des dates (Début et Fin réelle)
-            // On utilise 'let' pour pouvoir les mettre à jour globalement
-            let currentStartDate = info.startStr.split('T')[0];
+select: function (info) {
+    // 1. Vérifier s'il y a un weekend
+    let hasWeekend = false;
+    const startDate = new Date(info.start);
+    const endDateCheck = new Date(info.end);
+    
+    const interval = new Date(startDate);
+    while (interval < endDateCheck) {
+        const dayOfWeek = interval.getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+            hasWeekend = true;
+            break;
+        }
+        interval.setDate(interval.getDate() + 1);
+    }
 
-            // FullCalendar donne J+1 pour la fin, on garde la date brute pour le calcul SQL
-            // mais on calcule une version lisible pour l'affichage
-            let endDateObj = new Date(info.end);
-            endDateObj.setDate(endDateObj.getDate());
-            let currentEndDate = endDateObj.toISOString().split('T')[0];
+    // 2. Préparation de l'affichage et des variables
+    const displayDateElement = document.getElementById('display-date');
+    let hDebut = "08:30";
+    let hFin = "17:00";
 
-            // 2. Affichage lisible
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            let texteDate = "Le " + info.start.toLocaleDateString('fr-FR', options);
+    // 3. Calcul de la date de fin (Logique Desk.js qui marche)
+    let endDate = new Date(info.end);
+    if (info.allDay) {
+        endDate.setDate(endDate.getDate() - 1);
+    }
 
-            if (currentStartDate !== currentEndDate) {
-                texteDate = "Du " + info.start.toLocaleDateString('fr-FR', options) + " au " + endDateObj.toLocaleDateString('fr-FR', options);
-            }
+    // Formatage manuel (plus sûr que toISOString)
+    let day = endDate.getDate().toString().padStart(2, '0');
+    let month = (endDate.getMonth() + 1).toString().padStart(2, '0');
+    let year = endDate.getFullYear();
+    let formattedEndDate = `${year}-${month}-${day}`;
+    let formattedStartDate = info.startStr.split('T')[0];
 
-            const displayDateElement = document.getElementById('display-date');
-            if (displayDateElement) {
-                if (hasWeekend) {
-                    displayDateElement.innerHTML = `${texteDate} <br><span style="color:#b15f00;"><i class="fa-solid fa-triangle-exclamation me-1"></i>Les jours du week-end seront ignorés.</span>`;
-                } else {
-                    displayDateElement.innerText = texteDate;
-                }
-            }
+    // 4. Construction du texte pour l'affichage (L'humain voit le vrai dernier jour)
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    let texteDate = "Le " + startDate.toLocaleDateString('fr-FR', options);
 
-            // 3. Heures par défaut
-            let hDebut = "08:30";
-            let hFin = "17:00";
+    if (formattedStartDate !== formattedEndDate) {
+        texteDate = "Du " + startDate.toLocaleDateString('fr-FR', options) + " au " + endDate.toLocaleDateString('fr-FR', options);
+    }
 
-            // 4. Liaison avec ton formulaire (LES NOMS DE VARIABLES IMPORTANTS)
-            // On définit les fonctions globalement pour qu'elles soient accessibles partout
-            window.updateFinalDebut = function (val) {
-                hDebut = val;
-                document.getElementById('finalDebut').value = currentStartDate + " " + hDebut + ":00";
-            };
+    if (displayDateElement) {
+        if (hasWeekend) {
+            displayDateElement.innerHTML = texteDate + '<br><span style="color:#b15f00;"><i class="fa-solid fa-triangle-exclamation me-1"></i>Les jours du week-end seront ignorés.</span>';
+        } else {
+            displayDateElement.innerText = texteDate;
+        }
+    }
 
-            window.updateFinalFin = function (val) {
-                hFin = val;
-                // CRUCIAL : On utilise currentEndDate ici pour ne pas écraser la période !
-                document.getElementById('finalFin').value = currentEndDate + " " + hFin + ":00";
-            };
+    // 5. Mise à jour des inputs pour le formulaire (SQL)
+    // IMPORTANT : Pour le SQL, on garde la logique de fin inclusive ou exclusive selon ton besoin.
+    // Si tu veux que le SQL reçoive le jour affiché, utilise formattedEndDate.
+    
+    window.updateFinalDebut = function (val) {
+        document.getElementById('finalDebut').value = formattedStartDate + " " + val + ":00";
+    };
 
-            // Initialisation des champs
-            document.getElementById('heureDebutInput').value = hDebut;
-            document.getElementById('heureFinInput').value = hFin;
-            window.updateFinalDebut(hDebut);
-            window.updateFinalFin(hFin);
+    window.updateFinalFin = function (val) {
+        // Ici on utilise formattedEndDate pour que SQL reçoive exactement le jour affiché (ex: 24)
+        document.getElementById('finalFin').value = formattedEndDate + " " + val + ":00";
+    };
 
-            // 5. Configuration des horloges (Flatpickr)
-            flatpickr("#heureDebutInput", {
-                enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true,
-                defaultDate: hDebut,
-                onChange: function (selectedDates, timeStr) {
-                    window.updateFinalDebut(timeStr);
-                }
-            });
+    // Initialisation
+    document.getElementById('heureDebutInput').value = hDebut;
+    document.getElementById('heureFinInput').value = hFin;
+    window.updateFinalDebut(hDebut);
+    window.updateFinalFin(hFin);
 
-            flatpickr("#heureFinInput", {
-                enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true,
-                defaultDate: hFin,
-                onChange: function (selectedDates, timeStr) {
-                    window.updateFinalFin(timeStr);
-                }
-            });
-
-            // 6. Affichage du formulaire (ID : res-form-box)
-            const formBox = document.getElementById('res-form-box');
-            if (formBox) {
-                formBox.style.display = 'block';
-            }
-
-            // 7. Dégel du calendrier (seulement si c'est une sélection invalide ou après traitement)
-            // calendar.unselect(); // Commenté pour garder la sélection visible
-
-            if (window.innerWidth < 768 && formBox) {
-                window.scrollTo({
-                    top: formBox.offsetTop - 20,
-                    behavior: 'smooth'
-                });
-            }
-        },
+    // 6. Affichage du formulaire
+    const formBox = document.getElementById('res-form-box');
+    if (formBox) {
+        formBox.style.display = 'block';
+    }
+},
         eventClick: function(info) {
             showBookingDetailsModal(info.event);
         }
@@ -136,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // === FIX POUR LE TACTILE - Capturer les clics et remplir les dates ===
     
-    setTimeout(function() {
+    /* setTimeout(function() {
         calendarEl.addEventListener('click', function(e) {
             const dayCell = e.target.closest('.fc-daygrid-day');
             if (!dayCell) return;
@@ -182,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Error selecting parking date:', err);
             }
         });
-    }, 500);
+    }, 500); */
 });
 
 function selectPlace(id, nom) {

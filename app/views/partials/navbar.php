@@ -1,4 +1,4 @@
- <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/workspace_connect/home">
                 <i class="fa-solid fa-car-side me-2"></i> Workspace Connect
@@ -17,7 +17,7 @@
                             <a class="nav-link btn text-white px-3 me-2 btn-sm" href="/workspace_connect/reservation/parking"> <i class="fa-solid fa-square-parking"></i> Parking</a> 
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link btn text-white px-3 me-2 btn-sm" href="/workspace_connect/reservation/desk">Bureaux <i class="fa-solid fa-computer"></i></a>
+                            <a class="nav-link btn text-white px-3 me-2 btn-sm" href="/workspace_connect/reservation/desk"><i class="fa-solid fa-computer"></i> Bureaux </a>
                         </li>
                         <?php if ($_SESSION['user_role'] == 1 || $_SESSION['user_role'] == 2): ?>
                             <li class="nav-item">
