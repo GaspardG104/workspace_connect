@@ -61,7 +61,7 @@ body {
 }
 
 .navbar .nav-link:hover {
-    color: #ffffff !important; /* Le vert au survol du menu */
+    color: #ffffff !important;
 }
 
 /* Animation douce pour le contenu */
