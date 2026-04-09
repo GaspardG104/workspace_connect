@@ -204,3 +204,16 @@
 .fc-daygrid-day.fc-day-sat {
     background-color: #f0f4f8 !important;
 }
+
+/* Permet de s'assurer que les inputs sous le calendrier restent cliquables */
+#res-form-box {
+    position: relative;
+    z-index: 10;
+    touch-action: manipulation;
+}
+
+/* Empêche le calendrier de "manger" le clic si on touche l'input d'heure */
+input.flatpickr-input {
+    position: relative;
+    z-index: 100;
+}
