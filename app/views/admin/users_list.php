@@ -77,7 +77,10 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">Fichier CSV uniquement</label>
                             <input type="file" name="user_file" class="form-control" accept=".csv" required>
-                            <div class="form-text">Format attendu : Fonction, Nom, Prénom, Email, Immatriculation, MDP Temporaire</div>
+                            <div class="form-text">
+                                Format attendu : Fonction, Nom, Prénom, Email, Immatriculation (facultatif).<br>
+                                Le mot de passe par défaut pour les utilisateurs importés est "Nom123".
+                            </div>
                         </div>
                         <button type="submit">Importer</button>
                     </form>
