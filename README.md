@@ -42,6 +42,6 @@ To run this project, you will need to add the following environment variables to
 
 - Réserver sur plusieurs jours
 - Géré ses réservations
-- Invité des collègues
+- Inviter des collègues
 - Responsive (un peu)
 
