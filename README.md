@@ -1,7 +1,7 @@
 
 # Workspace Connect
 
-Projet de stage de BTS SIO. Réalisation d'une application web pour les reservations de places de parkings, salles de réunions, boxs et bureaux d'open space.
+Projet de stage de BTS SIO. Réalisation d'une application web pour les reservations de places de parkings, salles de réunions, boxs et bureaux d'open space pour l'entreprise COGNIZANT (merci pour la cagnotte surprise <3 ).
 
 
 
