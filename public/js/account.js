@@ -29,7 +29,7 @@ window.saveImmat = function() {
     const formData = new FormData();
     formData.append('immatriculation', val);
 
-    fetch('/workspace_connect/user/update_immat', { 
+    fetch('/workspace_connect/user/updateImmat', { 
         method: 'POST', 
         body: formData 
     })
