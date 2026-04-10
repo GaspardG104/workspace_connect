@@ -1,8 +1,3 @@
-/**
- * Solution de sélection de dates tactile pour FullCalendar
- * Capture les clics sur les cellules de jours et simule une sélection
- */
-
 function initTouchDateSelection() {
     const calendarEl = document.getElementById('calendar');
     if (!calendarEl) return;
@@ -11,18 +6,13 @@ function initTouchDateSelection() {
     let startDate = null;
     let endDate = null;
 
-    /**
-     * Extraire la date d'une cellule du calendrier
-     */
+
     function getDateFromCell(cell) {
         const dateStr = cell.getAttribute('data-date');
         if (!dateStr) return null;
         return new Date(dateStr);
     }
 
-    /**
-     * Obtenir toutes les cellules entre deux dates
-     */
     function getCellsBetween(startCell, endCell) {
         const startDate = getDateFromCell(startCell);
         const endDate = getDateFromCell(endCell);
@@ -41,9 +31,6 @@ function initTouchDateSelection() {
         return cells;
     }
 
-    /**
-     * Marquer les cellules comme sélectionnées
-     */
     function highlightCells(startCell, endCell) {
         calendarEl.querySelectorAll('[data-date]').forEach(cell => {
             cell.classList.remove('fc-daygrid-day-selected');
@@ -55,9 +42,6 @@ function initTouchDateSelection() {
         });
     }
 
-    /**
-     * Traiter un clic/tap sur une cellule
-     */
     function handleCellClick(cell) {
         if (!isSelecting) {
             // Premier clic: début de sélection
@@ -88,9 +72,6 @@ function initTouchDateSelection() {
         }
     }
 
-    /**
-     * Déclencher la sélection avec FullCalendar
-     */
     function triggerDateSelection(startCell, endCell) {
         if (typeof window.calendar === 'undefined') return;
 
@@ -99,9 +80,8 @@ function initTouchDateSelection() {
         
         const startDate = new Date(startDateStr + 'T00:00:00');
         let endDate = new Date(endDateStr + 'T23:59:59');
-        endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000); // +1 jour
+        endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000); 
 
-        // Créer l'objet d'info de sélection
         const selectInfo = {
             start: startDate,
             end: endDate,
@@ -110,16 +90,12 @@ function initTouchDateSelection() {
             allDay: true
         };
 
-        // Appeler la fonction select du calendrier
         const selectFunction = window.calendar.getOption('select');
         if (typeof selectFunction === 'function') {
             selectFunction(selectInfo);
         }
     }
 
-    /**
-     * Attacher les écouteurs d'événements
-     */
     calendarEl.addEventListener('click', function(e) {
         const cell = e.target.closest('[data-date]');
         if (cell) {
@@ -129,7 +105,6 @@ function initTouchDateSelection() {
         }
     });
 
-    // Support du drag sur desktop (pour compatibilité)
     let dragStartCell = null;
 
     document.addEventListener('dragstart', function(e) {
@@ -144,14 +119,14 @@ function initTouchDateSelection() {
     });
 }
 
-// Initialiser quand le DOM est prêt
+
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initTouchDateSelection, 100);
 });
 
-// Re-init quand le calendrier est mis à jour
+
 const observer = new MutationObserver(function() {
-    // Les cellules ont changé, s'assurer que tout est connecté
+
 });
 
 const config = { childList: true, subtree: true };

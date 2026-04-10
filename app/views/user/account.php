@@ -102,7 +102,7 @@
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0" id="bookingTable">
                                 <thead class="table-light text-secondary">
-                                    <tr id="booking-row-<?= $r['id'] ?>">
+                                    <tr>
                                         <th>Ressource</th>
                                         <th>Dates</th>
                                         <th class="text-end">Action</th>

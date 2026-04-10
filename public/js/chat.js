@@ -36,8 +36,6 @@ function sendMessage() {
     })
     .then(res => res.json())
     .then(data => {
-        // Gemini peut parfois renvoyer du texte avec des ```json ... ```
-        // On essaie de nettoyer si nécessaire
         let responseText = data.reponse || data; 
         chatBody.innerHTML += `<div class="text-start mb-2"><span class="bg-primary text-white p-2 rounded shadow-sm d-inline-block">${responseText}</span></div>`;
         chatBody.scrollTop = chatBody.scrollHeight;
@@ -47,7 +45,7 @@ function sendMessage() {
         chatBody.innerHTML += `<div class="text-start mb-2"><span class="bg-danger text-white p-2 rounded shadow-sm d-inline-block">L'IA n'a pas pu répondre.</span></div>`;
     });
 }
-// 3. Écouter la touche "Entrée"
+
 document.addEventListener('DOMContentLoaded', function() {
     const userInput = document.getElementById('user-input');
     if (userInput) {
