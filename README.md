@@ -42,6 +42,12 @@ To run this project, you will need to add the following environment variables to
 
 - Réserver sur plusieurs jours
 - Géré ses réservations
-- Inviter des collègues
+- Invité des collègues
 - Responsive (un peu)
+
+
+## Tech Stack
+
+**Client:** PHP, AJAX, Postgres 
+**Server:** Apache
 
