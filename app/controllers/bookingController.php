@@ -2,7 +2,7 @@
 namespace App\Controllers;
 
 use PDO;
-use App\Models\Booking; // Importation du modèle
+use App\Models\Booking; 
 use App\Models\Resource;
 
 class BookingController {
@@ -85,8 +85,7 @@ class BookingController {
                 echo json_encode(['success' => false, 'message' => "❌ Vous ne pouvez pas réserver une date dans le passé."]);
                 exit;
             }
-            
-            // --- NOUVEAU : DETECTION AUTO SÉLECTION SOURIS (MULTI-JOURS) ---
+
             // On vérifie si la date de début et la date de fin sont des jours différents
             $is_multi_day_selection = $startObj->format('Y-m-d') !== $endObj->format('Y-m-d');
             $is_recurring = isset($_POST['is_recurring']) && $_POST['is_recurring'] === 'true';
@@ -98,7 +97,6 @@ class BookingController {
                 $id_series = $db->lastInsertId();
 
                 $interval = new \DateInterval('P1D');
-                // On clone pour ne pas modifier l'original, et on ajoute 1 sec pour inclure le dernier jour dans la boucle
                 $tempEnd = clone $endObj;
                 $tempEnd->modify('+1 second');
                 $period = new \DatePeriod(new \DateTime($startObj->format('Y-m-d')), $interval, $tempEnd);
@@ -112,7 +110,6 @@ class BookingController {
                     $dates_a_reserver[] = [$d, $f];
                 }
             } 
-            // --- FIN DETECTION AUTO ---
             
             // 1. Gestion de la récurrence classique (Si cochée via le formulaire)
             elseif ($is_recurring) {
@@ -168,7 +165,7 @@ class BookingController {
             // Si c'est une sélection multi-jours OU une récurrence ET qu'il y a des conflits
             if (($is_multi_day_selection || $is_recurring) && !empty($conflicts) && !$skipConflicts) {
                 $db->rollBack();
-                // Préparer les données pour le frontend
+                // péparation des données pour le frontend
                 $conflictDetails = [];
                 foreach ($conflicts as $date => $bookings) {
                     foreach ($bookings as $booking) {
@@ -230,7 +227,6 @@ class BookingController {
         $db = require __DIR__ . '/../../config/db.php';
         $id_resource = isset($_GET['id_resource']) ? intval($_GET['id_resource']) : 0;
         
-        // Utilisation du modèle
         $events = Booking::getEventsByResource($db, $id_resource);
         
         header('Content-Type: application/json');
@@ -285,7 +281,7 @@ class BookingController {
                 return;
             }
 
-            // 2. Logique des notifications (on garde ton code tel quel)
+            // 2. Logique des notifications 
             if ($notifyInvites) {
                 $stmtAtt = $this->db->prepare("SELECT email FROM attendees WHERE id_booking = ?");
                 $stmtAtt->execute([$id]);

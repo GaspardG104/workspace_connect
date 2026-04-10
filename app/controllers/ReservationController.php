@@ -27,7 +27,7 @@ class ReservationController {
     }
 
     /**
-     * Recherche via le Modèle (La requête géante est maintenant dans Booking::search)
+     * Recherche via le Modèle 
      */
     public function search() {
         $search = $_GET['search'] ?? '';
@@ -54,7 +54,6 @@ class ReservationController {
             $deleteAllSeries = isset($_POST['deleteAllSeries']) && $_POST['deleteAllSeries'] === 'true';
 
             // 1. Récupération des infos avant suppression pour les mails
-            // On peut utiliser une petite requête ici ou ajouter une méthode getById dans le modèle
             $stmtInfo = $this->db->prepare("SELECT b.*, u.email as organizer_email FROM bookings b JOIN users u ON b.id_user = u.id WHERE b.id = ?");
             $stmtInfo->execute([$id]);
             $info = $stmtInfo->fetch(PDO::FETCH_ASSOC);
@@ -64,7 +63,7 @@ class ReservationController {
                 return;
             }
 
-            // 2. Logique des notifications (on garde ton code tel quel)
+            // 2. Logique des notifications 
             if ($notifyInvites) {
                 $stmtAtt = $this->db->prepare("SELECT email FROM attendees WHERE id_booking = ?");
                 $stmtAtt->execute([$id]);
@@ -74,7 +73,6 @@ class ReservationController {
 
             // 3. Exécution de la suppression via le Modèle
             if ($deleteAllSeries && !empty($info['id_series'])) {
-                // On délègue la suppression de la série au modèle
                 $result = Booking::delete($this->db, $id, true); // true pour supprimer toute la série
                 $message = "Toute la série de réservations a été supprimée.";
             } else {

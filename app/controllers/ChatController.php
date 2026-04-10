@@ -34,8 +34,6 @@ private function callGemini($prompt) {
     $config = require __DIR__ . '/../../config/api_config.php';
     $apiKey = trim($config['gemini_key']);
     
-    // On utilise le nom exact trouvé dans votre diagnostic : gemini-2.0-flash
-    // Et on repasse sur la version v1 qui est la version stable
     $url = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=" . $apiKey;
 
     $data = [

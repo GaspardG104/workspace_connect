@@ -32,4 +32,9 @@ class User {
         $stmt = $db->prepare($sql);
         return $stmt->execute([$id_role, $nom, $prenom, $email, $immatriculation, $password]);
     }
+
+    public static function updateImmatriculation($db, $userId, $immat) {
+        $stmt = $db->prepare("UPDATE users SET immatriculation = ? WHERE id = ?");
+        return $stmt->execute([$immat, $userId]);
+    }
 }
